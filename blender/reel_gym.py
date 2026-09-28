@@ -550,7 +550,8 @@ def render(name):
         sc.render.filepath = os.path.join(OUT, "test_%s.png" % name)
         bpy.ops.render.render(write_still=True)
     else:
-        sc.frame_start, sc.frame_end = 1, n
+        # --start / --end resume an interrupted shot (or redo a few frames)
+        sc.frame_start, sc.frame_end = int(arg("--start", 1)), int(arg("--end", n))
         bpy.ops.render.render(animation=True)
     print("REEL DONE", name, n)
 

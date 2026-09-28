@@ -61,7 +61,10 @@ ease = lambda t: 1 - (1 - clamp(t)) ** 3
 
 
 def frames(shot):
-    return sorted(glob.glob(J("build", "reel2", shot, "f_*.png")))
+    import time
+    fs = sorted(glob.glob(J("build", "reel2", shot, "f_*.png")) + glob.glob(J("build", "reel2", shot, "f_*.jpg")))
+    # skip a frame Blender may still be writing, or one a full disk left truncated
+    return [f for f in fs if time.time() - os.path.getmtime(f) > 8 and os.path.getsize(f) > 100_000]
 
 
 _cache = {}
@@ -69,7 +72,7 @@ _cache = {}
 
 def load(path):
     if path not in _cache:
-        if len(_cache) > 40:
+        if len(_cache) > 3:                          # each frame is read once: keep RAM low
             _cache.clear()
         _cache[path] = Image.open(path).convert("RGB").resize((W, H), Image.LANCZOS if not PREVIEW else Image.BILINEAR)
     return _cache[path]
@@ -191,6 +194,8 @@ def timeline():
 def main():
     ff = find_ffmpeg()
     out = J("build", "reel2", "preview.mp4") if PREVIEW else J("assets", "novaband-showreel-gym.mp4")
+    if "--out" in sys.argv:                           # e.g. a work-in-progress cut
+        out = sys.argv[sys.argv.index("--out") + 1]
     step = 5 if PREVIEW else 1
     cmd = [ff, "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", "%dx%d" % (W, H),
            "-r", str(FPS / step), "-i", "-", "-c:v", "libx264", "-preset", "slow", "-crf", "20",
@@ -208,7 +213,7 @@ def main():
     p.stdin.close()
     p.wait()
     print("wrote", out, n, "frames", "%.1f s" % (n * step / FPS))
-    if not PREVIEW:
+    if not PREVIEW and "--out" not in sys.argv:
         (poster or im).save(J("assets", "novaband-showreel-gym-poster.jpg"), quality=86)
         subprocess.run([ff, "-y", "-loglevel", "error", "-i", out, "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "34",
                         "-row-mt", "1", "-deadline", "good", "-cpu-used", "2", J("assets", "novaband-showreel-gym.webm")], check=True)

@@ -68,8 +68,8 @@ ns["phone"](J("build", "reel2", "app_phone.png"), os.path.join(OUT, "app-phone.p
 # gym frames and pod renders, when present
 for shot, fr, name in (("orbit", 70, "gym-orbit"), ("establish", 90, "gym-wide"), ("arm", 80, "gym-arm"),
                        ("bench", 60, "gym-bench"), ("exploded", 80, "gym-exploded"), ("hero", 60, "gym-hero")):
-    p = J("build", "reel2", shot, "f_%04d.png" % fr)
-    if os.path.exists(p):
+    p = next((q for q in (J("build", "reel2", shot, "f_%04d.%s" % (fr, e)) for e in ("jpg", "png")) if os.path.exists(q)), None)
+    if p:
         Image.open(p).convert("RGB").resize((1600, 900), Image.LANCZOS).save(os.path.join(OUT, name + ".jpg"), quality=88)
 def warm(im):
     """Shadow-catcher black -> the deck's warm shadow, then trim to content."""
@@ -89,8 +89,8 @@ for f in ("pod-hero.png", "pod-top.png"):
 print(sorted(os.listdir(OUT)))
 
 # 4:3 crop of the arm close-up for the "Upper-arm fit" card
-p = J("build", "reel2", "arm", "f_0080.png")
-if os.path.exists(p):
+p = next((q for q in (J("build", "reel2", "arm", "f_0080." + e) for e in ("jpg", "png")) if os.path.exists(q)), None)
+if p:
     im = Image.open(p).convert("RGB")
     w = im.height * 4 // 3
     x0 = (im.width - w) // 2

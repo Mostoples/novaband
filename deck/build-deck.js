@@ -705,8 +705,8 @@ function notes(slide, t) { slide.addNotes(t); }
     text(s, t, { x: x + 1.05, y: y + 0.13, w: 3.1, h: 0.32, size: 12.5, bold: true, order: o });
     text(s, d, { x: x + 1.05, y: y + 0.45, w: 3.1, h: 0.5, size: 9.5, color: INK2, order: o, lsm: 1.1 });
   });
-  text(s, "Screens from the firmware's PC simulator — the same C++ that runs on the band.  Heart rate shown is simulated (DEMO) until a PPG sensor is fitted.",
-    { x: MX, y: 6.98, w: 7.6, h: 0.3, size: 8.5, color: INK3, order: 9 });
+  text(s, "From the firmware's PC simulator (same C++ as the band). HR is simulated (DEMO) until a PPG sensor is fitted.",
+    { x: 3.05, y: 6.98, w: 7.4, h: 0.3, size: 8.5, color: INK3, order: 9 });
   notes(s, "The band's own interface: live heart rate with a beating 3D heart and PPG wave, run metrics, readiness ring, and the pairing page with a QR code to the web app. The firmware renders at about 60 fps by splitting each frame between the two ESP32-S3 cores.");
 }
 
@@ -1011,7 +1011,9 @@ function notes(slide, t) { slide.addNotes(t); }
   header(s, "CREDITS", "3D asset ", "credits", "Sketchfab models used for the showreel and renders — Creative Commons Attribution (CC-BY).");
   const credPath = path.join(ROOT, "build", "sketchfab", "credits.json");
   const cred = has(credPath) ? JSON.parse(fs.readFileSync(credPath, "utf8")) : {};
-  const keys = Object.keys(cred);
+  // only the models that appear in the renders (a few downloads were evaluated and not used)
+  const USED = ["training-gym", "runner", "treadmill", "dumbbell-rack", "kettlebell", "bottle", "sports-bag", "shoes", "phone"];
+  const keys = USED.filter((k) => k in cred);
   const col = Math.ceil(keys.length / 2);
   keys.forEach((k, i) => {
     const c = cred[k], x = i < col ? MX : 6.78, y = 2.2 + (i % col) * 0.72, o = 1 + Math.floor((i % col) / 2);
