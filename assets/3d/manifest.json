@@ -1,0 +1,232 @@
+{
+ "accelerometer": {
+  "w": 480,
+  "h": 475,
+  "kind": "icon"
+ },
+ "ai-network": {
+  "w": 480,
+  "h": 340,
+  "kind": "icon"
+ },
+ "bar-chart": {
+  "w": 480,
+  "h": 378,
+  "kind": "icon"
+ },
+ "battery": {
+  "w": 480,
+  "h": 333,
+  "kind": "icon"
+ },
+ "bell": {
+  "w": 480,
+  "h": 437,
+  "kind": "icon"
+ },
+ "blood-cells": {
+  "w": 480,
+  "h": 369,
+  "kind": "icon"
+ },
+ "bluetooth": {
+  "w": 459,
+  "h": 480,
+  "kind": "icon"
+ },
+ "calendar": {
+  "w": 416,
+  "h": 480,
+  "kind": "icon"
+ },
+ "chain-link": {
+  "w": 480,
+  "h": 289,
+  "kind": "icon"
+ },
+ "chip": {
+  "w": 480,
+  "h": 231,
+  "kind": "icon"
+ },
+ "clipboard": {
+  "w": 413,
+  "h": 480,
+  "kind": "icon"
+ },
+ "cloud": {
+  "w": 480,
+  "h": 343,
+  "kind": "icon"
+ },
+ "coins": {
+  "w": 480,
+  "h": 277,
+  "kind": "icon"
+ },
+ "device-exploded": {
+  "w": 817,
+  "h": 1100,
+  "kind": "device"
+ },
+ "device-front": {
+  "w": 1100,
+  "h": 756,
+  "kind": "device"
+ },
+ "device-hero": {
+  "w": 1100,
+  "h": 763,
+  "kind": "device"
+ },
+ "device-on-arm": {
+  "w": 1100,
+  "h": 635,
+  "kind": "device"
+ },
+ "device-side": {
+  "w": 818,
+  "h": 1100,
+  "kind": "device"
+ },
+ "dots-wave": {
+  "w": 1400,
+  "h": 593,
+  "kind": "deco"
+ },
+ "flame": {
+  "w": 410,
+  "h": 480,
+  "kind": "icon"
+ },
+ "footsteps": {
+  "w": 480,
+  "h": 254,
+  "kind": "icon"
+ },
+ "gauge": {
+  "w": 480,
+  "h": 289,
+  "kind": "icon"
+ },
+ "gear": {
+  "w": 480,
+  "h": 303,
+  "kind": "icon"
+ },
+ "globe": {
+  "w": 471,
+  "h": 480,
+  "kind": "icon"
+ },
+ "gyroscope": {
+  "w": 409,
+  "h": 480,
+  "kind": "icon"
+ },
+ "heart": {
+  "w": 472,
+  "h": 480,
+  "kind": "icon"
+ },
+ "led-sensor": {
+  "w": 480,
+  "h": 422,
+  "kind": "icon"
+ },
+ "lightbulb": {
+  "w": 436,
+  "h": 480,
+  "kind": "icon"
+ },
+ "magnetometer": {
+  "w": 480,
+  "h": 252,
+  "kind": "icon"
+ },
+ "magnifier": {
+  "w": 436,
+  "h": 480,
+  "kind": "icon"
+ },
+ "map-pin": {
+  "w": 380,
+  "h": 480,
+  "kind": "icon"
+ },
+ "medal": {
+  "w": 368,
+  "h": 480,
+  "kind": "icon"
+ },
+ "microcontroller": {
+  "w": 480,
+  "h": 246,
+  "kind": "icon"
+ },
+ "moon": {
+  "w": 460,
+  "h": 480,
+  "kind": "icon"
+ },
+ "photodetector": {
+  "w": 480,
+  "h": 448,
+  "kind": "icon"
+ },
+ "pills": {
+  "w": 569,
+  "h": 787,
+  "kind": "deco"
+ },
+ "ring-glossy": {
+  "w": 609,
+  "h": 506,
+  "kind": "deco"
+ },
+ "school": {
+  "w": 480,
+  "h": 473,
+  "kind": "icon"
+ },
+ "shield": {
+  "w": 423,
+  "h": 480,
+  "kind": "icon"
+ },
+ "smartphone": {
+  "w": 390,
+  "h": 480,
+  "kind": "icon"
+ },
+ "spring-tendon": {
+  "w": 411,
+  "h": 480,
+  "kind": "icon"
+ },
+ "stopwatch": {
+  "w": 437,
+  "h": 480,
+  "kind": "icon"
+ },
+ "target-tiers": {
+  "w": 480,
+  "h": 419,
+  "kind": "icon"
+ },
+ "user": {
+  "w": 480,
+  "h": 455,
+  "kind": "icon"
+ },
+ "warning": {
+  "w": 453,
+  "h": 480,
+  "kind": "icon"
+ },
+ "wifi-iot": {
+  "w": 480,
+  "h": 420,
+  "kind": "icon"
+ }
+}

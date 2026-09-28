@@ -1,0 +1,101 @@
+{
+  "hosting": {
+    "public": ".",
+    "cleanUrls": false,
+    "trailingSlash": false,
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "build/**",
+      "blender/**",
+      "tools/**",
+      "**/*.md",
+      "**/__pycache__/**",
+      "ppt/**",
+      "**/*.pdf",
+      "**/*.ttf",
+      "deck/**",
+      "firmware/**",
+      "hardware/**"
+    ],
+    "headers": [
+      {
+        "source": "/sw.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, max-age=0"
+          },
+          {
+            "key": "Service-Worker-Allowed",
+            "value": "/"
+          }
+        ]
+      },
+      {
+        "source": "/manifest.webmanifest",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/manifest+json"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, max-age=0"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(html)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, max-age=0, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(css|js)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(svg|png|jpg|jpeg|webp|glb|mp4|webm|woff2)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=2592000"
+          }
+        ]
+      },
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "SAMEORIGIN"
+          }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/app",
+        "destination": "/app.html"
+      }
+    ]
+  }
+}

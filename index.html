@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<title>Nova-Band — AIoT Upper-Arm Wearable untuk Pelari</title>
+<meta name="description" content="Nova-Band: An AIoT-Driven Upper-Arm Wearable for Real-Time Physiological Monitoring and Running Performance. MAPE 2,5–3,5% · SUS 84,5 (Grade A). ISIF 2026 — SMA Negeri 1 Surakarta.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%237b2021'/><path d='M9 23V9l14 14V9' stroke='%23fff' stroke-width='2.8' fill='none' stroke-linejoin='round' stroke-linecap='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fraunces:ital,wght@1,500;1,600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/pwa/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nova-Band">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preload" as="image" href="assets/img/product-side.webp">
+<script>
+  (function () {
+    try {
+      var s = localStorage.getItem("novaband-theme");
+      document.documentElement.setAttribute("data-theme", s === "dark" ? "dark" : "light");
+    } catch (e) {}
+  })();
+</script>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#beranda" aria-label="Nova-Band beranda">
+      <span class="brand-mark">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M8 24V8l16 16V8" stroke="#fff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      </span>
+      <span class="brand-name">Nova<b>-</b>Band</span>
+    </a>
+    <nav class="nav-links" aria-label="Navigasi utama">
+      <a href="#masalah">Masalah</a>
+      <a href="#solusi">Solusi</a>
+      <a href="#cara-kerja">Cara Kerja</a>
+      <a href="#produk">Produk</a>
+      <a href="#hasil">Hasil</a>
+      <a href="#pasar">Pasar</a>
+      <a href="#tim">Tim</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-btn theme-toggle" aria-label="Ganti tema terang/gelap" title="Ganti tema">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>
+      </button>
+      <a href="app.html" class="btn btn-primary btn-sm">Buka App</a>
+      <button class="icon-btn burger" aria-label="Buka menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="beranda">
+  <canvas id="wave-canvas" aria-hidden="true"></canvas>
+  <div class="container hero-inner">
+    <div>
+      <span class="eyebrow"><span class="dot"></span> ISIF 2026 · SMA Negeri 1 Surakarta</span>
+      <h1>Nova<span class="dash">-</span>Band</h1>
+      <p class="hero-title">An AIoT-Driven Upper-Arm Wearable for Real-Time Physiological Monitoring and Running Performance</p>
+      <p class="lead">
+        Armband lengan atas yang memadukan sensor PPG, IMU, dan mikrokontroler ESP32.
+        Posisinya menstabilkan sensor secara mekanis untuk meredam <em>motion artifact</em>,
+        lalu AI mengolah sinyalnya menjadi <strong>Readiness Score</strong> dan peringatan
+        dini — sebelum pelari cedera.
+      </p>
+      <div class="row" style="margin-top:28px">
+        <a href="app.html" class="btn btn-primary">
+          Coba Aplikasi
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#showreel" class="btn btn-ghost">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+          Tonton Showreel
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div><div class="n">2,5–3,5%</div><div class="l">MAPE sensor</div></div>
+        <div><div class="n"><span data-count="84.5" data-decimal=",">0</span></div><div class="l">Skor SUS · Grade A</div></div>
+        <div><div class="n"><span data-count="60">0</span></div><div class="l">Responden uji</div></div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hero-blob"></div>
+      <img class="hero-deco pills" src="assets/3d/pills.webp" alt="" aria-hidden="true">
+      <img class="hero-product" src="assets/img/product-side.webp" alt="Perangkat Nova-Band berwarna merah marun dengan tali elastis" width="592" height="816">
+      <div class="chip chip-1"><img src="assets/3d/heart.webp" alt=""><div>148 BPM<small>Detak jantung real-time</small></div></div>
+      <div class="chip chip-2"><img src="assets/3d/gauge.webp" alt=""><div>Readiness 85%<small>Siap latihan</small></div></div>
+      <div class="chip chip-3"><img src="assets/3d/shield.webp" alt=""><div>Shared Safety Net<small>Pengguna + pengawas</small></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COLLABORATORS ============ -->
+<div class="logos">
+  <div class="container">
+    <div class="row">
+      <span class="label">Berkolaborasi dengan</span>
+      <img src="assets/img/logo-reka.webp" alt="REKA Mersif" loading="lazy">
+      <img src="assets/img/logo-sman1.webp" alt="SMA Negeri 1 Surakarta" loading="lazy">
+      <img src="assets/img/logo-uns.webp" alt="Universitas Sebelas Maret" loading="lazy">
+      <img src="assets/img/logo-mersif-enuma.webp" alt="Mersif Academy dan Enuma Technology" loading="lazy">
+    </div>
+  </div>
+</div>
+
+<!-- ============ PROBLEM ============ -->
+<section class="section" id="masalah">
+  <img class="dots-bg tr" src="assets/3d/dots-wave.webp" alt="" aria-hidden="true" loading="lazy">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span> Meet the Problem</span>
+      <h2>Lari makin populer, <span class="serif red">risikonya ikut naik.</span></h2>
+      <p class="lead">Krisis gaya hidup sedentari mendorong banyak orang mulai berlari — sering kali
+        tanpa pemantauan yang bisa dipercaya.</p>
+    </div>
+
+    <div class="grid g-1-2">
+      <div class="card red big-stat reveal">
+        <span class="tag">Survei Kesehatan Indonesia 2023</span>
+        <div class="n" data-count="37.4" data-decimal="," data-suffix="%">0</div>
+        <div>
+          <h3>belum cukup aktif bergerak</h3>
+          <p>Penduduk Indonesia usia ≥10 tahun yang belum memenuhi rekomendasi aktivitas fisik.
+            Kurang gerak adalah salah satu faktor risiko utama kematian dini di dunia — bila
+            dibiarkan, kebugaran dan produktivitas ikut menurun.</p>
+        </div>
+      </div>
+      <div class="grid g-2">
+        <div class="card pain hover reveal">
+          <img src="assets/img/ill-anxiety.webp" alt="" loading="lazy">
+          <h4>Worried well anxiety</h4>
+          <p class="mb-0" style="font-size:.84rem">Cemas berlebihan pada metrik digital di layar jam.</p>
+        </div>
+        <div class="card pain hover reveal">
+          <img src="assets/img/ill-harm.webp" alt="" loading="lazy">
+          <h4>Physical harm</h4>
+          <p class="mb-0" style="font-size:.84rem">Sinyal bahaya tubuh — nyeri, lelah ekstrem — diabaikan demi target.</p>
+        </div>
+        <div class="card pain hover reveal">
+          <img src="assets/img/ill-overtraining.webp" alt="" loading="lazy">
+          <h4>Overtraining risk</h4>
+          <p class="mb-0" style="font-size:.84rem">Memaksa tubuh melewati batas fisik, terdorong FoMO.</p>
+        </div>
+        <div class="card pain hover reveal">
+          <img src="assets/img/ill-data.webp" alt="" loading="lazy">
+          <h4>Data inaccuracy</h4>
+          <p class="mb-0" style="font-size:.84rem">MAPE perangkat konsumer 1–42% pada hitung langkah.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card quote-card reveal" style="margin-top:22px">
+      <p class="mb-0"><strong class="red">Trends in Runner Injuries.</strong>
+        Popularitas lari di masyarakat urban kerap dibarengi tekanan gaya hidup, komodifikasi,
+        dan perilaku <em>Fear of Missing Out</em>. Kecenderungan memaksa tubuh melewati batas
+        (<em>overtraining</em>) menggeser pola cedera ke jaringan lunak dan tendon yang lebih
+        berat — Achilles tendinopathy, strain betis, cedera hamstring dan quadriceps,
+        Iliotibial Band Syndrome (ITBS), hingga robekan meniskus lutut.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESEARCH ============ -->
+<section class="section soft" id="riset">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow"><span class="dot"></span> Problem Formulation &amp; Research Objective</span>
+      <h2>Dua pertanyaan, <span class="serif red">dua tujuan.</span></h2>
+    </div>
+    <div class="grid g-2">
+      <div class="card reveal">
+        <span class="tag">Rumusan Masalah</span>
+        <ol class="qa-list" style="margin-top:12px">
+          <li>Bagaimana <em>motion artifact</em> akibat gerakan lengan memengaruhi akurasi data detak
+            jantung dan gerak pada wearable pergelangan tangan yang dipakai pelari?</li>
+          <li>Bagaimana Nova-Band dirancang dan diuji agar mampu mengekstraksi Readiness Score
+            secara akurat untuk mencegah cedera jaringan lunak dan <em>cardiovascular collapse</em>
+            pada pelari?</li>
+        </ol>
+      </div>
+      <div class="card red reveal">
+        <span class="tag">Tujuan Penelitian</span>
+        <ol class="qa-list" style="margin-top:12px">
+          <li>Merancang dan mengembangkan Nova-Band sebagai wearable lengan atas yang menstabilkan
+            posisi sensor secara mekanis untuk meminimalkan <em>motion artifact</em> dan
+            menghasilkan data PPG serta IMU yang akurat.</li>
+          <li>Mengevaluasi efektivitas Nova-Band melalui uji akurasi MAPE dan uji usability SUS
+            dalam mengekstraksi Readiness Score yang andal.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATE OF THE ART ============ -->
+<section class="section" id="sota">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span> State of the Art</span>
+      <h2>Apa kata penelitian, <span class="serif red">dan celahnya.</span></h2>
+    </div>
+    <div class="grid g-4">
+      <article class="card sota reveal">
+        <div class="who">Siradj<small>2016</small></div>
+        <div class="body">
+          <p class="finding">Wearable membantu pelari memantau aktivitas fisik secara praktis dan mandiri untuk motivasi diri.</p>
+          <span class="arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
+          <p class="gap"><b>Celah:</b> akurasi perangkat konsumer rendah — MAPE 1–42% (langkah) dan 15–44% (kalori).</p>
+        </div>
+      </article>
+      <article class="card sota reveal">
+        <div class="who">Al-Maroof et al.<small>2024</small></div>
+        <div class="body">
+          <p class="finding">Smartwatch memungkinkan pelacakan metrik fisiologis berkelanjutan dan mendukung intervensi self-monitoring.</p>
+          <span class="arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
+          <p class="gap"><b>Celah:</b> reliabilitas dan validitas antarperangkat tidak konsisten, terutama pada intensitas tinggi.</p>
+        </div>
+      </article>
+      <article class="card sota reveal">
+        <div class="who">Moghaddam et al.<small>2025</small></div>
+        <div class="body">
+          <p class="finding">Studi penempatan anatomis: perangkat di pergelangan praktis untuk memantau detak jantung sehari-hari.</p>
+          <span class="arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
+          <p class="gap"><b>Celah:</b> PPG di pergelangan sangat rentan <em>motion artifact</em>; akurasinya anjlok saat lari intensitas tinggi.</p>
+        </div>
+      </article>
+      <article class="card sota reveal">
+        <div class="who">McGrath &amp; Doyle et al.<small>2023</small></div>
+        <div class="body">
+          <p class="finding">IMU + machine learning mampu mengestimasi gaya reaksi tanah dan kinematika lari dengan presisi tinggi.</p>
+          <span class="arrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>
+          <p class="gap"><b>Celah:</b> masih kelas laboratorium, belum terintegrasi di wearable untuk pelari sehari-hari.</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="card red deep answer reveal" style="margin-top:22px">
+      <img class="ic3d lg" src="assets/3d/magnifier.webp" alt="" loading="lazy" style="margin:0">
+      <div>
+        <h3>Jawaban Nova-Band</h3>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>Penempatan di lengan atas meredam <em>motion artifact</em>.</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>PPG, IMU, dan ESP32 terintegrasi untuk pemantauan kardio dan biomekanik sekaligus.</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>Dashboard IoT mengirim peringatan dini ke penyelenggara agar pelari tidak jatuh ke <em>overtraining</em>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SOLUTION ============ -->
+<section class="section tint" id="solusi">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span> The Solution</span>
+      <h2>Empat lapis perlindungan <span class="serif red">dalam satu band.</span></h2>
+    </div>
+    <div class="solution">
+      <div class="card hover reveal">
+        <img class="ic3d" src="assets/3d/ai-network.webp" alt="" loading="lazy">
+        <h3>AI &amp; IoT Synergy</h3>
+        <p>Ekosistem cerdas yang memadukan pembacaan sensor fisik (IoT) dari perangkat dengan kecerdasan buatan untuk mengolah sinyal fisiologis secara terus-menerus.</p>
+      </div>
+      <div class="card hover reveal">
+        <img class="ic3d" src="assets/3d/shield.webp" alt="" loading="lazy">
+        <h3>Shared Safety Net</h3>
+        <p>Sistem proteksi dua lapis: peringatan dikirim bersamaan kepada pengguna dan pengawas untuk mencegah kolaps.</p>
+      </div>
+      <div class="card hover reveal">
+        <img class="ic3d" src="assets/3d/bell.webp" alt="" loading="lazy">
+        <h3>Biological Early Warning</h3>
+        <p>Peringatan proaktif seketika saat pelari mulai memaksa tubuhnya melewati batas aman.</p>
+      </div>
+      <div class="card hover reveal">
+        <img class="ic3d" src="assets/3d/spring-tendon.webp" alt="" loading="lazy">
+        <h3>Soft Network Load</h3>
+        <p>Pelacakan kinematika IMU yang mengukur stres mekanis pada otot dan tendon untuk mencegah Achilles tendinopathy &amp; ITBS.</p>
+      </div>
+      <div class="phone-col reveal">
+        <img src="assets/img/app-phone.webp" alt="Tampilan aplikasi Nova-Band di smartphone" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="section" id="cara-kerja">
+  <img class="dots-bg bl" src="assets/3d/dots-wave.webp" alt="" aria-hidden="true" loading="lazy">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span> Hardware Operation (PPG)</span>
+      <h2>Dari seberkas cahaya <span class="serif red">menjadi detak jantung.</span></h2>
+      <p class="lead">Photoplethysmography membaca perubahan volume darah di bawah kulit — setiap
+        detak mengubah seberapa banyak cahaya yang dipantulkan kembali.</p>
+    </div>
+    <div class="flow">
+      <div class="card step reveal"><img src="assets/3d/led-sensor.webp" alt="" loading="lazy"><h4>LED Sensor</h4><p>LED hijau menyinari kulit lengan atas.</p></div>
+      <div class="card step reveal"><img src="assets/3d/blood-cells.webp" alt="" loading="lazy"><h4>Blood Absorbs Light</h4><p>Volume darah berubah tiap detak, menyerap cahaya.</p></div>
+      <div class="card step reveal"><img src="assets/3d/photodetector.webp" alt="" loading="lazy"><h4>Photodetector</h4><p>Menangkap cahaya yang dipantulkan kembali.</p></div>
+      <div class="card step reveal"><img src="assets/3d/microcontroller.webp" alt="" loading="lazy"><h4>Mikrokontroler</h4><p>ESP32 menyaring sinyal dengan FFT di perangkat.</p></div>
+      <div class="card step reveal"><img src="assets/3d/heart.webp" alt="" loading="lazy"><h4>Heart Beats</h4><p>Menjadi BPM real-time dan Readiness Score.</p></div>
+    </div>
+
+    <div class="sec-head reveal" style="margin-top:clamp(70px,8vw,110px)">
+      <span class="eyebrow"><span class="dot"></span> Hardware Operation (IMU)</span>
+      <h2>Tiga sensor gerak <span class="serif red">untuk keadaan darurat.</span></h2>
+    </div>
+    <div class="grid g-3">
+      <div class="card imu-card hover reveal">
+        <img src="assets/3d/accelerometer.webp" alt="" loading="lazy">
+        <h3>Accelerometer</h3>
+        <p>Mendeteksi perubahan kecepatan gerak yang drastis untuk mengenali jatuh mendadak atau kolaps fisik.</p>
+        <span class="what">Jatuh &amp; kolaps</span>
+      </div>
+      <div class="card imu-card hover reveal">
+        <img src="assets/3d/gyroscope.webp" alt="" loading="lazy">
+        <h3>Gyroscope</h3>
+        <p>Memantau postur dan kemiringan tubuh untuk mendeteksi hilang keseimbangan, pusing, atau gerakan tidak stabil.</p>
+        <span class="what">Postur &amp; keseimbangan</span>
+      </div>
+      <div class="card imu-card hover reveal">
+        <img src="assets/3d/magnetometer.webp" alt="" loading="lazy">
+        <h3>Magnetometer</h3>
+        <p>Menentukan orientasi tubuh secara presisi untuk membantu pelacakan spasial dalam situasi darurat.</p>
+        <span class="what">Orientasi &amp; lokasi</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRODUCT ============ -->
+<section class="section soft" id="produk">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span> Produk</span>
+      <h2>Upper-arm fit, <span class="serif red">bukan keputusan estetika.</span></h2>
+      <p class="lead">Lengan atas jauh dari titik ayun terbesar saat berlari, sehingga sensor tetap
+        menempel rapat di kulit. Putar modelnya untuk melihat dari segala sisi.</p>
+    </div>
+
+    <div class="grid g-5-3">
+      <div class="viewer reveal">
+        <canvas id="viewer-canvas" aria-label="Model 3D Nova-Band yang bisa diputar"></canvas>
+        <div class="viewer-fallback" id="viewer-fallback" hidden><img src="assets/3d/device-hero.webp" alt="Render 3D Nova-Band"></div>
+        <span class="viewer-hint">Seret untuk memutar · model dari Blender</span>
+      </div>
+      <div class="card reveal">
+        <h3>Spesifikasi</h3>
+        <div class="spec">
+          <div><span>Mikrokontroler</span><span>ESP32 · mini PCB kustom</span></div>
+          <div><span>Sensor fisiologis</span><span>PPG optik</span></div>
+          <div><span>Sensor gerak</span><span>IMU</span></div>
+          <div><span>Pemrosesan</span><span>FFT di perangkat · C++</span></div>
+          <div><span>Casing</span><span>Polimer cetak 3D presisi</span></div>
+          <div><span>Tali</span><span>Elastis modular berpori</span></div>
+          <div><span>Daya</span><span>Li-Po + regulator step-down</span></div>
+          <div><span>Konektivitas</span><span>Bluetooth → aplikasi → IoT</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g-2" style="margin-top:22px">
+      <div class="card reveal">
+        <span class="tag">Exploded view</span>
+        <div class="explode" style="margin-top:12px">
+          <img src="assets/3d/device-exploded.webp" alt="Susunan komponen modul Nova-Band yang diurai" loading="lazy">
+          <span class="lbl" style="top:5%;right:2%">Jendela optik + LED PPG</span>
+          <span class="lbl" style="top:27%;left:0">Casing polimer 3D</span>
+          <span class="lbl" style="top:46%;right:0">Baterai Li-Po</span>
+          <span class="lbl" style="top:62%;left:0">PCB · ESP32 · IMU</span>
+          <span class="lbl" style="top:82%;right:4%">Sensor pod</span>
+        </div>
+      </div>
+      <div class="grid" style="gap:22px">
+        <div class="card reveal" style="padding-bottom:0;overflow:hidden">
+          <span class="tag">Dikenakan di lengan atas</span>
+          <img src="assets/3d/device-on-arm.webp" alt="Nova-Band terpasang di lengan atas" loading="lazy" style="margin-top:8px">
+        </div>
+        <div class="grid g-2" style="gap:22px">
+          <div class="card reveal center"><img src="assets/img/product-front.webp" alt="Nova-Band tampak depan dengan LED" loading="lazy" style="height:190px;margin:0 auto;object-fit:contain"></div>
+          <div class="card reveal center"><img src="assets/3d/device-front.webp" alt="Render Nova-Band tampak atas" loading="lazy" style="height:190px;margin:0 auto;object-fit:contain"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SOFTWARE ============ -->
+<section class="section" id="software">
+  <div class="container software">
+    <div class="phone-stage reveal">
+      <img class="phone" src="assets/img/app-phone.webp" alt="Aplikasi Nova-Band: performa hari ini, detak jantung, durasi aktivitas, kualitas tidur" loading="lazy">
+    </div>
+    <div>
+      <div class="sec-head reveal" style="margin-bottom:26px">
+        <span class="eyebrow"><span class="dot"></span> Software (IoT Dashboard)</span>
+        <h2>Semua sinyal, <span class="serif red">satu layar.</span></h2>
+        <p class="lead">Data dari band dikirim lewat Bluetooth ke aplikasi, lalu secara berkala ke
+          dashboard komunitas untuk pengawas event.</p>
+      </div>
+      <div class="feat-list">
+        <div class="feat reveal"><img src="assets/3d/heart.webp" alt="" loading="lazy"><div><h4>Detak jantung real-time</h4><p>BPM dan zona latihan dari PPG yang sudah disaring.</p></div></div>
+        <div class="feat reveal"><img src="assets/3d/gauge.webp" alt="" loading="lazy"><div><h4>Readiness Score</h4><p>Satu skor kesiapan harian dari fusi PPG dan IMU.</p></div></div>
+        <div class="feat reveal"><img src="assets/3d/bell.webp" alt="" loading="lazy"><div><h4>Biological Early Warning</h4><p>Alert ketika tubuh mendekati batas aman.</p></div></div>
+        <div class="feat reveal"><img src="assets/3d/map-pin.webp" alt="" loading="lazy"><div><h4>Community Based Analysis</h4><p>Peta kelompok pelari untuk mencegah kelelahan ekstrem massal.</p></div></div>
+      </div>
+      <a href="app.html" class="btn btn-primary" style="margin-top:24px">Buka dashboard demo</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TIMELINE ============ -->
+<section class="section soft" id="timeline">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow"><span class="dot"></span> Project Timeline</span>
+      <h2>Tiga tahap <span class="serif red">riset &amp; pengembangan.</span></h2>
+    </div>
+    <div class="timeline">
+      <div class="card stage reveal">
+        <span class="num">1</span>
+        <img class="ic3d" src="assets/3d/calendar.webp" alt="" loading="lazy" style="position:absolute;right:16px;top:10px;width:78px;height:78px">
+        <h3>Design Stage</h3>
+        <ul>
+          <li>Casing ergonomis dirancang dan dicetak 3D.</li>
+          <li>Penempatan upper-arm ditetapkan untuk meredam guncangan.</li>
+          <li>Pemilihan sensor PPG, IMU, dan ESP32.</li>
+        </ul>
+      </div>
+      <div class="card stage reveal">
+        <span class="num">2</span>
+        <img class="ic3d" src="assets/3d/chip.webp" alt="" loading="lazy" style="position:absolute;right:16px;top:10px;width:78px;height:78px">
+        <h3>Integration Stage</h3>
+        <ul>
+          <li>Mini PCB, baterai Li-Po, dan regulator step-down dirakit.</li>
+          <li>Algoritma fusi sensor + FFT diprogram dalam C++.</li>
+          <li>Koneksi Bluetooth ke aplikasi dan dashboard IoT.</li>
+        </ul>
+      </div>
+      <div class="card stage reveal">
+        <span class="num">3</span>
+        <img class="ic3d" src="assets/3d/clipboard.webp" alt="" loading="lazy" style="position:absolute;right:16px;top:10px;width:78px;height:78px">
+        <h3>Validation Stage</h3>
+        <ul>
+          <li>Uji akurasi MAPE terhadap motion capture kecepatan tinggi.</li>
+          <li>Uji usability SUS dengan 60 responden.</li>
+          <li>Evaluasi untuk iterasi desain berikutnya.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section class="section" id="hasil">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span> Result &amp; Discussion</span>
+      <h2>Akurat di lapangan, <span class="serif red">nyaman dipakai.</span></h2>
+    </div>
+    <div class="grid g-3">
+      <div class="card reveal">
+        <div class="row between"><span class="tag">Hardware Accuracy</span><img src="assets/3d/gauge.webp" alt="" style="width:64px" loading="lazy"></div>
+        <div class="result-num" style="margin-top:10px">2,5–3,5<small>% MAPE</small></div>
+        <div class="meter"><i data-w="7"></i></div>
+        <div class="meter-scale"><span>0%</span><span class="red">ambang alat profesional 5%</span><span>50%</span></div>
+        <p style="margin-top:16px">Rata-rata besarnya error pembacaan sensor. Semakin kecil, semakin akurat —
+          dan pembacaannya tetap stabil bahkan saat aktivitas intensitas tinggi.</p>
+      </div>
+      <div class="card reveal">
+        <div class="row between"><span class="tag">Usability Evaluation (SUS)</span><img src="assets/3d/medal.webp" alt="" style="width:64px" loading="lazy"></div>
+        <div class="result-num" style="margin-top:10px"><span data-count="84.5" data-decimal=",">0</span><small>/ 100</small></div>
+        <div class="meter"><i data-w="84.5"></i></div>
+        <div class="meter-scale"><span>0</span><span>ambang 68</span><span>100</span></div>
+        <p style="margin-top:16px">Kategori <strong>Acceptable</strong> dengan <strong>Grade A</strong>: Nova-Band
+          dinilai mudah digunakan dan nyaman oleh 60 responden.</p>
+      </div>
+      <figure class="card photo-card reveal" style="margin:0">
+        <img src="assets/img/testing.webp" alt="Tim peneliti saat pengujian Nova-Band" loading="lazy">
+        <figcaption>Dokumentasi pengujian</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARKET ============ -->
+<section class="section tint" id="pasar">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span> Market</span>
+      <h2>Ribuan event lari, <span class="serif red">satu jaring pengaman.</span></h2>
+    </div>
+    <div class="tam">
+      <div class="funnel reveal">
+        <div class="lvl"><span class="k">TAM</span><span class="d">Event lari yang digelar di seluruh Indonesia sepanjang 2025</span><span class="v" data-count="1818" data-thousands=".">0</span></div>
+        <div class="lvl"><span class="k">SAM</span><span class="d">Event lari di Jawa Tengah</span><span class="v" data-count="302">0</span></div>
+        <div class="lvl"><span class="k">SOM</span><span class="d">Event lari di Kota Surakarta</span><span class="v" data-count="18">0</span></div>
+        <p class="muted" style="font-size:.76rem;margin:4px 0 0">Sumber: data event lari 2025, hasil verifikasi tim.</p>
+      </div>
+      <div class="card chart-box reveal">
+        <div class="row between" style="margin-bottom:6px">
+          <h3 class="mb-0">Proyeksi 2026–2030</h3>
+          <img src="assets/3d/coins.webp" alt="" style="width:62px" loading="lazy">
+        </div>
+        <div class="chart-legend">
+          <span><i style="background:#c9a3a3"></i>Fixed cost</span>
+          <span><i style="background:#962a2c"></i>Total cost</span>
+          <span><i style="background:#4b070f"></i>Revenue</span>
+        </div>
+        <svg id="bep-chart" viewBox="0 0 440 250" role="img" aria-label="Grafik proyeksi fixed cost, total cost, dan revenue 2026 sampai 2030"></svg>
+        <p class="muted" style="font-size:.74rem;margin:8px 0 0">Nilai dibaca dari grafik pada deck ISIF (satuan mengikuti deck).
+          Revenue melampaui total cost sejak 2027.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PARTNERSHIP + CONCLUSION ============ -->
+<section class="section" id="kesimpulan">
+  <div class="container">
+    <div class="grid g-2" style="align-items:start">
+      <div>
+        <div class="sec-head reveal" style="margin-bottom:26px">
+          <span class="eyebrow"><span class="dot"></span> Partnership ISIF 2026</span>
+          <h2>Bersama <span class="serif red">sekolah mitra.</span></h2>
+        </div>
+        <div class="grid" style="gap:14px">
+          <div class="card partner hover reveal"><img src="assets/img/logo-sman1.webp" alt="" loading="lazy" style="width:120px;height:60px"><div><h4 class="mb-0">SMA Negeri 1 Surakarta</h4><p class="mb-0" style="font-size:.84rem">Tim peneliti &amp; pengembang</p></div></div>
+          <div class="card partner hover reveal"><img src="assets/3d/school.webp" alt="" loading="lazy"><div><h4 class="mb-0">SMA Negeri 5 Yogyakarta</h4><p class="mb-0" style="font-size:.84rem">Sekolah mitra ISIF 2026</p></div></div>
+          <div class="card partner hover reveal"><img src="assets/3d/chain-link.webp" alt="" loading="lazy"><div><h4 class="mb-0">Kolaborator</h4><p class="mb-0" style="font-size:.84rem">REKA Mersif · UNS · Mersif Academy · Enuma Technology</p></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="sec-head reveal" style="margin-bottom:26px">
+          <span class="eyebrow"><span class="dot"></span> Conclusion</span>
+          <h2>Akurat, praktis, <span class="serif red">berbasis data.</span></h2>
+        </div>
+        <div class="grid" style="gap:14px">
+          <div class="card concl reveal"><span class="n">01</span><div><h4>System Integration</h4><p class="mb-0">PPG (detak jantung) dan IMU (gerak tubuh) digerakkan ESP32 di lengan atas, mengumpulkan data fisiologis dan gerak secara bersamaan.</p></div></div>
+          <div class="card concl reveal"><span class="n">02</span><div><h4>AI Analysis</h4><p class="mb-0">AI mengolah pola aktivitas dan respons fisiologis secara bersama-sama, real time, selama latihan.</p></div></div>
+          <div class="card concl reveal"><span class="n">03</span><div><h4>Impact &amp; Final Result</h4><p class="mb-0">Nova-Band menjadi inovasi wearable yang akurat, praktis, ergonomis, dan berbasis data untuk memantau performa pelari secara real-time.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SHOWREEL ============ -->
+<section class="section soft" id="showreel">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow"><span class="dot"></span> Showreel</span>
+      <h2>Nova-Band <span class="serif red">dalam gerak.</span></h2>
+      <p class="lead">Satu sesi di gym, dirender penuh dengan Blender Cycles: pelari di treadmill memakai
+        purwarupa NovaBand di lengan atas, layarnya menjalankan firmware asli, tersambung ke aplikasi.</p>
+    </div>
+    <div class="reel reveal">
+      <video id="reel-video" muted loop playsinline preload="none" poster="assets/novaband-showreel-gym-poster.jpg" aria-label="Video showreel Nova-Band di gym">
+        <source src="assets/novaband-showreel-gym.webm" type="video/webm">
+        <source src="assets/novaband-showreel-gym.mp4" type="video/mp4">
+      </video>
+      <div class="reel-bar">
+        <span>Nova-Band · Showreel ISIF 2026 · <a href="assets/novaband-showreel.mp4" class="red">versi infografis</a></span>
+        <button class="btn btn-ghost btn-sm" id="reel-toggle" aria-pressed="false">Putar</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TEAM ============ -->
+<section class="section" id="tim">
+  <div class="container">
+    <div class="sec-head center reveal">
+      <span class="eyebrow"><span class="dot"></span> Tim Peneliti</span>
+      <h2>Enam siswa, <span class="serif red">satu purwarupa.</span></h2>
+      <p class="lead">SMA Negeri 1 Surakarta · 2026</p>
+    </div>
+    <div class="team-photo reveal">
+      <img src="assets/img/team.webp" alt="Enam anggota tim peneliti Nova-Band berjas hitam" loading="lazy">
+    </div>
+    <div class="team-grid">
+      <div class="card member reveal"><div class="pos">01 · KIRI</div><div class="nm">Satriya Javas Wibisono</div><div class="role">Tim Peneliti</div></div>
+      <div class="card member reveal"><div class="pos">02</div><div class="nm">Almira Edgina Nareswari Haryadi</div><div class="role">Tim Peneliti</div></div>
+      <div class="card member reveal"><div class="pos">03</div><div class="nm">Azra Daniswara Tyandaru</div><div class="role">Tim Peneliti</div></div>
+      <div class="card member reveal"><div class="pos">04</div><div class="nm">Maheswara Nala Wisadewa</div><div class="role">Tim Peneliti</div></div>
+      <div class="card member reveal"><div class="pos">05</div><div class="nm">Dela Astiara</div><div class="role">Tim Peneliti</div></div>
+      <div class="card member reveal"><div class="pos">06 · KANAN</div><div class="nm">Rizkyta Aufa Mutiagassania</div><div class="role">Tim Peneliti</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="cta reveal">
+      <img class="deco" src="assets/3d/device-hero.webp" alt="" aria-hidden="true" loading="lazy">
+      <span class="eyebrow" style="background:rgba(255,255,255,.14);color:#fff"><span class="dot" style="background:#fff"></span> Demo interaktif</span>
+      <h2 style="max-width:16ch">Lihat Nova-Band bekerja secara langsung.</h2>
+      <p style="max-width:48ch">Streaming detak jantung, Readiness Score, peringatan dini, beban jaringan
+        lunak, dan dashboard komunitas — dalam satu aplikasi demo.</p>
+      <div class="row" style="margin-top:22px">
+        <a href="app.html" class="btn btn-ghost">Buka Aplikasi</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-col">
+        <a class="brand" href="#beranda" style="margin-bottom:12px">
+          <span class="brand-mark"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M8 24V8l16 16V8" stroke="#fff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+          <span class="brand-name">Nova<b>-</b>Band</span>
+        </a>
+        <p style="font-size:.86rem;max-width:36ch">AI Body Assistant for Runners — an AIoT-driven upper-arm wearable for real-time physiological monitoring and running performance.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Produk</h4>
+        <a href="#solusi">Solusi</a>
+        <a href="#cara-kerja">Cara kerja</a>
+        <a href="#produk">Model 3D</a>
+        <a href="app.html">Aplikasi</a>
+      </div>
+      <div class="foot-col">
+        <h4>Penelitian</h4>
+        <a href="#masalah">Masalah</a>
+        <a href="#sota">State of the art</a>
+        <a href="#hasil">Hasil uji</a>
+        <a href="#showreel">Showreel</a>
+      </div>
+      <div class="foot-col">
+        <h4>Institusi</h4>
+        <p style="font-size:.86rem;margin:0">SMA Negeri 1 Surakarta<br>Jawa Tengah, Indonesia<br>ISIF 2026</p>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span data-year>2026</span> Nova-Band — Tim Peneliti SMA Negeri 1 Surakarta.</span>
+      <span>Monitor. Analyze. Improve.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="js/three-scene.js"></script>
+<script src="js/main.js"></script>
+<script type="module" src="js/firebase-init.js"></script>
+<script>
+  /* PWA: offline shell + installable (sw.js) */
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+  }
+</script>
+</body>
+</html>

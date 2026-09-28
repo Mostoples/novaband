@@ -1,0 +1,331 @@
+{
+ "heart": {
+  "file": "heart.gif",
+  "w": 254,
+  "h": 262,
+  "frames": 50,
+  "kb": 366
+ },
+ "heart-wine": {
+  "file": "heart-wine.gif",
+  "w": 248,
+  "h": 259,
+  "frames": 50,
+  "kb": 320
+ },
+ "accelerometer": {
+  "file": "accelerometer.gif",
+  "w": 235,
+  "h": 219,
+  "frames": 50,
+  "kb": 327
+ },
+ "ai-network": {
+  "file": "ai-network.gif",
+  "w": 278,
+  "h": 216,
+  "frames": 50,
+  "kb": 529
+ },
+ "bar-chart": {
+  "file": "bar-chart.gif",
+  "w": 247,
+  "h": 199,
+  "frames": 50,
+  "kb": 236
+ },
+ "battery": {
+  "file": "battery.gif",
+  "w": 292,
+  "h": 205,
+  "frames": 50,
+  "kb": 426
+ },
+ "bell": {
+  "file": "bell.gif",
+  "w": 247,
+  "h": 239,
+  "frames": 50,
+  "kb": 481
+ },
+ "blood-cells": {
+  "file": "blood-cells.gif",
+  "w": 243,
+  "h": 194,
+  "frames": 50,
+  "kb": 615
+ },
+ "bluetooth": {
+  "file": "bluetooth.gif",
+  "w": 258,
+  "h": 272,
+  "frames": 50,
+  "kb": 656
+ },
+ "calendar": {
+  "file": "calendar.gif",
+  "w": 226,
+  "h": 281,
+  "frames": 50,
+  "kb": 543
+ },
+ "chain-link": {
+  "file": "chain-link.gif",
+  "w": 295,
+  "h": 229,
+  "frames": 50,
+  "kb": 485
+ },
+ "chip": {
+  "file": "chip.gif",
+  "w": 315,
+  "h": 154,
+  "frames": 50,
+  "kb": 442
+ },
+ "clipboard": {
+  "file": "clipboard.gif",
+  "w": 232,
+  "h": 286,
+  "frames": 50,
+  "kb": 547
+ },
+ "cloud": {
+  "file": "cloud.gif",
+  "w": 257,
+  "h": 194,
+  "frames": 50,
+  "kb": 259
+ },
+ "coins": {
+  "file": "coins.gif",
+  "w": 277,
+  "h": 181,
+  "frames": 50,
+  "kb": 502
+ },
+ "corner-rings": {
+  "file": "corner-rings.gif",
+  "w": 547,
+  "h": 548,
+  "frames": 50,
+  "kb": 1396
+ },
+ "corner-rings-wine": {
+  "file": "corner-rings-wine.gif",
+  "w": 546,
+  "h": 547,
+  "frames": 50,
+  "kb": 1195
+ },
+ "corner-wave": {
+  "file": "corner-wave.gif",
+  "w": 852,
+  "h": 361,
+  "frames": 38,
+  "kb": 2323
+ },
+ "device-spin": {
+  "file": "device-spin.gif",
+  "w": 586,
+  "h": 522,
+  "frames": 90,
+  "kb": 7856
+ },
+ "device-spin-wine": {
+  "file": "device-spin-wine.gif",
+  "w": 549,
+  "h": 506,
+  "frames": 90,
+  "kb": 3211
+ },
+ "flame": {
+  "file": "flame.gif",
+  "w": 234,
+  "h": 293,
+  "frames": 50,
+  "kb": 429
+ },
+ "footsteps": {
+  "file": "footsteps.gif",
+  "w": 282,
+  "h": 172,
+  "frames": 50,
+  "kb": 256
+ },
+ "gauge": {
+  "file": "gauge.gif",
+  "w": 239,
+  "h": 145,
+  "frames": 50,
+  "kb": 226
+ },
+ "gear": {
+  "file": "gear.gif",
+  "w": 275,
+  "h": 172,
+  "frames": 50,
+  "kb": 497
+ },
+ "globe": {
+  "file": "globe.gif",
+  "w": 221,
+  "h": 226,
+  "frames": 50,
+  "kb": 600
+ },
+ "gyroscope": {
+  "file": "gyroscope.gif",
+  "w": 211,
+  "h": 260,
+  "frames": 50,
+  "kb": 601
+ },
+ "led-sensor": {
+  "file": "led-sensor.gif",
+  "w": 251,
+  "h": 246,
+  "frames": 50,
+  "kb": 580
+ },
+ "lightbulb": {
+  "file": "lightbulb.gif",
+  "w": 225,
+  "h": 265,
+  "frames": 50,
+  "kb": 394
+ },
+ "magnetometer": {
+  "file": "magnetometer.gif",
+  "w": 249,
+  "h": 132,
+  "frames": 50,
+  "kb": 394
+ },
+ "magnifier": {
+  "file": "magnifier.gif",
+  "w": 238,
+  "h": 261,
+  "frames": 50,
+  "kb": 578
+ },
+ "map-pin": {
+  "file": "map-pin.gif",
+  "w": 206,
+  "h": 307,
+  "frames": 50,
+  "kb": 353
+ },
+ "medal": {
+  "file": "medal.gif",
+  "w": 227,
+  "h": 288,
+  "frames": 50,
+  "kb": 356
+ },
+ "microcontroller": {
+  "file": "microcontroller.gif",
+  "w": 272,
+  "h": 141,
+  "frames": 50,
+  "kb": 544
+ },
+ "moon": {
+  "file": "moon.gif",
+  "w": 232,
+  "h": 262,
+  "frames": 50,
+  "kb": 469
+ },
+ "orn-pills": {
+  "file": "orn-pills.gif",
+  "w": 353,
+  "h": 420,
+  "frames": 38,
+  "kb": 500
+ },
+ "orn-ring": {
+  "file": "orn-ring.gif",
+  "w": 336,
+  "h": 288,
+  "frames": 38,
+  "kb": 542
+ },
+ "orn-ring-wine": {
+  "file": "orn-ring-wine.gif",
+  "w": 297,
+  "h": 284,
+  "frames": 38,
+  "kb": 557
+ },
+ "photodetector": {
+  "file": "photodetector.gif",
+  "w": 233,
+  "h": 229,
+  "frames": 50,
+  "kb": 393
+ },
+ "school": {
+  "file": "school.gif",
+  "w": 246,
+  "h": 265,
+  "frames": 50,
+  "kb": 543
+ },
+ "shield": {
+  "file": "shield.gif",
+  "w": 251,
+  "h": 281,
+  "frames": 50,
+  "kb": 580
+ },
+ "smartphone": {
+  "file": "smartphone.gif",
+  "w": 227,
+  "h": 304,
+  "frames": 50,
+  "kb": 475
+ },
+ "spring-tendon": {
+  "file": "spring-tendon.gif",
+  "w": 229,
+  "h": 287,
+  "frames": 50,
+  "kb": 574
+ },
+ "stopwatch": {
+  "file": "stopwatch.gif",
+  "w": 231,
+  "h": 266,
+  "frames": 50,
+  "kb": 538
+ },
+ "target-tiers": {
+  "file": "target-tiers.gif",
+  "w": 216,
+  "h": 190,
+  "frames": 50,
+  "kb": 164
+ },
+ "user": {
+  "file": "user.gif",
+  "w": 239,
+  "h": 243,
+  "frames": 50,
+  "kb": 415
+ },
+ "warning": {
+  "file": "warning.gif",
+  "w": 235,
+  "h": 258,
+  "frames": 50,
+  "kb": 440
+ },
+ "wifi-iot": {
+  "file": "wifi-iot.gif",
+  "w": 230,
+  "h": 220,
+  "frames": 50,
+  "kb": 476
+ }
+}

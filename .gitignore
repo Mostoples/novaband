@@ -1,0 +1,28 @@
+# ---- generated / large (rebuild with the pipeline in README.md)
+build/
+node_modules/
+.firebase/
+__pycache__/
+*.pyc
+
+# generated deck (136 MB before dedup): published as a GitHub Release asset instead
+ppt/NovaBand_Deck_Neumorph.pptx
+~$*.pptx
+
+# third-party reference material, not ours to redistribute
+AQUENT_Deck_Neumorph.pdf
+
+# firmware simulator build output
+firmware/sim/obj/
+firmware/sim/*.exe
+firmware/sim/*.obj
+
+# secrets never go in git (Sketchfab token lives in build/sketchfab/.token)
+.env
+*.token
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+*.blend1
