@@ -18,6 +18,7 @@ struct Profile {
 
 struct Metrics {
   float hr = 64, spo2 = 98, cadence = 0, pace = 0, dist = 0, kcal = 0, load = 0;
+  float temp = 0;          // skin temperature, deg C (0 = no sensor)
   uint32_t steps = 0;
   float elapsed = 0;       // s, running time
   int readiness = 82, zone = 1, battery = 100;
@@ -44,10 +45,12 @@ class Model {
   void pause();
   void stop();
   void setRealHr(float hr, float now);
+  void setRealSpo2(float v, float now);
+  void setRealCadence(float spm, float now);
   int zoneOf(float hr) const;
 
  private:
-  float target_ = 64, wander_ = 0, ppgAcc_ = 0, t_ = 0, realUntil_ = -1, stepAcc_ = 0;
+  float target_ = 64, wander_ = 0, ppgAcc_ = 0, t_ = 0, realUntil_ = -1, stepAcc_ = 0, realSpo2Until_ = -1, realCadUntil_ = -1;
   uint32_t rng_ = 0x9E3779B9u;
   float noise();
 };

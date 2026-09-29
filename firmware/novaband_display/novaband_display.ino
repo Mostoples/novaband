@@ -29,6 +29,7 @@
 #include <freertos/queue.h>
 #include <freertos/semphr.h>
 
+#include "sensors.h"
 #include "src/assets.h"
 #include "src/gfx.h"
 #include "src/model.h"
@@ -228,6 +229,19 @@ static void batteryRead() {
   model.m.battery = model.m.usbPower ? 100 : constrain((int)pct, 0, 100);
 }
 
+// ---------------------------------------------------------------- sensors -> model
+// Fresh readings replace the simulation; a stale one lets the model take over again.
+static void applySensors() {
+  using namespace sensors;
+  uint32_t ms = millis();
+  float up = uptime();
+  auto fresh = [&](uint32_t at) { return at && ms - at < VALID_MS; };
+  if (fresh(data.hrAt)) model.setRealHr(data.hr, up);
+  if (fresh(data.spo2At)) model.setRealSpo2(data.spo2, up);
+  if (fresh(data.cadAt)) model.setRealCadence(data.cadence, up);
+  model.m.temp = fresh(data.tempAt) ? data.temp : 0;
+}
+
 // ---------------------------------------------------------------- BLE
 class SrvCb : public BLEServerCallbacks {
   void onConnect(BLEServer*) override { bleClients++; }
@@ -383,6 +397,7 @@ void setup() {
     }
   }
   touchInit();
+  sensors::begin();
   cmdQ = xQueueCreate(8, sizeof(Line));
   ui.begin(&assets, &model);
   ui.setDeviceName(devName);
@@ -420,6 +435,7 @@ void loop() {
   static uint32_t batT = 0;
   if (millis() - batT > 500) { batT = millis(); batteryRead(); }
 
+  applySensors();
   model.update(dt, uptime());
   ui.update(dt);
   linkTick();

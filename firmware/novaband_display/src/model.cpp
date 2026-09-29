@@ -25,6 +25,9 @@ void Model::setRealHr(float hr, float now) {
   m.hr = hr; demo = false; realUntil_ = now + 5.f;   // falls back to the model 5 s after the last reading
 }
 
+void Model::setRealSpo2(float v, float now) { m.spo2 = v; realSpo2Until_ = now + 5.f; }
+void Model::setRealCadence(float spm, float now) { m.cadence = spm; realCadUntil_ = now + 3.f; }
+
 void Model::update(float dt, float now) {
   t_ = now;
   if (realUntil_ > 0 && now > realUntil_) { demo = true; realUntil_ = -1; }
@@ -43,12 +46,12 @@ void Model::update(float dt, float now) {
     m.hr += (target_ - m.hr) * (1 - expf(-dt / tau));
   }
   m.zone = zoneOf(m.hr);
-  m.spo2 = 97.6f + 0.6f * sinf(now / 17.f) - (moving ? 0.8f : 0);
+  if (now > realSpo2Until_) m.spo2 = 97.6f + 0.6f * sinf(now / 17.f) - (moving ? 0.8f : 0);
 
   // --- locomotion
   if (moving) {
     m.elapsed += dt;
-    m.cadence += ((166 + 5 * sinf(m.elapsed / 40.f) + noise()) - m.cadence) * (1 - expf(-dt / 3.f));
+    if (now > realCadUntil_) m.cadence += ((166 + 5 * sinf(m.elapsed / 40.f) + noise()) - m.cadence) * (1 - expf(-dt / 3.f));
     float pace = 332 - 14 * sinf(m.elapsed / 70.f);   // s per km, ~5:32
     m.pace += (pace - m.pace) * (1 - expf(-dt / 5.f));
     m.dist += dt / fmaxf(m.pace, 150.f);                // guard: pace eases in from the start value
@@ -60,7 +63,7 @@ void Model::update(float dt, float now) {
     float hrr = (m.hr - profile.hrRest) / (float)(profile.hrMax - profile.hrRest);
     if (hrr > 0) m.load += dt / 60.f * hrr * 0.64f * expf(1.92f * hrr);   // Banister TRIMP
   } else {
-    m.cadence += (0 - m.cadence) * (1 - expf(-dt / 1.5f));
+    if (now > realCadUntil_) m.cadence += (0 - m.cadence) * (1 - expf(-dt / 1.5f));
   }
 
   // --- PPG pulse wave, sampled at PPG_HZ, locked to the heart rate

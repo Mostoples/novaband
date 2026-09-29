@@ -13,10 +13,10 @@ int telemetry(const Model& md, char* out, size_t n) {
   return snprintf(out, n,
                   "{\"t\":\"m\",\"hr\":%d,\"sp\":%d,\"cad\":%d,\"pace\":%d,\"dist\":%.2f,\"sec\":%d,"
                   "\"kcal\":%d,\"load\":%d,\"rdy\":%d,\"z\":%d,\"bat\":%d,\"usb\":%d,\"run\":%d,\"pz\":%d,"
-                  "\"stp\":%lu,\"demo\":%d}",
+                  "\"stp\":%lu,\"tmp\":%.1f,\"demo\":%d}",
                   (int)(m.hr + .5f), (int)(m.spo2 + .5f), (int)(m.cadence + .5f), (int)m.pace, m.dist,
                   (int)m.elapsed, (int)m.kcal, (int)m.load, m.readiness, m.zone, m.battery, m.usbPower,
-                  m.running, m.paused, (unsigned long)m.steps, md.demo ? 1 : 0);
+                  m.running, m.paused, (unsigned long)m.steps, m.temp, md.demo ? 1 : 0);
 }
 
 static void setTime(Model& m, JsonVariantConst doc, float up) {

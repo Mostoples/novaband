@@ -11,7 +11,7 @@
 //               {"cmd":"alert","hr":185}  {"cmd":"hr","v":151}   {"cmd":"ready","v":78}
 //               {"cmd":"ping"}  (USB keep-alive, every 3 s)
 // band -> app   {"t":"m","hr":142,"sp":98,"cad":166,"pace":332,"dist":2.41,"sec":812,"kcal":210,
-//                "load":47,"rdy":82,"z":3,"bat":87,"usb":1,"run":1,"pz":0,"stp":4213,"demo":1}   (1 Hz)
+//                "load":47,"rdy":82,"z":3,"bat":87,"usb":1,"run":1,"pz":0,"stp":4213,"tmp":33.6,"demo":1}   (1 Hz)
 //               {"t":"info","name":"NovaBand-EB60","fw":"1.0.0","w":320,"h":170}              (on hello)
 //               {"t":"ack","cmd":"run"}
 #pragma once
