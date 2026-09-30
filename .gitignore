@@ -26,3 +26,9 @@ firmware/sim/*.obj
 Thumbs.db
 .vscode/
 *.blend1
+
+# personal contact details (repo is public)
+kartu-nama/
+
+# previews of the letters (regenerated)
+berkas/_preview/

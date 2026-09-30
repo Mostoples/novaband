@@ -556,5 +556,6 @@ def render(name):
     print("REEL DONE", name, n)
 
 
-for s in (SHOTS if SHOT == "all" else SHOT.split(",")):
-    render(s)
+if __name__ == "__main__":                       # importable by blender/usecases.py
+    for s in (SHOTS if SHOT == "all" else SHOT.split(",")):
+        render(s)
