@@ -119,7 +119,7 @@ def widget(scene, d, t, dur):
         d.rounded_rectangle((box[0] + S(28), box[3] - S(38), box[2] - S(28), box[3] - S(26)), S(6),
                             fill=RED + (int(255 * a * (0.55 + 0.45 * pulse)),))
     elif scene == "recovery":
-        box = (x1 - S(470), S(90), x1, S(330))
+        box = (x1 - S(560), S(90), x1, S(330))
         card(d, box, a)
         cx, cy, r = box[0] + S(120), box[1] + S(120), S(80)
         v = 0.82 * ease((t - 0.9) / 1.4)

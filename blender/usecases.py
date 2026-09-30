@@ -414,8 +414,8 @@ def shot_coach(sc):
     cam = RG.camera(sc, 70, fstop=2.0)
     head = Vector((at.x, at.y, 1.55))
     RG.keyframe_path(cam, N,
-                     lambda t, e: head + Vector((0.95 - 0.25 * e, -2.3 + 0.3 * e, 0.02)),
-                     lambda t, e: head + Vector((0.42, 0, -0.12)),
+                     lambda t, e: head + Vector((0.55 - 0.15 * e, -2.4 + 0.25 * e, 0.02)),
+                     lambda t, e: head + Vector((0.22, 0, -0.14)),
                      lambda t, e, tgt: (tgt - cam.location).length)
     return N
 
