@@ -69,6 +69,41 @@ int main(int argc, char** argv) {
   proto::Env env{&model, &ui, "NovaBand-EB60", nullptr, uptime};
   char reply[256];
 
+  // ---- scenario mode: sim.exe assets.bin outdir fps <live|run|ready|alert|walk> [frames]
+  // A steady screen for one use case (used as the pod's screen in the use-case film).
+  if (argc > 4) {
+    const char* sc = argv[4];
+    int n = argc > 5 ? atoi(argv[5]) : 220;
+    const float dt = 1.f / fps;
+    ui.skipBoot();
+    const char* hello = "{\"cmd\":\"hello\",\"name\":\"Raka\",\"age\":17,\"alert\":182,\"t\":1790575200,\"tz\":420}";
+    proto::handle(hello, strlen(hello), env, reply, sizeof reply);
+    ui.setLink(Link::Ble, "Chrome - Pixel 8");
+    bool running = !strcmp(sc, "live") || !strcmp(sc, "run") || !strcmp(sc, "alert");
+    if (running) {
+      model.start();
+      for (int k = 0; k < 6000; k++) model.update(.1f, k * .1f);   // ~10 minutes into the run
+    }
+    int page = !strcmp(sc, "run") ? 1 : !strcmp(sc, "ready") ? 2 : 0;
+    ui.goPage(page);
+    float t0 = 600;
+    for (int k = 0; k < 90; k++) { g_up = t0 + k * dt; model.update(dt, g_up); ui.update(dt); }   // settle, let toasts pass
+    if (!strcmp(sc, "ready")) ui.goPage(0), ui.goPage(2);      // re-enter so the ring sweeps in on screen
+    for (int i = 0; i < n; i++) {
+      float t = t0 + (90 + i) * dt;
+      g_up = t;
+      if (!strcmp(sc, "alert")) model.setRealHr(166 + 22 * fminf(i / 70.f, 1.f), t);  // HR climbs past the 182 limit
+      model.update(dt, t);
+      ui.update(dt);
+      ui.render(c);
+      char path[512];
+      snprintf(path, sizeof path, "%s/f_%04d.ppm", out, i + 1);
+      writePPM(path, fb.data());
+    }
+    printf("scenario %s: %d frames\n", sc, n);
+    return 0;
+  }
+
   const Drag drags[] = {{6.0f, .28f, 262, 70, 90}, {10.2f, .30f, 250, 60, 90}, {13.4f, .25f, 255, 80, 90},
                         {19.0f, .12f, 70, 250, 90}, {19.6f, .12f, 70, 250, 90}, {20.2f, .12f, 70, 250, 90}};
   const float dt = 1.f / fps;
