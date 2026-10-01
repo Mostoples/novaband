@@ -174,10 +174,11 @@
   /* ---------- Showreel ----------
      preload="none" keeps the ~MB video off the critical path; it starts
      (muted) once the section is on screen, and never for reduce-motion. */
-  var reel = doc.getElementById("reel-video");
-  var reelBtn = doc.getElementById("reel-toggle");
-  if (reel && reelBtn) {
-    var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  doc.querySelectorAll(".reel").forEach(function (box) {
+    var reel = box.querySelector("video");
+    var reelBtn = box.querySelector(".reel-toggle");
+    if (!reel || !reelBtn) return;
     var userPaused = false;
     var sync = function () {
       reelBtn.textContent = reel.paused ? "Putar" : "Jeda";
@@ -198,7 +199,7 @@
       }, { threshold: 0.35 }).observe(reel);
     }
     sync();
-  }
+  });
 
   /* ---------- Three.js ---------- */
   if (window.NovaThree) {
