@@ -1,0 +1,237 @@
+/* ============================================================
+   Nova-Band App — "immersive" layer
+   Loaded after style.css on app.html only. Adds depth: a moving
+   aurora + perspective grid behind everything, glass tiles that
+   tilt toward the pointer (js/app-nova.js sets --rx/--ry/--mx/--my),
+   HUD details, and Nova the mascot as a live holographic guide.
+   Dark is the main look; light is a frosted variant.
+   ============================================================ */
+
+/* ---------- tokens ---------- */
+[data-theme="dark"] .app-body {
+  --bg: #07040a;
+  --bg-soft: #0d070c;
+  --surface: rgba(34, 14, 22, .52);
+  --surface-2: rgba(52, 20, 32, .55);
+  --ink: #f8eef0;
+  --ink-2: #cdb7bd;
+  --ink-3: #8f7a81;
+  --line: rgba(255, 120, 136, .13);
+  --line-2: rgba(255, 120, 136, .22);
+  --red: #ff4f63;
+  --red-mid: #ff7d8c;
+  --red-soft: rgba(255, 79, 99, .12);
+  --red-tint: rgba(255, 79, 99, .07);
+  --rose: #a8475a;
+  --brand-500: #ff4f63;
+  --neon: #ff4f63;
+  --cyan: #5fe3ff;
+  --glow: 0 0 24px rgba(255, 79, 99, .35);
+  --glass-hi: rgba(255, 255, 255, .07);
+  --edge: linear-gradient(140deg, rgba(255, 140, 155, .55), rgba(255, 79, 99, .08) 38%, rgba(95, 227, 255, .10) 70%, rgba(255, 140, 155, .35));
+  --depth: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 18px 40px -12px rgba(0, 0, 0, .7), 0 40px 90px -30px rgba(120, 10, 30, .45);
+}
+[data-theme="light"] .app-body {
+  --bg: #f5eef0;
+  --bg-soft: #f3e9ec;
+  --surface: rgba(255, 255, 255, .62);
+  --surface-2: rgba(255, 255, 255, .78);
+  --line: rgba(123, 32, 33, .11);
+  --neon: #c0263a;
+  --cyan: #0f9fc0;
+  --glow: 0 0 22px rgba(192, 38, 58, .18);
+  --glass-hi: rgba(255, 255, 255, .7);
+  --edge: linear-gradient(140deg, rgba(255, 255, 255, .95), rgba(192, 38, 58, .12) 40%, rgba(15, 159, 192, .12) 70%, rgba(255, 255, 255, .8));
+  --depth: 0 1px 0 rgba(255, 255, 255, .8) inset, 0 14px 30px -12px rgba(75, 7, 15, .18), 0 40px 80px -36px rgba(75, 7, 15, .25);
+}
+
+.app-body { background: var(--bg); min-height: 100svh; }
+.app-body .app-shell { position: relative; z-index: 1; }
+
+/* ---------- immersive background ---------- */
+.fx-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.fx-aurora { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; will-change: transform; }
+.fx-aurora.a1 { width: 60vw; height: 60vw; left: -18vw; top: -22vw; background: radial-gradient(circle, #8f1027, transparent 65%); animation: drift1 22s ease-in-out infinite alternate; }
+.fx-aurora.a2 { width: 55vw; height: 55vw; right: -20vw; top: 10vh; background: radial-gradient(circle, #4b0d3a, transparent 65%); animation: drift2 26s ease-in-out infinite alternate; }
+.fx-aurora.a3 { width: 40vw; height: 40vw; left: 30vw; bottom: -20vw; background: radial-gradient(circle, rgba(95, 227, 255, .22), transparent 65%); animation: drift1 30s ease-in-out infinite alternate-reverse; }
+[data-theme="light"] .fx-aurora { opacity: .35; }
+[data-theme="light"] .fx-aurora.a1 { background: radial-gradient(circle, #f1a7b1, transparent 65%); }
+[data-theme="light"] .fx-aurora.a2 { background: radial-gradient(circle, #e8c3d6, transparent 65%); }
+@keyframes drift1 { to { transform: translate(8vw, 6vh) scale(1.12); } }
+@keyframes drift2 { to { transform: translate(-10vw, 8vh) scale(.9); } }
+
+.fx-floor { position: absolute; left: -50%; right: -50%; bottom: -8vh; height: 62vh; perspective: 420px; perspective-origin: 50% 0; }
+.fx-grid {
+  position: absolute; inset: 0; transform: rotateX(68deg); transform-origin: 50% 0;
+  background-image:
+    linear-gradient(rgba(255, 79, 99, .30) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 79, 99, .30) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 35%, #000 70%, transparent);
+          mask-image: linear-gradient(to bottom, transparent, #000 35%, #000 70%, transparent);
+  animation: gridRun 6s linear infinite;
+  opacity: .5;
+}
+[data-theme="light"] .fx-grid { opacity: .28; background-image: linear-gradient(rgba(123, 32, 33, .25) 1px, transparent 1px), linear-gradient(90deg, rgba(123, 32, 33, .25) 1px, transparent 1px); }
+@keyframes gridRun { to { background-position: 0 64px, 0 0; } }
+#fx-stars { position: absolute; inset: 0; width: 100%; height: 100%; }
+.fx-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, transparent 40%, rgba(4, 2, 5, .65)); }
+[data-theme="light"] .fx-vignette { background: radial-gradient(ellipse at 50% 40%, transparent 50%, rgba(245, 238, 240, .7)); }
+
+/* ---------- nav ---------- */
+.app-body .nav { background: color-mix(in srgb, var(--bg) 62%, transparent); backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3); border-bottom: 1px solid var(--line); }
+.app-body .conn { background: var(--surface); backdrop-filter: blur(10px); }
+.app-body .led-dot.on { background: var(--cyan); box-shadow: 0 0 0 3px rgba(95, 227, 255, .18), 0 0 12px var(--cyan); }
+
+/* ---------- glass + depth tiles ---------- */
+[hidden] { display: none !important; }
+.app-body .tile, .app-body .metric, .app-body .nova-hero { position: relative; }
+.app-body .tile, .app-body .metric, .app-body .side, .app-body .nova-hero {
+  isolation: isolate;
+  background: transparent; border: 0; box-shadow: var(--depth);
+  transform-style: preserve-3d;
+  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0);
+  transition: transform .5s var(--ease), box-shadow .4s var(--ease);
+}
+.app-body .tile::before, .app-body .metric::before, .app-body .side::before, .app-body .nova-hero::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  background: linear-gradient(160deg, var(--surface-2), var(--surface));
+  backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
+}
+/* hairline gradient edge */
+.app-body .tile::after, .app-body .metric::after, .app-body .side::after, .app-body .nova-hero::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .22), transparent 45%), var(--edge);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+.app-body .tile.is-tilting, .app-body .metric.is-tilting { transition: transform .08s linear, box-shadow .3s; box-shadow: var(--depth), var(--glow); }
+.app-body .tile > *, .app-body .metric > * { transform: translateZ(18px); }
+.app-body .tile-title img, .app-body .metric .lbl img { transform: translateZ(26px); filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .35)); }
+.app-body .metric .val, .app-body .gauge-val { text-shadow: 0 0 18px rgba(255, 79, 99, .35); }
+[data-theme="light"] .app-body .metric .val, [data-theme="light"] .app-body .gauge-val { text-shadow: none; }
+.app-body .tile-note { font-family: var(--mono); letter-spacing: .08em; }
+.app-body .tile-title { letter-spacing: .01em; }
+
+/* HUD corner brackets */
+.app-body .tile .hud { position: absolute; inset: 8px; pointer-events: none; transform: translateZ(4px); }
+.hud i { position: absolute; width: 12px; height: 12px; border-color: var(--neon); opacity: .55; }
+.hud i:nth-child(1) { left: 0; top: 0; border-left: 1.5px solid; border-top: 1.5px solid; border-radius: 6px 0 0 0; }
+.hud i:nth-child(2) { right: 0; top: 0; border-right: 1.5px solid; border-top: 1.5px solid; border-radius: 0 6px 0 0; }
+.hud i:nth-child(3) { left: 0; bottom: 0; border-left: 1.5px solid; border-bottom: 1.5px solid; border-radius: 0 0 0 6px; }
+.hud i:nth-child(4) { right: 0; bottom: 0; border-right: 1.5px solid; border-bottom: 1.5px solid; border-radius: 0 0 6px 0; }
+
+/* sheen sweep across tiles once in a while */
+.app-body .tile .sheen { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; transform: none; }
+.sheen::before { content: ""; position: absolute; top: -50%; bottom: -50%; width: 30%; left: -40%; transform: skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .07), transparent); animation: sweep 9s var(--ease) infinite; }
+@keyframes sweep { 0%, 70% { left: -40%; } 100% { left: 140%; } }
+
+/* side menu */
+.app-body .side-item { position: relative; transform: translateZ(10px); }
+.app-body .side-item.active { background: linear-gradient(135deg, #ff4f63, #9c1430); box-shadow: 0 8px 22px -6px rgba(255, 79, 99, .6), 0 0 0 1px rgba(255, 255, 255, .12) inset; }
+[data-theme="light"] .app-body .side-item.active { background: linear-gradient(135deg, #c0263a, #7b2021); }
+.app-body .side-item:not(.active):hover { background: var(--red-tint); }
+.app-body .device-mini { background: var(--red-tint); border: 1px solid var(--line); }
+
+/* buttons */
+.app-body .btn-primary { background: linear-gradient(135deg, #ff4f63, #a5162f); border-color: transparent; box-shadow: 0 10px 26px -8px rgba(255, 79, 99, .65), 0 0 0 1px rgba(255, 255, 255, .14) inset; }
+[data-theme="light"] .app-body .btn-primary { background: linear-gradient(135deg, #c0263a, #7b2021); }
+.app-body .btn-ghost, .app-body .btn-soft { background: var(--surface); border-color: var(--line-2); color: var(--ink); backdrop-filter: blur(10px); }
+
+/* home device card: a glowing holo card */
+.app-body .dev-card::before { background: linear-gradient(135deg, rgba(110, 10, 30, .85), rgba(255, 79, 99, .55)); }
+[data-theme="light"] .app-body .dev-card::before { background: linear-gradient(135deg, #4b070f, #a52a35); }
+.app-body .dev-card img { transform: translateZ(50px) rotate(-6deg); animation: hover 6s ease-in-out infinite; }
+@keyframes hover { 50% { translate: 0 -8px; } }
+
+/* rings and charts glow */
+.app-body #ring-prog, .app-body .ring .p { filter: drop-shadow(0 0 6px rgba(255, 79, 99, .7)); }
+.app-body .ecg-wrap, .app-body .map-box { background: rgba(0, 0, 0, .25); border-color: var(--line); }
+[data-theme="light"] .app-body .ecg-wrap, [data-theme="light"] .app-body .map-box { background: rgba(255, 255, 255, .5); }
+.app-body .bar i, .app-body .load-fill { box-shadow: 0 0 10px rgba(255, 79, 99, .45); }
+.app-body .alert { background: var(--surface); border-color: var(--line); backdrop-filter: blur(10px); }
+.app-body .alert.danger { background: rgba(255, 50, 70, .12); border-color: rgba(255, 79, 99, .4); box-shadow: 0 0 22px rgba(255, 79, 99, .2); }
+.app-body .toast { background: rgba(20, 8, 12, .85); color: #fff; backdrop-filter: blur(14px); border: 1px solid var(--line-2); }
+.app-body table.tbl tr:hover td { background: var(--red-tint); }
+.app-body .cx-dlg { background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(24px); border: 1px solid var(--line-2); }
+.app-body .cx-opt { background: var(--surface); border-color: var(--line); }
+
+/* ============================================================
+   Nova — the mascot as a holographic guide
+   ============================================================ */
+.nova-hero {
+  display: grid; grid-template-columns: minmax(170px, 250px) minmax(0, 1fr); gap: 10px 26px; align-items: center;
+  border-radius: var(--r-xl); padding: 14px 26px 14px 14px; margin-bottom: 22px;
+}
+.nova-hero h1 { font-size: clamp(1.7rem, 3.4vw, 2.6rem); margin: 0; transform: translateZ(30px); }
+.nova-hero .hero-copy { transform: translateZ(24px); }
+.nova-hero .row { margin-top: 14px; }
+
+.nova-stage { position: relative; aspect-ratio: 4 / 5; transform-style: preserve-3d; transform: translateZ(60px); }
+.nova-stage .nova-sprite { position: absolute; inset: 0 0 6% 0; width: 100%; height: 94%; object-fit: contain; z-index: 2;
+  filter: drop-shadow(0 18px 18px rgba(0, 0, 0, .35)); transition: opacity .25s; }
+.nova-pad { position: absolute; left: 12%; right: 12%; bottom: 2%; height: 13%; border-radius: 50%; z-index: 1;
+  background: radial-gradient(ellipse, rgba(255, 79, 99, .65), rgba(255, 79, 99, .15) 55%, transparent 70%);
+  box-shadow: 0 0 40px rgba(255, 79, 99, .45); }
+.nova-pad::before, .nova-pad::after { content: ""; position: absolute; inset: 18% 6%; border-radius: 50%; border: 1.5px solid rgba(255, 140, 155, .7); animation: padRing 2.6s ease-out infinite; }
+.nova-pad::after { animation-delay: 1.3s; }
+@keyframes padRing { from { transform: scale(.6); opacity: 1; } to { transform: scale(1.35); opacity: 0; } }
+.nova-beam { position: absolute; left: 22%; right: 22%; bottom: 8%; top: 4%; z-index: 0;
+  background: linear-gradient(to top, rgba(255, 79, 99, .28), transparent 80%);
+  clip-path: polygon(30% 100%, 70% 100%, 100% 0, 0 0); filter: blur(6px); opacity: .7; }
+[data-theme="light"] .nova-beam { opacity: .35; }
+
+.nova-bubble { position: relative; margin-top: 12px; padding: 12px 16px; border-radius: 16px 16px 16px 4px; max-width: 560px;
+  background: var(--surface-2); border: 1px solid var(--line-2); font-size: .9rem; color: var(--ink); line-height: 1.5;
+  box-shadow: var(--glow); transform: translateZ(40px); max-width: min(560px, 100%); }
+.nova-bubble b { color: var(--neon); }
+.nova-bubble .caret { display: inline-block; width: 7px; height: 1em; background: var(--neon); vertical-align: -2px; margin-left: 2px; animation: caret 1s steps(1) infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+.nova-tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--cyan); }
+.nova-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+
+/* small Nova inside tiles */
+.nova-mini { display: grid; grid-template-columns: 110px 1fr; gap: 16px; align-items: center; }
+.nova-mini .nova-stage { aspect-ratio: 4 / 5; transform: translateZ(46px); }
+.nova-mini p { margin: 4px 0 0; color: var(--ink); font-size: .9rem; }
+.app-body .insight { background: transparent; border: 0; }
+.nova-corner { position: absolute; left: 14px; bottom: 6px; width: 92px; aspect-ratio: 4 / 5; transform: translateZ(50px); pointer-events: none; }
+.nova-corner .nova-sprite { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 10px 12px rgba(0, 0, 0, .35)); }
+.app-body .rail .tile:first-child { padding-bottom: 24px; }
+.ready-nova { display: flex; align-items: flex-end; justify-content: center; gap: 4px; }
+.ready-nova .nova-stage { width: 96px; margin-left: -10px; transform: translateZ(40px); }
+.cx-nova { width: 120px; aspect-ratio: 4 / 5; margin: -8px auto 4px; position: relative; }
+.cx-nova .nova-sprite { width: 100%; height: 100%; object-fit: contain; }
+.app-body .avatar.nova-av { background: radial-gradient(circle at 50% 35%, #ff6b7c, #6d0f22); overflow: hidden; box-shadow: var(--glow); }
+.app-body .avatar.nova-av img { width: 130%; max-width: none; margin-top: 30%; }
+
+/* alert flash: the whole screen edge pulses red */
+.app-body.nova-alert::after { content: ""; position: fixed; inset: 0; z-index: 150; pointer-events: none;
+  box-shadow: inset 0 0 0 2px rgba(255, 60, 80, .8), inset 0 0 90px rgba(255, 40, 60, .45); animation: alarm 1s ease-in-out infinite; }
+@keyframes alarm { 50% { opacity: .35; } }
+
+/* ---------- responsive ---------- */
+@media (max-width: 920px) {
+  .app-body .side::before { border-radius: 22px 22px 0 0; }
+  .app-body .side { transform: none; }
+  .fx-floor { height: 40vh; }
+}
+@media (max-width: 600px) {
+  .nova-hero { grid-template-columns: 104px minmax(0, 1fr); padding: 8px 14px 16px 6px; gap: 4px 12px; align-items: end; }
+  .nova-hero .hero-copy { display: contents; }
+  .nova-hero .nova-stage { grid-column: 1; grid-row: 1 / span 3; }
+  .nova-hero .nova-tag, .nova-hero #today-date, .nova-hero h1 { grid-column: 2; }
+  .nova-hero .nova-tag { align-self: end; }
+  .nova-hero h1 { font-size: 1.55rem; align-self: start; }
+  .nova-bubble { font-size: .82rem; padding: 10px 12px; grid-column: 1 / -1; margin: 6px 0 0 8px; }
+  .nova-hero .row { grid-column: 1 / -1; margin: 6px 0 0 8px; }
+  .nova-mini { grid-template-columns: 84px 1fr; }
+  .nova-corner { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fx-aurora, .fx-grid, .sheen::before, .nova-pad::before, .nova-pad::after, .app-body .dev-card img { animation: none !important; }
+  .app-body .tile, .app-body .metric { transform: none !important; }
+}
+@media (max-width: 760px) { .nova-corner { display: none; } }
+@media (min-width: 761px) { .app-body .band-tile { padding-bottom: 112px; } }

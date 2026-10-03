@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="light">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#07040a">
 <title>Nova-Band App — Dashboard Pelari</title>
 <meta name="description" content="Aplikasi Nova-Band: performa hari ini, detak jantung real-time, Readiness Score, Biological Early Warning, beban jaringan lunak, dan dashboard komunitas.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%237b2021'/><path d='M9 23V9l14 14V9' stroke='%23fff' stroke-width='2.8' fill='none' stroke-linejoin='round' stroke-linecap='round'/></svg>">
@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fraunces:ital,wght@1,500;1,600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/app-future.css">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/pwa/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,12 +21,20 @@
   (function () {
     try {
       var s = localStorage.getItem("novaband-theme");
-      document.documentElement.setAttribute("data-theme", s === "dark" ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", s === "light" ? "light" : "dark");   // the app is dark-first
     } catch (e) {}
   })();
 </script>
 </head>
 <body class="app-body">
+
+<!-- ============ IMMERSIVE BACKGROUND (js/app-nova.js) ============ -->
+<div class="fx-bg" aria-hidden="true">
+  <div class="fx-aurora a1"></div><div class="fx-aurora a2"></div><div class="fx-aurora a3"></div>
+  <div class="fx-floor"><div class="fx-grid"></div></div>
+  <canvas id="fx-stars"></canvas>
+  <div class="fx-vignette"></div>
+</div>
 
 <!-- ============ NAV ============ -->
 <header class="nav">
@@ -54,17 +63,24 @@
 
 <main class="app-shell">
   <div class="container">
-    <div class="app-head">
-      <div>
+    <div class="nova-hero" data-tilt>
+      <div class="nova-stage">
+        <div class="nova-beam"></div>
+        <img class="nova-sprite" data-nova="hero" src="assets/mascot/nova-wave.webp" alt="Nova, maskot cheetah Nova-Band" width="360" height="450">
+        <div class="nova-pad"></div>
+      </div>
+      <div class="hero-copy">
+        <span class="nova-tag">Nova · AI coach</span>
         <p class="muted mb-0" style="font-size:.82rem" id="today-date">—</p>
         <h1>Halo, <span class="red">Runner</span></h1>
-      </div>
-      <div class="row">
-        <button class="btn btn-primary" id="btn-session">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
-          <span id="session-label">Mulai Sesi</span>
-        </button>
-        <button class="btn btn-ghost" id="btn-reset">Reset</button>
+        <div class="nova-bubble" id="nova-say" aria-live="polite">Hai, aku <b>Nova</b>! Band kamu siap. Mau mulai sesi lari hari ini?</div>
+        <div class="row">
+          <button class="btn btn-primary" id="btn-session">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>
+            <span id="session-label">Mulai Sesi</span>
+          </button>
+          <button class="btn btn-ghost" id="btn-reset">Reset</button>
+        </div>
       </div>
     </div>
 
@@ -179,10 +195,10 @@
             </div>
           </div>
 
-          <div class="tile insight" style="margin-top:18px">
-            <img src="assets/3d/lightbulb.webp" alt="">
+          <div class="tile insight nova-mini" style="margin-top:18px">
+            <div class="nova-stage"><img class="nova-sprite" data-nova="insight" src="assets/mascot/nova-talk.webp" alt="" width="360" height="450"><div class="nova-pad"></div></div>
             <div>
-              <div class="tile-note" style="margin-bottom:2px">Insight AI</div>
+              <div class="tile-note" style="margin-bottom:2px">Insight AI · Nova</div>
               <p id="insight-text">Kamu aktif pagi ini. Pertahankan konsistensimu untuk mencapai target mingguan.</p>
             </div>
           </div>
@@ -190,6 +206,13 @@
 
         <!-- ===== AKTIVITAS: live session ===== -->
         <div class="panel" id="p-live">
+          <div class="tile nova-mini" style="margin-bottom:18px">
+            <div class="nova-stage"><img class="nova-sprite" data-nova="coach" src="assets/mascot/nova-idle.webp" alt="" width="360" height="450"><div class="nova-pad"></div></div>
+            <div>
+              <span class="nova-tag">Coach Nova · live</span>
+              <p id="nova-coach">Tekan <b>Mulai Sesi</b>, aku akan lari bersamamu dan memantau detak jantung, kadensi, serta beban otot.</p>
+            </div>
+          </div>
           <div class="metric-grid">
             <div class="metric"><div class="lbl"><img src="assets/3d/heart.webp" alt="">Detak jantung</div><div class="val" id="m-bpm">— <small>bpm</small></div><div class="delta" id="m-zone">Zona —</div></div>
             <div class="metric"><div class="lbl"><img src="assets/3d/footsteps.webp" alt="">Cadence</div><div class="val" id="m-cad">— <small>spm</small></div><div class="delta" id="m-cad-note">menunggu data</div></div>
@@ -321,6 +344,7 @@
         <div class="panel" id="p-device">
           <div class="tile band-tile">
             <div class="tile-head"><div class="tile-title"><img src="assets/3d/bluetooth.webp" alt="">NovaBand tersambung</div><div class="tile-note" id="band-transport">Belum terhubung</div></div>
+            <div class="nova-corner"><img class="nova-sprite" data-nova="device" src="assets/mascot/nova-flex.webp" alt="" width="360" height="450"></div>
             <div class="band-grid">
               <div class="spec-list">
                 <div class="spec-row"><span>Perangkat</span><span class="mono" id="band-name">—</span></div>
@@ -397,7 +421,7 @@
         <!-- ===== AKUN ===== -->
         <div class="panel" id="p-account">
           <div class="tile account">
-            <div class="avatar">R</div>
+            <div class="avatar nova-av"><img src="assets/img/mascot-wink.webp" alt="Nova"></div>
             <div>
               <h3 class="mb-0">Runner</h3>
               <p class="mb-0" style="font-size:.86rem">Profil demo · data simulasi, bukan data pengguna sungguhan</p>
@@ -431,7 +455,7 @@
       <aside class="rail">
         <div class="tile" style="text-align:center">
           <div class="tile-title" style="justify-content:center;margin-bottom:6px">Readiness Score</div>
-          <div class="ready-ring">
+          <div class="ready-nova"><div class="ready-ring">
             <svg viewBox="0 0 120 120" width="158" height="158" aria-hidden="true">
               <circle cx="60" cy="60" r="50" fill="none" stroke="var(--line)" stroke-width="10"/>
               <circle id="ring-prog" cx="60" cy="60" r="50" fill="none" stroke="var(--red)" stroke-width="10" stroke-linecap="round"
@@ -439,6 +463,7 @@
             </svg>
             <div><div class="gauge-val" id="ready-val">85</div><div class="gauge-sub" id="ready-lbl">Siap latihan</div></div>
           </div>
+          <div class="nova-stage"><img class="nova-sprite" data-nova="ready" src="assets/mascot/nova-thumbs.webp" alt="" width="360" height="450"></div></div>
           <p class="mb-0" style="font-size:.84rem" id="ready-desc">Tubuh dalam kondisi baik. Sesi tempo hingga 45 menit masih aman.</p>
         </div>
         <div class="tile">
@@ -457,6 +482,7 @@
 
 <!-- ============ CONNECT DIALOG ============ -->
 <dialog id="connect-dlg" class="cx-dlg" aria-labelledby="cx-title">
+  <div class="cx-nova"><img class="nova-sprite" data-nova="dialog" src="assets/mascot/nova-wave.webp" alt="" width="360" height="450"></div>
   <h3 id="cx-title">Hubungkan NovaBand</h3>
   <p class="muted">Nyalakan band. Layarnya menampilkan <b>READY TO PAIR</b> di halaman Link.</p>
   <div class="cx-opts">
@@ -472,6 +498,7 @@
 <script src="js/band-link.js"></script>
 <script src="js/app.js"></script>
 <script src="js/app-home.js"></script>
+<script src="js/app-nova.js"></script>
 <script type="module" src="js/firebase-init.js"></script>
 <script>
   /* PWA: offline shell + installable (sw.js) */
