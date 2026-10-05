@@ -66,7 +66,7 @@ class Layout:
             self.nova = (400 * k, 1010 * k, 880 * k)          # feet x, feet y, height
             self.phone = (850 * k, 520 * k, 760 * k)           # centre x, centre y, height
             self.band = (1090 * k, 860 * k, 190 * k)
-            self.copy = (1230 * k, 330 * k, "la")
+            self.copy = (1170 * k, 330 * k, "la")
         else:
             self.nova = (430 * k, 1840 * k, 1000 * k)
             self.phone = (780 * k, 1020 * k, 760 * k)
@@ -219,10 +219,24 @@ def put_nova(im, L, fi, ph):
 
 def put_phone(im, L, ph, alert_glow):
     cx, cy, h = L.phone
-    t_rec = SR.MK["home"] + 2.5 + 10 * ph if ph < 0.33 else (
-        SR.MK["alert_on"] - 0.5 + (ph - 0.33) * 10 if ph < 0.66 else SR.MK["ready"] + 0.8 + (ph - 0.66) * 10)
+    starts = [(0.0, SR.MK["home"] + 2.5), (1 / 3, SR.MK["alert_on"] - 0.5), (2 / 3, SR.MK["ready"] + 0.8)]
+
+    def rec(seg, p_):
+        a, t0 = starts[seg]
+        return t0 + ((p_ - a) % 1.0) * DUR
+
+    seg = 0 if ph < 1 / 3 else (1 if ph < 2 / 3 else 2)
     yaw = -16 + 6 * math.sin(TAU * ph)
-    p = SR.phone(t_rec, yaw, h)
+    p = SR.phone(rec(seg, ph), yaw, h)
+    # dissolve the screen into the next beat's screen over the last 0.4 s of each beat
+    nxt_a = starts[(seg + 1) % 3][0] or 1.0
+    X = 0.04
+    if ph > nxt_a - X:
+        q = SR.phone(rec((seg + 1) % 3, ph), yaw, h)
+        p = Image.blend(p, q.resize(p.size), (ph - (nxt_a - X)) / X * 0.5)
+    elif ph < starts[seg][0] + X:
+        q = SR.phone(rec((seg - 1) % 3, ph), yaw, h)
+        p = Image.blend(q.resize(p.size), p, 0.5 + (ph - starts[seg][0]) / X * 0.5)
     y = cy + math.sin(TAU * ph * 2 + 1) * S(L, 12)
     g = Image.new("RGBA", (p.width + S(L, 200), p.height + S(L, 200)), (0, 0, 0, 0))
     ImageDraw.Draw(g).rounded_rectangle([S(L, 100), S(L, 100), S(L, 100) + p.width, S(L, 100) + p.height], S(L, 60),
@@ -258,11 +272,20 @@ def put_copy(im, L, ph):
         d = ImageDraw.Draw(im)
         F = lambda f, s: f(s * L.k / E.K)       # E fonts scale by the 1920-wide K
         E.R.txt(d, (x, y), chip, F(E.SEMI, 26), CYAN, a, spacing=S(L, 6))
-        size = 76 if L.fmt == "landscape" else 104
+        size = 70 if L.fmt == "landscape" else 104
         E.text(d, (x - S(L, 4) + slide, y + S(L, 44)), l1, F(E.XB, size), WHITE, a)
         E.glow_text(im, (x - S(L, 4) + slide, y + S(L, 44 + size * 1.12)), l2, F(E.XB, size), NEON, a, 20)
         d = ImageDraw.Draw(im)
-        E.text(d, (x, y + S(L, 60 + size * 2.3)), sub, F(E.REG, 28 if L.fmt == "landscape" else 36), CREAM, a)
+        fs = F(E.REG, 28 if L.fmt == "landscape" else 36)
+        maxw = (L.W - x - S(L, 60))
+        words, line, ly = sub.split(), "", y + S(L, 60 + size * 2.3)
+        for w_ in words:
+            if fs.getlength((line + " " + w_).strip()) > maxw:
+                E.text(d, (x, ly), line.strip(), fs, CREAM, a)
+                line, ly = w_, ly + int(fs.size * 1.45)
+            else:
+                line += " " + w_
+        E.text(d, (x, ly), line.strip(), fs, CREAM, a)
 
 
 def logo(im, L):

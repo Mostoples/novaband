@@ -323,4 +323,5 @@ def main():
     print("ANIM DONE", ANIM, frames)
 
 
-main()
+if __name__ == "__main__":
+    main()
