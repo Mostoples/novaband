@@ -17,7 +17,14 @@
       "**/*.ttf",
       "deck/**",
       "firmware/**",
-      "hardware/**"
+      "hardware/**",
+      "berkas/**",
+      "docs/**",
+      "kartu-nama/**",
+      "**/*.docx",
+      "**/*.pptx",
+      "**/*.py",
+      "firestore.rules"
     ],
     "headers": [
       {
@@ -97,5 +104,8 @@
         "destination": "/app.html"
       }
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
   }
 }

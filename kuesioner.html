@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7b2021">
+<title>Kuesioner Pelari — Nova-Band</title>
+<meta name="description" content="Kuesioner analisis kebutuhan pelari dan prioritas fitur Nova-Band, wearable lengan atas untuk pemantauan fisiologis saat berlari. ±5 menit.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%237b2021'/><path d='M9 23V9l14 14V9' stroke='%23fff' stroke-width='2.8' fill='none' stroke-linejoin='round' stroke-linecap='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fraunces:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body.q { background: var(--bg-soft); }
+  .q-wrap { width: min(100% - 2rem, 760px); margin: 0 auto; padding: 28px 0 80px; }
+  .q-top { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .q-top .brand-mark { width: 38px; height: 38px; }
+  .q-hero { background: linear-gradient(135deg, var(--red-deep), var(--red)); color: #fff; border-radius: var(--r-xl);
+    padding: 28px 26px; position: relative; overflow: hidden; box-shadow: var(--shadow-md); }
+  .q-hero h1 { color: #fff; font-size: clamp(1.6rem, 5vw, 2.3rem); margin: 6px 0 8px; }
+  .q-hero p { color: rgba(255,255,255,.86); margin: 0; font-size: .95rem; }
+  .q-hero img { position: absolute; right: -6px; bottom: -10px; width: 120px; opacity: .95; pointer-events: none; }
+  .q-hero .tag { font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; opacity: .85; font-weight: 600; }
+  .q-hero .copy { max-width: 72%; }
+  .q-progress { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg-soft) 88%, transparent);
+    backdrop-filter: blur(8px); padding: 12px 0 10px; margin: 18px 0 6px; }
+  .q-bar { height: 7px; border-radius: 99px; background: var(--line); overflow: hidden; }
+  .q-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--rose), var(--red)); transition: width .4s var(--ease); }
+  .q-bar-txt { display: flex; justify-content: space-between; font-size: .75rem; color: var(--ink-3); margin-top: 6px; }
+  .q-sec { margin-top: 26px; }
+  .q-sec h2 { font-size: 1.25rem; margin: 0 0 4px; letter-spacing: -.02em; }
+  .q-sec > p { font-size: .88rem; margin-bottom: 12px; }
+  .q-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 18px 18px 16px;
+    margin-bottom: 12px; box-shadow: var(--shadow-xs); transition: border-color .2s; }
+  .q-card.missing { border-color: var(--bad); box-shadow: 0 0 0 3px rgba(208, 52, 44, .12); }
+  .q-card legend, .q-card .q-l { font-weight: 600; font-size: .95rem; color: var(--ink); line-height: 1.45; padding: 0; margin-bottom: 10px; display: block; }
+  .q-card fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  .q-num { display: inline-grid; place-items: center; min-width: 26px; height: 26px; border-radius: 8px; background: var(--red-soft);
+    color: var(--red); font-size: .74rem; font-weight: 700; margin-right: 8px; padding: 0 6px; }
+  .q-hint { font-size: .78rem; color: var(--ink-3); font-weight: 400; display: block; margin-top: 2px; }
+  .q-opts { display: grid; gap: 8px; }
+  .q-opts.cols { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .q-opt { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 12px;
+    cursor: pointer; font-size: .9rem; color: var(--ink-2); transition: .15s; background: var(--surface); }
+  .q-opt:hover { border-color: var(--rose); }
+  .q-opt input { accent-color: var(--red); width: 17px; height: 17px; flex: 0 0 17px; margin: 0; }
+  .q-opt:has(input:checked) { border-color: var(--red); background: var(--red-tint); color: var(--ink); }
+  .likert { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .likert label { display: grid; place-items: center; gap: 4px; padding: 10px 2px; border: 1px solid var(--line-2); border-radius: 12px;
+    cursor: pointer; font-size: .7rem; color: var(--ink-3); text-align: center; line-height: 1.2; transition: .15s; }
+  .likert input { position: absolute; opacity: 0; pointer-events: none; }
+  .likert b { font-size: 1.05rem; color: var(--ink-2); }
+  .likert label:has(input:checked) { background: var(--red); border-color: var(--red); color: #fff; }
+  .likert label:has(input:checked) b { color: #fff; }
+  .likert label:has(input:focus-visible) { outline: 2px solid var(--red); outline-offset: 2px; }
+  .q-in { width: 100%; padding: 11px 13px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--surface);
+    font: inherit; font-size: .92rem; color: var(--ink); }
+  .q-in:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px rgba(123, 32, 33, .12); }
+  textarea.q-in { min-height: 90px; resize: vertical; }
+  .q-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .q-consent { display: flex; gap: 10px; align-items: flex-start; font-size: .86rem; color: var(--ink-2); }
+  .q-consent input { accent-color: var(--red); width: 18px; height: 18px; margin-top: 2px; flex: 0 0 18px; }
+  .q-submit { width: 100%; justify-content: center; padding: 15px; font-size: 1rem; margin-top: 8px; }
+  .q-err { color: var(--bad); font-size: .86rem; min-height: 1.2em; margin-top: 8px; text-align: center; }
+  .q-done { text-align: center; padding: 40px 22px; }
+  .q-done img { width: 150px; margin: 0 auto 10px; }
+  .q-done h2 { margin-bottom: 6px; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  @media (max-width: 560px) {
+    .q-grid2 { grid-template-columns: 1fr; }
+    .q-hero .copy { max-width: 100%; }
+    .q-hero img { width: 84px; opacity: .35; }
+    .likert label { font-size: .62rem; padding: 9px 1px; }
+  }
+</style>
+</head>
+<body class="q">
+<main class="q-wrap">
+  <div class="q-top">
+    <span class="brand-mark"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M8 24V8l16 16V8" stroke="#fff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+    <span class="brand-name" style="font-weight:800;font-size:1.15rem">Nova<b style="color:var(--red)">-</b>Band</span>
+  </div>
+
+  <section class="q-hero">
+    <div class="copy">
+      <span class="tag">Kuesioner Pelari · ±5 menit</span>
+      <h1>Bantu kami membangun wearable lari yang tepat.</h1>
+      <p>Nova-Band adalah wearable lengan atas untuk memantau detak jantung dan performa lari secara real-time.
+        Jawabanmu dipakai untuk penelitian tim SMA Negeri 1 Surakarta (ISIF 2026).</p>
+    </div>
+    <img src="assets/img/mascot-wink.webp" alt="">
+  </section>
+
+  <div class="q-progress" aria-hidden="true">
+    <div class="q-bar"><i id="bar"></i></div>
+    <div class="q-bar-txt"><span id="bar-txt">0 dari 0 pertanyaan terjawab</span><span>Wajib: semua kecuali yang bertanda opsional</span></div>
+  </div>
+
+  <form id="form" novalidate>
+    <div id="sections"></div>
+
+    <div class="q-sec">
+      <div class="q-card">
+        <label class="q-l" for="saran">Saran atau harapan lain untuk Nova-Band <span class="q-hint">Opsional</span></label>
+        <textarea class="q-in" id="saran" name="saran" maxlength="600" placeholder="Tulis di sini…"></textarea>
+      </div>
+      <div class="q-card" data-req="persetujuan">
+        <label class="q-consent"><input type="checkbox" name="persetujuan" value="ya">
+          <span>Saya bersedia jawaban ini digunakan untuk penelitian Nova-Band. Data hanya diolah oleh tim peneliti,
+            disajikan secara agregat (tanpa nama), dan tidak dibagikan ke pihak lain.</span></label>
+      </div>
+      <div class="hp" aria-hidden="true"><label>Jangan diisi <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+      <button class="btn btn-primary q-submit" type="submit" id="submit">Kirim jawaban</button>
+      <p class="q-err" id="err" role="alert"></p>
+    </div>
+  </form>
+
+  <section class="q-card q-done" id="done" hidden>
+    <img src="assets/img/mascot-hero.webp" alt="Nova, maskot Nova-Band, mengacungkan jempol">
+    <h2>Terima kasih! 🏃</h2>
+    <p>Jawabanmu sudah tersimpan dan sangat membantu pengembangan Nova-Band.</p>
+    <a class="btn btn-ghost" href="index.html" style="margin-top:8px">Lihat Nova-Band</a>
+  </section>
+</main>
+
+<script type="module">
+/* ---------------- Pertanyaan ----------------
+   type: single | multi | likert | text | select | number
+   Kunci (id) dipakai sebagai nama field di Firestore — jangan diubah setelah kuesioner disebar. */
+const LIKERT_PENTING = ["Tidak penting", "Kurang penting", "Cukup penting", "Penting", "Sangat penting"];
+const SECTIONS = [
+  { title: "Identitas", desc: "Cukup data sederhana. Nama boleh nama panggilan atau inisial.", qs: [
+    { id: "nama", type: "text", label: "Nama panggilan / inisial", optional: true, max: 40 },
+    { id: "usia", type: "single", label: "Usia", cols: true, opts: ["< 15 tahun", "15–18 tahun", "19–25 tahun", "26–35 tahun", "36–45 tahun", "> 45 tahun"] },
+    { id: "gender", type: "single", label: "Jenis kelamin", cols: true, opts: ["Laki-laki", "Perempuan", "Memilih tidak menjawab"] },
+    { id: "kota", type: "text", label: "Kota / kabupaten domisili", max: 60 },
+    { id: "kategori", type: "single", label: "Kamu termasuk pelari…", opts: ["Pemula (baru mulai, < 6 bulan)", "Rekreasi / untuk kesehatan", "Anggota komunitas lari", "Kompetitif (ikut lomba / race)", "Atlet sekolah / klub"] },
+  ]},
+  { title: "Bagian A · Kebiasaan & kebutuhan lari", desc: "10 pertanyaan tentang caramu berlari dan kendala yang kamu alami.", qs: [
+    { id: "a1_frekuensi", type: "single", label: "Seberapa sering kamu berlari dalam seminggu?", cols: true, opts: ["< 1 kali", "1–2 kali", "3–4 kali", "≥ 5 kali"] },
+    { id: "a2_jarak", type: "single", label: "Berapa jarak rata-rata setiap kali lari?", cols: true, opts: ["< 3 km", "3–5 km", "5–10 km", "10–21 km", "> 21 km"] },
+    { id: "a3_perangkat", type: "multi", label: "Perangkat apa yang kamu pakai saat berlari?", hint: "Boleh pilih lebih dari satu", cols: true,
+      opts: ["Tidak memakai apa pun", "Aplikasi di HP", "Smartwatch", "Smartband di pergelangan", "Chest strap (sabuk dada)", "Lainnya"] },
+    { id: "a4_penting_hr", type: "likert", label: "Seberapa penting bagimu memantau detak jantung saat berlari?", scale: LIKERT_PENTING },
+    { id: "a5_keluhan", type: "multi", label: "Keluhan apa yang pernah kamu alami saat/setelah berlari?", hint: "Boleh pilih lebih dari satu", cols: true,
+      opts: ["Tidak pernah", "Cedera otot / sendi", "Kram", "Kelelahan berlebih", "Pusing / mual", "Nyeri dada / sesak napas", "Dehidrasi / kepanasan", "Pingsan / hampir pingsan"] },
+    { id: "a6_akurasi", type: "single", label: "Menurutmu, seberapa akurat data detak jantung dari perangkat di pergelangan saat berlari?",
+      opts: ["Sangat akurat", "Cukup akurat", "Kurang akurat (angkanya sering melompat)", "Tidak tahu / belum pernah pakai"] },
+    { id: "a7_kendala", type: "multi", label: "Apa kendala perangkat/aplikasi lari yang kamu pakai sekarang?", hint: "Boleh pilih lebih dari satu", cols: true,
+      opts: ["Data kurang akurat", "Harga mahal", "Tidak nyaman / bergeser", "Baterai cepat habis", "Data sulit dipahami", "Tidak ada peringatan bahaya", "Tidak terhubung ke pelatih", "Belum punya perangkat"] },
+    { id: "a8_tahu_batas", type: "likert", label: "Seberapa yakin kamu tahu kapan harus memperlambat atau berhenti agar tidak overtraining?",
+      scale: ["Tidak yakin", "Kurang yakin", "Cukup yakin", "Yakin", "Sangat yakin"] },
+    { id: "a9_pendamping", type: "single", label: "Saat berlari, apakah ada pelatih/komunitas yang ikut memantau kondisimu?",
+      opts: ["Tidak, biasanya lari sendiri", "Kadang, saat lari bersama komunitas", "Ya, ada pelatih / pembina", "Ya, saat event / lomba ada tim medis"] },
+    { id: "a10_harga", type: "single", label: "Berapa harga yang wajar menurutmu untuk wearable lari dengan fitur pemantauan kesehatan?", cols: true,
+      opts: ["< Rp300 rb", "Rp300–500 rb", "Rp500 rb–1 jt", "Rp1–2 jt", "> Rp2 jt"] },
+  ]},
+  { title: "Bagian B · Fitur yang paling kamu butuhkan di Nova-Band", desc: "Nilai seberapa penting setiap fitur bagimu (1 = tidak penting, 5 = sangat penting).", qs: [
+    { id: "b1_hr_akurat", type: "likert", label: "Detak jantung real-time yang akurat saat berlari (sensor di lengan atas, lebih stabil dari pergelangan)", scale: LIKERT_PENTING },
+    { id: "b2_peringatan", type: "likert", label: "Peringatan dini (getar + layar) saat detak jantung melewati batas aman", scale: LIKERT_PENTING },
+    { id: "b3_notif_pelatih", type: "likert", label: "Notifikasi otomatis ke pelatih / keluarga / grup lari saat kondisimu berbahaya", scale: LIKERT_PENTING },
+    { id: "b4_readiness", type: "likert", label: "Readiness Score harian: tahu tubuh siap latihan berat atau perlu istirahat", scale: LIKERT_PENTING },
+    { id: "b5_cedera", type: "likert", label: "Analisis beban otot & risiko cedera dari gerakan lari (sensor gerak / IMU)", scale: LIKERT_PENTING },
+    { id: "b6_data_lari", type: "likert", label: "Data lari lengkap: pace, jarak, kadensi, langkah, kalori", scale: LIKERT_PENTING },
+    { id: "b7_layar", type: "likert", label: "Layar sentuh di band, jadi data terlihat tanpa membuka HP", scale: LIKERT_PENTING },
+    { id: "b8_ai_coach", type: "likert", label: "Rekomendasi latihan & pemulihan dari AI coach (maskot Nova) di aplikasi", scale: LIKERT_PENTING },
+    { id: "b9_komunitas", type: "likert", label: "Fitur komunitas: peta & status kesehatan kelompok pelari saat event", scale: LIKERT_PENTING },
+    { id: "b10_nyaman", type: "likert", label: "Nyaman dipakai lama: ringan, tidak bergeser, baterai tahan seharian", scale: LIKERT_PENTING },
+  ]},
+];
+
+/* ---------------- Render ---------------- */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const host = document.getElementById("sections");
+let n = 0;
+for (const sec of SECTIONS) {
+  const box = document.createElement("div");
+  box.className = "q-sec";
+  box.innerHTML = `<h2>${esc(sec.title)}</h2><p>${esc(sec.desc)}</p>`;
+  for (const q of sec.qs) {
+    const num = sec.title.startsWith("Identitas") ? "" : `<span class="q-num">${q.id.split("_")[0].toUpperCase()}</span>`;
+    const hint = q.optional ? `<span class="q-hint">Opsional</span>` : (q.hint ? `<span class="q-hint">${esc(q.hint)}</span>` : "");
+    const card = document.createElement("div");
+    card.className = "q-card";
+    if (!q.optional) card.dataset.req = q.id;
+    let body = "";
+    if (q.type === "text") {
+      body = `<label class="q-l" for="${q.id}">${num}${esc(q.label)} ${hint}</label>
+              <input class="q-in" id="${q.id}" name="${q.id}" maxlength="${q.max || 80}" autocomplete="off">`;
+    } else if (q.type === "likert") {
+      body = `<fieldset><legend>${num}${esc(q.label)} ${hint}</legend><div class="likert">` +
+        q.scale.map((s, i) => `<label><input type="radio" name="${q.id}" value="${i + 1}"><b>${i + 1}</b>${esc(s)}</label>`).join("") +
+        `</div></fieldset>`;
+    } else {
+      const t = q.type === "multi" ? "checkbox" : "radio";
+      body = `<fieldset><legend>${num}${esc(q.label)} ${hint}</legend><div class="q-opts${q.cols ? " cols" : ""}">` +
+        q.opts.map(o => `<label class="q-opt"><input type="${t}" name="${q.id}" value="${esc(o)}">${esc(o)}</label>`).join("") +
+        `</div></fieldset>`;
+    }
+    card.innerHTML = body;
+    box.appendChild(card);
+    if (!q.optional) n++;
+  }
+  host.appendChild(box);
+}
+const ALL = SECTIONS.flatMap(s => s.qs);
+const form = document.getElementById("form");
+
+/* "Tidak pernah / tidak memakai / belum punya" exclude the other choices */
+const EXCL = ["Tidak pernah", "Tidak memakai apa pun", "Belum punya perangkat"];
+form.addEventListener("change", e => {
+  const el = e.target;
+  if (el.type === "checkbox" && el.name !== "persetujuan" && el.checked) {
+    const group = form.querySelectorAll(`input[name="${el.name}"]`);
+    if (EXCL.includes(el.value)) group.forEach(x => { if (x !== el) x.checked = false; });
+    else group.forEach(x => { if (EXCL.includes(x.value)) x.checked = false; });
+  }
+  el.closest(".q-card")?.classList.remove("missing");
+  progress();
+});
+form.addEventListener("input", progress);
+
+function answer(q) {
+  if (q.type === "text") return form.elements[q.id].value.trim();
+  if (q.type === "multi") return [...form.querySelectorAll(`input[name="${q.id}"]:checked`)].map(x => x.value);
+  const c = form.querySelector(`input[name="${q.id}"]:checked`);
+  return c ? (q.type === "likert" ? Number(c.value) : c.value) : "";
+}
+const filled = v => Array.isArray(v) ? v.length > 0 : v !== "" && v !== null;
+function progress() {
+  const req = ALL.filter(q => !q.optional);
+  const done = req.filter(q => filled(answer(q))).length;
+  document.getElementById("bar").style.width = (done / req.length * 100) + "%";
+  document.getElementById("bar-txt").textContent = `${done} dari ${req.length} pertanyaan terjawab`;
+}
+progress();
+
+/* ---------------- Kirim ke Firestore ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyB6JPBKeHo4lVuRHx91yS6NdvIqxWIJuT0",
+  authDomain: "novaband-id.firebaseapp.com",
+  projectId: "novaband-id",
+  storageBucket: "novaband-id.firebasestorage.app",
+  messagingSenderId: "257524197285",
+  appId: "1:257524197285:web:2f710e395620d3ea47ea4c"
+};
+const V = "12.4.0";
+const t0 = Date.now();
+const err = document.getElementById("err");
+
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+  err.textContent = "";
+  if (form.elements.website.value) return;                       // bot honeypot
+  const data = {};
+  let firstMissing = null;
+  for (const q of ALL) {
+    const v = answer(q);
+    data[q.id] = v;
+    if (!q.optional && !filled(v)) {
+      const card = form.querySelector(`[data-req="${q.id}"]`);
+      card.classList.add("missing");
+      firstMissing = firstMissing || card;
+    }
+  }
+  const consent = form.elements.persetujuan.checked;
+  if (!consent) {
+    const c = form.querySelector('[data-req="persetujuan"]');
+    c.classList.add("missing");
+    firstMissing = firstMissing || c;
+  }
+  if (firstMissing) {
+    err.textContent = "Masih ada pertanyaan wajib yang belum dijawab (ditandai merah).";
+    firstMissing.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  data.saran = form.elements.saran.value.trim();
+  data.persetujuan = true;
+  data.durasi_detik = Math.round((Date.now() - t0) / 1000);
+  data.versi = 1;
+  const btn = document.getElementById("submit");
+  btn.disabled = true;
+  btn.textContent = "Mengirim…";
+  try {
+    const { initializeApp } = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`);
+    const { getFirestore, collection, addDoc, serverTimestamp } = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`);
+    const db = getFirestore(initializeApp(firebaseConfig));
+    data.dibuat = serverTimestamp();
+    await addDoc(collection(db, "kuesioner_pelari"), data);
+    form.hidden = true;
+    document.querySelector(".q-progress").hidden = true;
+    document.getElementById("done").hidden = false;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } catch (ex) {
+    console.error(ex);
+    err.textContent = "Gagal mengirim. Periksa koneksi internet lalu coba lagi.";
+    btn.disabled = false;
+    btn.textContent = "Kirim jawaban";
+  }
+});
+</script>
+</body>
+</html>

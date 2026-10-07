@@ -1,0 +1,46 @@
+rules_version = '2';
+// Nova-Band — Firestore security rules.
+// The only client-side write is the runner questionnaire (kuesioner.html):
+// anyone may ADD one response; nobody can read, edit or delete responses from
+// a browser. The team reads them in the Firebase console or with
+// tools/kuesioner-export.py (admin credentials, not the web API key).
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    match /kuesioner_pelari/{id} {
+      allow read, update, delete: if false;
+      allow create: if validResponse(request.resource.data);
+    }
+
+    // everything else stays closed
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function str(v, max) { return v is string && v.size() <= max; }
+    function req(v, max) { return str(v, max) && v.size() > 0; }
+    function likert(v) { return v is int && v >= 1 && v <= 5; }
+    function pick(v) { return v is list && v.size() >= 1 && v.size() <= 10; }
+
+    function validResponse(d) {
+      return d.keys().hasOnly([
+               'nama', 'usia', 'gender', 'kota', 'kategori',
+               'a1_frekuensi', 'a2_jarak', 'a3_perangkat', 'a4_penting_hr', 'a5_keluhan', 'a6_akurasi',
+               'a7_kendala', 'a8_tahu_batas', 'a9_pendamping', 'a10_harga',
+               'b1_hr_akurat', 'b2_peringatan', 'b3_notif_pelatih', 'b4_readiness', 'b5_cedera',
+               'b6_data_lari', 'b7_layar', 'b8_ai_coach', 'b9_komunitas', 'b10_nyaman',
+               'saran', 'persetujuan', 'durasi_detik', 'versi', 'dibuat'])
+          && d.keys().hasAll(['usia', 'gender', 'kota', 'kategori', 'persetujuan', 'dibuat'])
+          && str(d.nama, 40) && req(d.usia, 40) && req(d.gender, 40) && req(d.kota, 60) && req(d.kategori, 80)
+          && req(d.a1_frekuensi, 40) && req(d.a2_jarak, 40) && pick(d.a3_perangkat) && likert(d.a4_penting_hr)
+          && pick(d.a5_keluhan) && req(d.a6_akurasi, 80) && pick(d.a7_kendala) && likert(d.a8_tahu_batas)
+          && req(d.a9_pendamping, 80) && req(d.a10_harga, 40)
+          && likert(d.b1_hr_akurat) && likert(d.b2_peringatan) && likert(d.b3_notif_pelatih)
+          && likert(d.b4_readiness) && likert(d.b5_cedera) && likert(d.b6_data_lari) && likert(d.b7_layar)
+          && likert(d.b8_ai_coach) && likert(d.b9_komunitas) && likert(d.b10_nyaman)
+          && str(d.saran, 600) && d.persetujuan == true
+          && d.durasi_detik is int && d.versi == 1
+          && d.dibuat == request.time;
+    }
+  }
+}
