@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#7b2021">
+<title>Rekap Kuesioner — Nova-Band</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%237b2021'/><path d='M9 23V9l14 14V9' stroke='%23fff' stroke-width='2.8' fill='none' stroke-linejoin='round' stroke-linecap='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body.adm { background: var(--bg-soft); }
+  .adm-wrap { width: min(100% - 2rem, 1180px); margin: 0 auto; padding: 24px 0 70px; }
+  .adm-top { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+  .adm-top h1 { font-size: clamp(1.4rem, 3vw, 2rem); margin: 0; }
+  .adm-top .brand { display: flex; align-items: center; gap: 12px; }
+  .live { display: inline-flex; align-items: center; gap: 7px; font-size: .78rem; color: var(--ink-2); padding: 6px 12px;
+    border-radius: 99px; background: var(--surface); border: 1px solid var(--line); }
+  .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); }
+  .live.on i { background: var(--ok); box-shadow: 0 0 0 3px rgba(31, 157, 85, .18); }
+  .note { font-size: .8rem; color: var(--ink-3); margin: -6px 0 18px; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px 18px; }
+  .kpi .l { font-size: .74rem; color: var(--ink-3); font-weight: 500; }
+  .kpi .v { font-size: 2rem; font-weight: 800; letter-spacing: -.04em; line-height: 1.1; margin-top: 4px; }
+  .kpi .v.sm { font-size: 1.05rem; letter-spacing: -.01em; line-height: 1.3; margin-top: 8px; }
+  .kpi .s { font-size: .74rem; color: var(--ink-2); margin-top: 4px; }
+  .box { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; margin-bottom: 18px; }
+  .box h2 { font-size: 1.1rem; margin: 0 0 2px; letter-spacing: -.02em; }
+  .box .sub { font-size: .8rem; color: var(--ink-3); margin: 0 0 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  /* horizontal bar rows: label | bar | value */
+  .bars { display: grid; gap: 7px; }
+  .bar-row { display: grid; grid-template-columns: minmax(120px, 42%) 1fr 64px; gap: 10px; align-items: center; font-size: .82rem;
+    padding: 3px 4px; border-radius: 8px; cursor: default; }
+  .bar-row:hover { background: var(--red-tint); }
+  .bar-row .lb { color: var(--ink-2); line-height: 1.3; }
+  .bar-row .tr { height: 12px; background: var(--line); border-radius: 0 4px 4px 0; position: relative; }
+  .bar-row .fl { position: absolute; inset: 0 auto 0 0; background: var(--red); border-radius: 0 4px 4px 0; min-width: 2px;
+    transition: width .5s var(--ease); }
+  .bar-row .vl { text-align: right; font-family: var(--mono); font-size: .76rem; color: var(--ink); }
+  .rank .bar-row { grid-template-columns: 26px minmax(160px, 44%) 1fr 104px; }
+  .rank .no { font-weight: 700; color: var(--ink-3); font-size: .78rem; text-align: center; }
+  .rank .bar-row:first-child .no { color: var(--red); }
+  .q-block { margin-bottom: 18px; }
+  .q-block h3 { font-size: .9rem; margin: 0 0 8px; letter-spacing: -.01em; line-height: 1.35; }
+  .q-block h3 small { font-weight: 500; color: var(--ink-3); font-size: .74rem; margin-left: 4px; }
+  .empty { color: var(--ink-3); font-size: .85rem; padding: 10px 0; }
+  .saran { display: grid; gap: 8px; max-height: 420px; overflow: auto; }
+  .saran blockquote { margin: 0; padding: 10px 14px; border-left: 3px solid var(--rose); background: var(--bg-soft); border-radius: 0 10px 10px 0;
+    font-size: .86rem; color: var(--ink); }
+  .saran cite { display: block; font-style: normal; font-size: .72rem; color: var(--ink-3); margin-top: 4px; }
+  .tbl-wrap { overflow: auto; max-height: 520px; border: 1px solid var(--line); border-radius: 12px; }
+  table.t { border-collapse: collapse; font-size: .76rem; min-width: 1400px; width: 100%; }
+  table.t th { position: sticky; top: 0; background: var(--red-deep); color: #fff; text-align: left; padding: 8px 10px; font-weight: 600; white-space: nowrap; }
+  table.t td { padding: 7px 10px; border-top: 1px solid var(--line); vertical-align: top; color: var(--ink-2); }
+  table.t tr:nth-child(even) td { background: var(--bg-soft); }
+  .tools { display: flex; gap: 8px; flex-wrap: wrap; }
+  .qr { display: grid; grid-template-columns: 180px 1fr; gap: 20px; align-items: center; }
+  .qr img { width: 180px; border-radius: 12px; border: 1px solid var(--line); }
+  .qr code { font-family: var(--mono); font-size: .85rem; background: var(--bg-soft); padding: 4px 8px; border-radius: 6px; }
+  .tip { position: fixed; z-index: 50; pointer-events: none; background: var(--ink); color: var(--bg); font-size: .76rem; padding: 7px 10px;
+    border-radius: 8px; box-shadow: var(--shadow-md); max-width: 260px; opacity: 0; transition: opacity .12s; }
+  @media (max-width: 900px) { .kpis { grid-template-columns: 1fr 1fr; } .grid2, .grid3 { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .qr { grid-template-columns: 1fr; } .rank .bar-row { grid-template-columns: 22px 1fr 84px; }
+    .rank .bar-row .tr { grid-column: 2 / 4; grid-row: 2; } }
+</style>
+</head>
+<body class="adm">
+<main class="adm-wrap">
+  <div class="adm-top">
+    <div class="brand">
+      <span class="brand-mark"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M8 24V8l16 16V8" stroke="#fff" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+      <h1>Rekap Kuesioner Pelari</h1>
+    </div>
+    <span class="live" id="live"><i></i><span id="live-txt">Menghubungkan…</span></span>
+  </div>
+  <p class="note">Halaman tim (tanpa login, tidak tercantum di website). Data tampil tanpa nama dan diperbarui otomatis setiap ada jawaban baru.</p>
+
+  <section class="kpis" aria-label="Ringkasan">
+    <div class="kpi"><div class="l">Responden</div><div class="v" id="k-n">0</div><div class="s" id="k-last">—</div></div>
+    <div class="kpi"><div class="l">Pernah mengalami keluhan saat lari</div><div class="v" id="k-keluhan">—</div><div class="s">dari responden (A5)</div></div>
+    <div class="kpi"><div class="l">Kurang yakin tahu batas aman</div><div class="v" id="k-batas">—</div><div class="s">skor 1–2 pada A8</div></div>
+    <div class="kpi"><div class="l">Fitur paling dibutuhkan</div><div class="v sm" id="k-top">—</div><div class="s" id="k-top-s"></div></div>
+  </section>
+
+  <section class="box">
+    <h2>Prioritas fitur Nova-Band</h2>
+    <p class="sub">Bagian B · rata-rata tingkat kepentingan (1 = tidak penting, 5 = sangat penting), diurutkan dari tertinggi. Persentase = yang menjawab 4 atau 5.</p>
+    <div class="bars rank" id="rank"></div>
+  </section>
+
+  <section class="box">
+    <h2>Profil responden</h2>
+    <p class="sub">Identitas sederhana.</p>
+    <div class="grid3" id="profil"></div>
+  </section>
+
+  <section class="box">
+    <h2>Bagian A · Kebiasaan &amp; kebutuhan lari</h2>
+    <p class="sub">Jumlah responden per jawaban. Pertanyaan pilihan ganda: satu orang bisa memilih lebih dari satu.</p>
+    <div class="grid2" id="bagianA"></div>
+  </section>
+
+  <section class="grid2">
+    <div class="box">
+      <h2>Saran &amp; harapan</h2>
+      <p class="sub">Isian bebas (opsional), terbaru di atas.</p>
+      <div class="saran" id="saran"></div>
+    </div>
+    <div class="box">
+      <h2>QR code kuesioner</h2>
+      <p class="sub">Pindai untuk membuka kuesioner. Cetak atau bagikan ke komunitas lari.</p>
+      <div class="qr">
+        <img src="assets/img/kuesioner-qr.png" alt="QR code menuju novaband-id.web.app/kuesioner.html">
+        <div>
+          <p style="margin:0 0 10px"><code>novaband-id.web.app/kuesioner.html</code></p>
+          <div class="tools">
+            <a class="btn btn-primary btn-sm" href="assets/img/kuesioner-qr.png" download="QR-Kuesioner-NovaBand.png">Unduh QR (PNG)</a>
+            <a class="btn btn-ghost btn-sm" href="assets/img/kuesioner-qr-print.png" download="QR-Kuesioner-NovaBand-A5.png">Poster A5 (cetak)</a>
+            <button class="btn btn-ghost btn-sm" id="copy">Salin link</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="box">
+    <div class="adm-top" style="margin-bottom:10px">
+      <div><h2>Data jawaban</h2><p class="sub" style="margin:0">Satu baris per responden, tanpa nama.</p></div>
+      <div class="tools"><button class="btn btn-primary btn-sm" id="csv">Unduh CSV (Excel)</button></div>
+    </div>
+    <div class="tbl-wrap"><table class="t" id="tbl"></table></div>
+  </section>
+</main>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script type="module">
+const Q = {
+  usia: "Usia", gender: "Jenis kelamin", kategori: "Kategori pelari", kota: "Kota (10 teratas)",
+  a1_frekuensi: "A1 · Frekuensi lari per minggu", a2_jarak: "A2 · Jarak rata-rata per sesi",
+  a3_perangkat: "A3 · Perangkat yang dipakai", a4_penting_hr: "A4 · Pentingnya memantau detak jantung",
+  a5_keluhan: "A5 · Keluhan saat/setelah lari", a6_akurasi: "A6 · Akurasi perangkat pergelangan",
+  a7_kendala: "A7 · Kendala perangkat saat ini", a8_tahu_batas: "A8 · Yakin tahu batas aman",
+  a9_pendamping: "A9 · Pendamping saat berlari", a10_harga: "A10 · Harga yang wajar",
+};
+const FITUR = {
+  b1_hr_akurat: "Detak jantung real-time akurat (lengan atas)", b2_peringatan: "Peringatan dini saat HR lewat batas",
+  b3_notif_pelatih: "Notifikasi ke pelatih / keluarga / grup", b4_readiness: "Readiness Score harian",
+  b5_cedera: "Analisis beban otot & risiko cedera", b6_data_lari: "Data lari lengkap (pace, jarak, kadensi)",
+  b7_layar: "Layar sentuh di band", b8_ai_coach: "AI coach Nova", b9_komunitas: "Fitur komunitas / peta pelari",
+  b10_nyaman: "Nyaman, ringan, baterai seharian",
+};
+const ORDER = {   // natural order for ordinal answers
+  usia: ["< 15 tahun", "15–18 tahun", "19–25 tahun", "26–35 tahun", "36–45 tahun", "> 45 tahun"],
+  a1_frekuensi: ["< 1 kali", "1–2 kali", "3–4 kali", "≥ 5 kali"],
+  a2_jarak: ["< 3 km", "3–5 km", "5–10 km", "10–21 km", "> 21 km"],
+  a10_harga: ["< Rp300 rb", "Rp300–500 rb", "Rp500 rb–1 jt", "Rp1–2 jt", "> Rp2 jt"],
+};
+const LIK = ["a4_penting_hr", "a8_tahu_batas"];
+const COLS = ["dibuat", "usia", "gender", "kota", "kategori", ...Object.keys(Q).filter(k => k.startsWith("a")),
+              ...Object.keys(FITUR), "saran", "durasi_detik"];
+
+const $ = id => document.getElementById(id);
+const SHOW_TEST = new URLSearchParams(location.search).has("uji");      // ?uji shows test entries
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const pct = (a, b) => b ? Math.round(100 * a / b) : 0;
+const fmtT = ts => ts ? ts.toLocaleString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
+
+/* tooltip */
+const tip = $("tip");
+document.addEventListener("mousemove", e => {
+  const r = e.target.closest("[data-tip]");
+  if (!r) { tip.style.opacity = 0; return; }
+  tip.textContent = r.dataset.tip;
+  tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + "px";
+  tip.style.top = (e.clientY + 14) + "px";
+  tip.style.opacity = 1;
+});
+
+function barRows(entries, n, opts = {}) {
+  if (!n) return `<div class="empty">Belum ada jawaban.</div>`;
+  const max = Math.max(...entries.map(e => e[1]), 1);
+  return entries.map(([lab, c]) =>
+    `<div class="bar-row" data-tip="${esc(lab)}: ${c} responden (${pct(c, n)}%)">
+       <span class="lb">${esc(lab)}</span><span class="tr"><span class="fl" style="width:${c / max * 100}%"></span></span>
+       <span class="vl">${c} · ${pct(c, n)}%</span></div>`).join("");
+}
+
+function count(rows, key) {
+  const m = new Map();
+  for (const r of rows) {
+    const v = r[key];
+    for (const x of (Array.isArray(v) ? v : [v])) if (x !== undefined && x !== "") m.set(String(x), (m.get(String(x)) || 0) + 1);
+  }
+  let e = [...m.entries()];
+  if (ORDER[key]) e.sort((a, b) => ORDER[key].indexOf(a[0]) - ORDER[key].indexOf(b[0]));
+  else if (LIK.includes(key)) {
+    e.sort((a, b) => a[0] - b[0]);
+    const lab = key === "a8_tahu_batas" ? ["Tidak yakin", "Kurang yakin", "Cukup yakin", "Yakin", "Sangat yakin"]
+                                        : ["Tidak penting", "Kurang penting", "Cukup penting", "Penting", "Sangat penting"];
+    e = e.map(([k, c]) => [k + " · " + lab[k - 1], c]);
+  }
+  else e.sort((a, b) => b[1] - a[1]);
+  if (key === "kota") e = e.slice(0, 10);
+  return e;
+}
+
+function render(rows) {
+  const n = rows.length;
+  $("k-n").textContent = n;
+  $("k-last").textContent = n ? "terakhir " + fmtT(rows[0].t) : "menunggu jawaban pertama";
+  const kel = rows.filter(r => Array.isArray(r.a5_keluhan) && r.a5_keluhan.length && !r.a5_keluhan.includes("Tidak pernah")).length;
+  $("k-keluhan").textContent = n ? pct(kel, n) + "%" : "—";
+  const bat = rows.filter(r => r.a8_tahu_batas <= 2).length;
+  $("k-batas").textContent = n ? pct(bat, n) + "%" : "—";
+
+  const stats = Object.entries(FITUR).map(([k, lab]) => {
+    const xs = rows.map(r => r[k]).filter(Number.isFinite);
+    const m = xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
+    return { k, lab, m, p: pct(xs.filter(x => x >= 4).length, xs.length), n: xs.length };
+  }).sort((a, b) => b.m - a.m);
+  $("rank").innerHTML = n ? stats.map((s, i) =>
+    `<div class="bar-row" data-tip="${esc(s.lab)}: rata-rata ${s.m.toFixed(2)} dari 5 · ${s.p}% menilai penting/sangat penting (n=${s.n})">
+       <span class="no">${i + 1}</span><span class="lb">${esc(s.lab)}</span>
+       <span class="tr"><span class="fl" style="width:${s.m / 5 * 100}%"></span></span>
+       <span class="vl">${s.m.toFixed(2)} · ${s.p}%</span></div>`).join("") : `<div class="empty">Belum ada jawaban.</div>`;
+  $("k-top").textContent = n ? stats[0].lab : "—";
+  $("k-top-s").textContent = n ? `rata-rata ${stats[0].m.toFixed(2)} / 5` : "";
+
+  const block = (k) => {
+    const lik = LIK.includes(k);
+    let head = esc(Q[k]);
+    if (lik && n) {
+      const xs = rows.map(r => r[k]).filter(Number.isFinite);
+      head += `<small>rata-rata ${(xs.reduce((a, b) => a + b, 0) / xs.length).toFixed(2)} / 5</small>`;
+    }
+    return `<div class="q-block"><h3>${head}</h3><div class="bars">${barRows(count(rows, k), n)}</div></div>`;
+  };
+  $("profil").innerHTML = ["usia", "gender", "kategori", "kota"].map(block).join("");
+  $("bagianA").innerHTML = Object.keys(Q).filter(k => k.startsWith("a")).map(block).join("");
+
+  const sr = rows.filter(r => r.saran);
+  $("saran").innerHTML = sr.length ? sr.map(r => `<blockquote>${esc(r.saran)}<cite>${esc(r.kategori || "")} · ${esc(r.usia || "")} · ${fmtT(r.t)}</cite></blockquote>`).join("")
+                                   : `<div class="empty">Belum ada saran.</div>`;
+
+  const cell = v => esc(Array.isArray(v) ? v.join("; ") : v);
+  $("tbl").innerHTML = `<thead><tr>${COLS.map(c => `<th>${c === "dibuat" ? "waktu" : c}</th>`).join("")}</tr></thead><tbody>` +
+    rows.map(r => `<tr>${COLS.map(c => `<td>${c === "dibuat" ? fmtT(r.t) : cell(r[c])}</td>`).join("")}</tr>`).join("") + "</tbody>";
+  window.__rows = rows;
+}
+render([]);
+
+$("csv").addEventListener("click", () => {
+  const rows = window.__rows || [];
+  const q = v => `"${String(Array.isArray(v) ? v.join("; ") : (v ?? "")).replace(/"/g, '""')}"`;
+  const lines = [COLS.join(","), ...rows.map(r => COLS.map(c => c === "dibuat" ? q(r.t ? r.t.toISOString() : "") : q(r[c])).join(","))];
+  const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob),
+    download: `kuesioner-novaband-${new Date().toISOString().slice(0, 10)}.csv` });
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+$("copy").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText("https://novaband-id.web.app/kuesioner.html"); $("copy").textContent = "Tersalin ✓"; }
+  catch { $("copy").textContent = "novaband-id.web.app/kuesioner.html"; }
+});
+
+/* live data */
+const firebaseConfig = {
+  apiKey: "AIzaSyB6JPBKeHo4lVuRHx91yS6NdvIqxWIJuT0", authDomain: "novaband-id.firebaseapp.com", projectId: "novaband-id",
+  storageBucket: "novaband-id.firebasestorage.app", messagingSenderId: "257524197285", appId: "1:257524197285:web:2f710e395620d3ea47ea4c"
+};
+try {
+  const V = "12.4.0";
+  const { initializeApp } = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`);
+  const { getFirestore, collection, onSnapshot } = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`);
+  const db = getFirestore(initializeApp(firebaseConfig));
+  onSnapshot(collection(db, "kuesioner_rekap"), snap => {
+    const rows = snap.docs.map(d => { const x = d.data(); x.t = x.dibuat ? x.dibuat.toDate() : null; return x; })
+                          .filter(x => SHOW_TEST || !String(x.saran || "").startsWith("[UJI]"))   // test entries
+                          .sort((a, b) => (b.t || 0) - (a.t || 0));
+    render(rows);
+    $("live").classList.add("on");
+    $("live-txt").textContent = "Live · " + rows.length + " responden";
+  }, e => { $("live-txt").textContent = "Gagal memuat: " + e.code; });
+} catch (e) {
+  $("live-txt").textContent = "Offline";
+}
+</script>
+</body>
+</html>

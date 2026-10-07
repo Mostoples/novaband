@@ -7,7 +7,8 @@ Nova-Band feature ranking (Part B, mean importance 1-5).
 
 Reading needs admin credentials (browsers are blocked by firestore.rules):
 the gcloud login, or the Firebase CLI login (`firebase login`). Rows whose
-name starts with "UJI COBA" are test submissions and are skipped.
+name starts with "UJI COBA" or whose suggestion starts with "[UJI]" are test
+submissions and are skipped (the admin page skips "[UJI]" too).
 The output holds respondents' answers: it stays out of git (data/ is ignored).
 """
 import csv
@@ -85,7 +86,8 @@ def fetch():
 
 
 def main():
-    rows = [r for r in fetch() if not str(r.get("nama", "")).upper().startswith("UJI COBA")]
+    rows = [r for r in fetch() if not str(r.get("nama", "")).upper().startswith("UJI COBA")
+            and not str(r.get("saran", "")).startswith("[UJI]")]
     rows.sort(key=lambda r: r.get("dibuat", ""))
     os.makedirs(OUT, exist_ok=True)
     stamp = dt.date.today().isoformat()

@@ -4,12 +4,22 @@ rules_version = '2';
 // anyone may ADD one response; nobody can read, edit or delete responses from
 // a browser. The team reads them in the Firebase console or with
 // tools/kuesioner-export.py (admin credentials, not the web API key).
+// The admin page reads kuesioner_rekap, a copy without names.
 service cloud.firestore {
   match /databases/{db}/documents {
 
     match /kuesioner_pelari/{id} {
       allow read, update, delete: if false;
       allow create: if validResponse(request.resource.data);
+    }
+
+    // the same answers WITHOUT the name, written in the same batch; the
+    // no-login admin page (rekap-kuesioner.html) reads only this collection
+    match /kuesioner_rekap/{id} {
+      allow get, list: if true;
+      allow update, delete: if false;
+      allow create: if !('nama' in request.resource.data) && validResponse(request.resource.data)
+                    && existsAfter(/databases/$(db)/documents/kuesioner_pelari/$(id));
     }
 
     // everything else stays closed
@@ -31,7 +41,7 @@ service cloud.firestore {
                'b6_data_lari', 'b7_layar', 'b8_ai_coach', 'b9_komunitas', 'b10_nyaman',
                'saran', 'persetujuan', 'durasi_detik', 'versi', 'dibuat'])
           && d.keys().hasAll(['usia', 'gender', 'kota', 'kategori', 'persetujuan', 'dibuat'])
-          && str(d.nama, 40) && req(d.usia, 40) && req(d.gender, 40) && req(d.kota, 60) && req(d.kategori, 80)
+          && (!('nama' in d) || str(d.nama, 40)) && req(d.usia, 40) && req(d.gender, 40) && req(d.kota, 60) && req(d.kategori, 80)
           && req(d.a1_frekuensi, 40) && req(d.a2_jarak, 40) && pick(d.a3_perangkat) && likert(d.a4_penting_hr)
           && pick(d.a5_keluhan) && req(d.a6_akurasi, 80) && pick(d.a7_kendala) && likert(d.a8_tahu_batas)
           && req(d.a9_pendamping, 80) && req(d.a10_harga, 40)

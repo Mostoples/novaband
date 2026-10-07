@@ -107,8 +107,8 @@
       </div>
       <div class="q-card" data-req="persetujuan">
         <label class="q-consent"><input type="checkbox" name="persetujuan" value="ya">
-          <span>Saya bersedia jawaban ini digunakan untuk penelitian Nova-Band. Data hanya diolah oleh tim peneliti,
-            disajikan secara agregat (tanpa nama), dan tidak dibagikan ke pihak lain.</span></label>
+          <span>Saya bersedia jawaban ini digunakan untuk penelitian Nova-Band. Data diolah oleh tim peneliti; nama tidak pernah ditampilkan
+            dan hasil hanya disajikan tanpa nama.</span></label>
       </div>
       <div class="hp" aria-hidden="true"><label>Jangan diisi <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
       <button class="btn btn-primary q-submit" type="submit" id="submit">Kirim jawaban</button>
@@ -284,10 +284,16 @@ form.addEventListener("submit", async e => {
   btn.textContent = "Mengirim…";
   try {
     const { initializeApp } = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-app.js`);
-    const { getFirestore, collection, addDoc, serverTimestamp } = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`);
+    const { getFirestore, collection, doc, writeBatch, serverTimestamp } = await import(`https://www.gstatic.com/firebasejs/${V}/firebase-firestore.js`);
     const db = getFirestore(initializeApp(firebaseConfig));
     data.dibuat = serverTimestamp();
-    await addDoc(collection(db, "kuesioner_pelari"), data);
+    /* one batch: the full answer (private) + the same answer without the name (read by the admin recap) */
+    const ref = doc(collection(db, "kuesioner_pelari"));
+    const { nama, ...tanpaNama } = data;
+    const b = writeBatch(db);
+    b.set(ref, data);
+    b.set(doc(db, "kuesioner_rekap", ref.id), tanpaNama);
+    await b.commit();
     form.hidden = true;
     document.querySelector(".q-progress").hidden = true;
     document.getElementById("done").hidden = false;

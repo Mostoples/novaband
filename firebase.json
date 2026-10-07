@@ -28,6 +28,15 @@
     ],
     "headers": [
       {
+        "source": "/rekap-kuesioner.html",
+        "headers": [
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, nofollow"
+          }
+        ]
+      },
+      {
         "source": "/sw.js",
         "headers": [
           {
