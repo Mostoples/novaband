@@ -106,26 +106,11 @@
     <div class="grid2" id="bagianA"></div>
   </section>
 
-  <section class="grid2">
+  <section>
     <div class="box">
       <h2>Saran &amp; harapan</h2>
       <p class="sub">Isian bebas (opsional), terbaru di atas.</p>
       <div class="saran" id="saran"></div>
-    </div>
-    <div class="box">
-      <h2>QR code kuesioner</h2>
-      <p class="sub">Pindai untuk membuka kuesioner. Cetak atau bagikan ke komunitas lari.</p>
-      <div class="qr">
-        <img src="assets/img/kuesioner-qr.png" alt="QR code menuju novaband-id.web.app/kuesioner.html">
-        <div>
-          <p style="margin:0 0 10px"><code>novaband-id.web.app/kuesioner.html</code></p>
-          <div class="tools">
-            <a class="btn btn-primary btn-sm" href="assets/img/kuesioner-qr.png" download="QR-Kuesioner-NovaBand.png">Unduh QR (PNG)</a>
-            <a class="btn btn-ghost btn-sm" href="assets/img/kuesioner-qr-print.png" download="QR-Kuesioner-NovaBand-A5.png">Poster A5 (cetak)</a>
-            <button class="btn btn-ghost btn-sm" id="copy">Salin link</button>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -264,10 +249,6 @@ $("csv").addEventListener("click", () => {
     download: `kuesioner-novaband-${new Date().toISOString().slice(0, 10)}.csv` });
   a.click();
   URL.revokeObjectURL(a.href);
-});
-$("copy").addEventListener("click", async () => {
-  try { await navigator.clipboard.writeText("https://novaband-id.web.app/kuesioner.html"); $("copy").textContent = "Tersalin ✓"; }
-  catch { $("copy").textContent = "novaband-id.web.app/kuesioner.html"; }
 });
 
 /* live data */

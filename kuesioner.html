@@ -66,6 +66,12 @@
   .q-done { text-align: center; padding: 40px 22px; }
   .q-done img { width: 150px; margin: 0 auto 10px; }
   .q-done h2 { margin-bottom: 6px; }
+  .q-share { display: grid; grid-template-columns: 132px 1fr; gap: 18px; align-items: center; margin-top: 14px; }
+  .q-share img { width: 132px; height: 132px; border-radius: 12px; border: 1px solid var(--line); background: #fff; object-fit: cover; object-position: top; }
+  .q-share h3 { font-size: 1rem; margin: 0 0 4px; }
+  .q-share p { font-size: .82rem; margin: 0 0 10px; }
+  .q-share .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  @media (max-width: 560px) { .q-share { grid-template-columns: 96px 1fr; gap: 12px; } .q-share img { width: 96px; height: 96px; } }
   .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
   @media (max-width: 560px) {
     .q-grid2 { grid-template-columns: 1fr; }
@@ -90,6 +96,18 @@
         Jawabanmu dipakai untuk penelitian tim SMA Negeri 1 Surakarta (ISIF 2026).</p>
     </div>
     <img src="assets/img/mascot-wink.webp" alt="">
+  </section>
+
+  <section class="q-card q-share" aria-label="Bagikan kuesioner">
+    <img src="assets/img/kuesioner-qr.png" alt="QR code kuesioner Nova-Band" width="132" height="132">
+    <div>
+      <h3>Bagikan ke teman pelari</h3>
+      <p>Pindai QR ini atau kirim link-nya: <b style="word-break:break-all">novaband-id.web.app/kuesioner.html</b></p>
+      <div class="row">
+        <button class="btn btn-primary btn-sm" type="button" id="share">Bagikan</button>
+        <a class="btn btn-ghost btn-sm" href="assets/img/kuesioner-qr-print.png" download="QR-Kuesioner-NovaBand.png">Unduh QR</a>
+      </div>
+    </div>
   </section>
 
   <div class="q-progress" aria-hidden="true">
@@ -235,6 +253,17 @@ function progress() {
   document.getElementById("bar-txt").textContent = `${done} dari ${req.length} pertanyaan terjawab`;
 }
 progress();
+
+/* ---------------- Bagikan ---------------- */
+const LINK = "https://novaband-id.web.app/kuesioner.html";
+document.getElementById("share").addEventListener("click", async e => {
+  const b = e.currentTarget;
+  try {
+    if (navigator.share) { await navigator.share({ title: "Kuesioner Pelari Nova-Band", text: "Bantu isi kuesioner pelari Nova-Band (±5 menit):", url: LINK }); return; }
+    await navigator.clipboard.writeText(LINK);
+    b.textContent = "Link tersalin ✓";
+  } catch { /* dibatalkan */ }
+});
 
 /* ---------------- Kirim ke Firestore ---------------- */
 const firebaseConfig = {
