@@ -1,0 +1,47 @@
+/* Nova AI Buddy — floating chat (js/nova-buddy.js). Uses the app tokens. */
+.nb-fab { position: fixed; right: 20px; bottom: 22px; z-index: 120; width: 64px; height: 64px; border-radius: 50%; border: 0; padding: 0;
+  cursor: pointer; background: radial-gradient(circle at 50% 30%, #ff6b7c, #6d0f22); box-shadow: 0 10px 30px -6px rgba(255, 79, 99, .65), 0 0 0 1px rgba(255, 255, 255, .15) inset;
+  overflow: hidden; transition: transform .2s; }
+.nb-fab:hover { transform: translateY(-2px) scale(1.04); }
+.nb-fab img { width: 130%; max-width: none; margin: 18% 0 0 -15%; }
+.nb-fab .nb-dot { position: absolute; top: 8px; right: 8px; width: 12px; height: 12px; border-radius: 50%; background: #5fe3ff; box-shadow: 0 0 10px #5fe3ff; }
+.nb-fab.on .nb-dot { display: none; }
+.nb-chat { position: fixed; right: 20px; bottom: 98px; z-index: 121; width: min(380px, calc(100vw - 24px)); height: min(560px, calc(100svh - 150px));
+  display: flex; flex-direction: column; border-radius: 24px; overflow: hidden; color: var(--ink);
+  background: color-mix(in srgb, var(--bg, #0d070c) 88%, transparent); backdrop-filter: blur(22px) saturate(1.3); -webkit-backdrop-filter: blur(22px);
+  border: 1px solid var(--line-2, rgba(255,120,136,.22)); box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .6), 0 0 30px rgba(255, 79, 99, .15);
+  animation: nbIn .28s var(--ease, ease); }
+.nb-chat[hidden] { display: none; }
+@keyframes nbIn { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+.nb-head { display: flex; align-items: center; gap: 10px; padding: 12px 12px 10px 14px; border-bottom: 1px solid var(--line, rgba(255,255,255,.08)); }
+.nb-av { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: top; background: radial-gradient(circle, #ff6b7c, #6d0f22); }
+.nb-chat.talking .nb-av { box-shadow: 0 0 0 3px rgba(95, 227, 255, .7); animation: nbPulse .9s ease-in-out infinite; }
+@keyframes nbPulse { 50% { box-shadow: 0 0 0 6px rgba(95, 227, 255, .25); } }
+.nb-head b { display: block; font-size: .95rem; }
+.nb-eng { display: block; font-size: .68rem; color: var(--cyan, #5fe3ff); font-family: var(--mono); letter-spacing: .04em; }
+.nb-ctl { margin-left: auto; display: flex; gap: 6px; }
+.nb-btn { min-width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line-2, rgba(255,255,255,.15)); background: var(--surface, transparent);
+  color: var(--ink); font: 600 .74rem var(--font); cursor: pointer; }
+.nb-log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.nb-msg { max-width: 86%; padding: 9px 13px; border-radius: 16px; font-size: .88rem; line-height: 1.45; white-space: pre-wrap; animation: nbIn .2s; }
+.nb-msg.nova { align-self: flex-start; background: var(--surface-2, rgba(255,255,255,.06)); border: 1px solid var(--line, rgba(255,255,255,.08)); border-bottom-left-radius: 4px; }
+.nb-msg.me { align-self: flex-end; background: linear-gradient(135deg, #ff4f63, #a5162f); color: #fff; border-bottom-right-radius: 4px; }
+.nb-msg.urgent { background: rgba(255, 50, 70, .2); border-color: rgba(255, 79, 99, .7); font-weight: 600; }
+.nb-chat.thinking .nb-log::after { content: "Nova mengetik…"; font-size: .74rem; color: var(--ink-3); }
+.nb-chips { display: flex; gap: 6px; overflow-x: auto; padding: 0 12px 10px; scrollbar-width: none; }
+.nb-chips button { flex: 0 0 auto; padding: 7px 11px; border-radius: 99px; border: 1px solid var(--line-2, rgba(255,255,255,.15));
+  background: transparent; color: var(--ink); font: 500 .76rem var(--font); cursor: pointer; }
+.nb-chips button:hover { border-color: var(--red); }
+.nb-in { display: flex; gap: 8px; padding: 10px 12px 12px; border-top: 1px solid var(--line, rgba(255,255,255,.08)); }
+.nb-in input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line-2, rgba(255,255,255,.15));
+  background: var(--surface, transparent); color: var(--ink); font: .9rem var(--font); }
+.nb-in input:focus { outline: none; border-color: var(--red); }
+.nb-mic, .nb-send { width: 42px; border-radius: 12px; border: 0; cursor: pointer; font-size: 1rem; }
+.nb-mic { background: var(--surface-2, rgba(255,255,255,.08)); color: var(--ink); }
+.nb-send { background: linear-gradient(135deg, #ff4f63, #a5162f); color: #fff; }
+.nb-chat.listening .nb-mic { background: #ff4f63; animation: nbPulse .9s infinite; }
+@media (max-width: 920px) {               /* clear the bottom tab bar on phones */
+  .nb-fab { bottom: 92px; right: 14px; width: 56px; height: 56px; }
+  .nb-chat { right: 12px; left: 12px; width: auto; bottom: 158px; height: min(520px, calc(100svh - 230px)); }
+}
+@media (min-width: 921px) { body:has(.nb-chat:not([hidden])) .toasts { right: 420px; } }

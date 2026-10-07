@@ -3,11 +3,11 @@
    Everything else (CSS, JS, images, fonts): stale-while-revalidate.
    API traffic (Firebase / Google APIs) is never cached. Bump VERSION to
    drop old caches on the next deploy. */
-var VERSION = "novaband-v4";
+var VERSION = "novaband-v5";
 var SHELL = [
   "./", "index.html", "app.html", "manifest.webmanifest",
   "css/style.css", "css/app-future.css",
-  "js/main.js", "js/app.js", "js/app-home.js", "js/app-nova.js", "js/band-link.js", "js/firebase-init.js",
+  "js/main.js", "js/app.js", "js/app-home.js", "js/app-nova.js", "js/nova-buddy.js", "css/nova-buddy.css", "assets/buddy/intents.json", "js/band-link.js", "js/firebase-init.js",
   "assets/pwa/icon-192.png", "assets/pwa/icon-512.png"
 ];
 

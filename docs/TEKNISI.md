@@ -166,3 +166,16 @@ Nova (cheetah, `blender/mascot.py`) dianimasikan lewat kode, tanpa file .blend.
   melambai saat dibuka, berlari saat sesi berjalan, gestur stop saat ada
   peringatan detak jantung, melompat saat sesi selesai. Tampilan imersif ada di
   `css/app-future.css` (dimuat hanya oleh `app.html`).
+
+## 8. AI Buddy (chat dengan Nova) + suara Pocket TTS
+
+- Tombol bulat Nova di kanan bawah `app.html` membuka chat (`js/nova-buddy.js`, `css/nova-buddy.css`).
+  Otak: pencocok intent di perangkat (`assets/buddy/intents.json`, ID + EN, 28 intent) yang
+  membaca data live `window.NovaState`; bisa memulai/menjeda sesi. Pertanyaan darurat
+  (nyeri dada, sesak napas, mau pingsan) selalu dicek lebih dulu → arahkan berhenti + 112/119.
+- Suara: **Bahasa Inggris** → Kyutai Pocket TTS di laptop:
+  `pip install pocket-tts` lalu `python tools/nova-tts-server.py` (port 8765, CPU, unduh model saat
+  pertama jalan). Aplikasi mendeteksinya otomatis (label "Voice: Pocket TTS").
+  **Bahasa Indonesia** → suara bawaan HP/browser (Pocket TTS belum punya model Indonesia).
+- Saat sesi berjalan Nova bicara sendiri: peringatan bila HR > ambang (maks. tiap 45 dtk) dan setiap 1 km.
+- Tidak ada LLM cloud; teks hanya dikirim ke server Pocket TTS lokal.
