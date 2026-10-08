@@ -58,7 +58,151 @@
   </div>
 </header>
 
-<!-- ============ USE CASES (top) ============ -->
+<!-- ============ HERO: blurred use-case film + slide carousel ============ -->
+<section class="hero hero-film" id="beranda">
+  <div class="hero-bg" aria-hidden="true">
+    <video class="hero-bg-video" muted loop playsinline autoplay preload="metadata" poster="assets/novaband-usecases-poster.jpg" tabindex="-1">
+      <source src="assets/novaband-usecases.webm" type="video/webm">
+      <source src="assets/novaband-usecases.mp4" type="video/mp4">
+    </video>
+    <div class="hero-bg-shade"></div>
+  </div>
+
+  <div class="container hc" role="region" aria-roledescription="carousel" aria-label="Sorotan Nova-Band">
+    <div class="hc-track" aria-live="polite">
+
+      <!-- 1 · intro -->
+      <div class="hc-slide is-active" role="group" aria-roledescription="slide" aria-label="1 dari 5">
+        <div class="hero-inner">
+          <div class="hc-text">
+            <span class="eyebrow"><span class="dot"></span> ISIF 2026 · SMA Negeri 1 Surakarta</span>
+            <h1>Nova<span class="dash">-</span>Band</h1>
+            <p class="hero-title">An AIoT-Driven Upper-Arm Wearable for Real-Time Physiological Monitoring and Running Performance</p>
+            <p class="lead">
+              Armband lengan atas yang memadukan sensor PPG, IMU, dan mikrokontroler ESP32.
+              Posisinya menstabilkan sensor secara mekanis untuk meredam <em>motion artifact</em>,
+              lalu AI mengolah sinyalnya menjadi <strong>Readiness Score</strong> dan peringatan
+              dini — sebelum pelari cedera.
+            </p>
+            <div class="row hc-cta">
+              <a href="app.html" class="btn btn-primary">
+                Coba Aplikasi
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </a>
+              <a href="#use-case" class="btn btn-glass">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+                Tonton Use Case
+              </a>
+            </div>
+            <div class="hero-stats">
+              <div><div class="n">2,5–3,5%</div><div class="l">MAPE sensor</div></div>
+              <div><div class="n"><span data-count="84.5" data-decimal=",">0</span></div><div class="l">Skor SUS · Grade A</div></div>
+              <div><div class="n"><span data-count="60">0</span></div><div class="l">Responden uji</div></div>
+            </div>
+          </div>
+          <div class="hero-visual">
+            <div class="hero-blob"></div>
+            <img class="hero-product" src="assets/img/product-side.webp" alt="Perangkat Nova-Band berwarna merah marun dengan tali elastis" width="592" height="816">
+            <div class="chip chip-1"><img src="assets/3d/heart.webp" alt=""><div>148 BPM<small>Detak jantung real-time</small></div></div>
+            <div class="chip chip-2"><img src="assets/3d/gauge.webp" alt=""><div>Readiness 85%<small>Siap latihan</small></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 · real-time monitoring -->
+      <div class="hc-slide" role="group" aria-roledescription="slide" aria-label="2 dari 5" aria-hidden="true">
+        <div class="hero-inner">
+          <div class="hc-text">
+            <span class="eyebrow"><span class="dot"></span> PPG + IMU di lengan atas</span>
+            <h2 class="hc-h">Detak jantung <span class="serif">real-time,</span> tetap akurat saat berlari.</h2>
+            <p class="lead">Lengan atas bergerak lebih sedikit daripada pergelangan, jadi sinyal PPG lebih bersih.
+              IMU membaca kadens dan langkah untuk meredam <em>motion artifact</em>.</p>
+            <div class="hc-facts">
+              <div><b>2,5–3,5%</b><span>MAPE terhadap alat acuan</span></div>
+              <div><b>50 Hz</b><span>gelombang PPG ke aplikasi</span></div>
+            </div>
+            <div class="row hc-cta"><a href="#cara-kerja" class="btn btn-primary">Lihat cara kerja</a></div>
+          </div>
+          <div class="hero-visual"><div class="hero-blob"></div>
+            <img class="hc-art" src="assets/3d/device-on-arm.webp" alt="Nova-Band terpasang di lengan atas" loading="lazy">
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 · readiness score -->
+      <div class="hc-slide" role="group" aria-roledescription="slide" aria-label="3 dari 5" aria-hidden="true">
+        <div class="hero-inner">
+          <div class="hc-text">
+            <span class="eyebrow"><span class="dot"></span> AI · Readiness Score</span>
+            <h2 class="hc-h">Tahu kapan <span class="serif">gas,</span> tahu kapan istirahat.</h2>
+            <p class="lead">AI menggabungkan detak jantung, beban latihan, dan pemulihan menjadi satu
+              Readiness Score harian, supaya pelari tidak berlatih berlebihan.</p>
+            <div class="hc-facts">
+              <div><b>0–100</b><span>skor kesiapan harian</span></div>
+              <div><b>5 zona</b><span>intensitas detak jantung</span></div>
+            </div>
+            <div class="row hc-cta"><a href="#solusi" class="btn btn-primary">Lihat solusinya</a></div>
+          </div>
+          <div class="hero-visual"><div class="hero-blob"></div>
+            <img class="hc-art icon" src="assets/3d/gauge.webp" alt="" aria-hidden="true" loading="lazy">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 · shared safety net -->
+      <div class="hc-slide" role="group" aria-roledescription="slide" aria-label="4 dari 5" aria-hidden="true">
+        <div class="hero-inner">
+          <div class="hc-text">
+            <span class="eyebrow"><span class="dot"></span> Shared Safety Net</span>
+            <h2 class="hc-h">Pelatih ikut <span class="serif">menjaga,</span> dari mana saja.</h2>
+            <p class="lead">Saat detak jantung melewati batas aman, layar band memberi alarm dan
+              pengawas menerima peringatan dini di aplikasi.</p>
+            <div class="hc-facts">
+              <div><b>1 Hz</b><span>telemetri via Bluetooth LE</span></div>
+              <div><b>84,5</b><span>skor SUS · Grade A</span></div>
+            </div>
+            <div class="row hc-cta"><a href="#software" class="btn btn-primary">Lihat dashboard</a></div>
+          </div>
+          <div class="hero-visual"><div class="hero-blob"></div>
+            <img class="hc-art icon" src="assets/3d/shield.webp" alt="" aria-hidden="true" loading="lazy">
+          </div>
+        </div>
+      </div>
+
+      <!-- 5 · mascot -->
+      <div class="hc-slide" role="group" aria-roledescription="slide" aria-label="5 dari 5" aria-hidden="true">
+        <div class="hero-inner">
+          <div class="hc-text">
+            <span class="eyebrow"><span class="dot"></span> Kenalan dengan Nova</span>
+            <h2 class="hc-h">Faster, healthier, <span class="serif">stronger together.</span></h2>
+            <p class="lead">Nova, cheetah maskot Nova-Band, selalu memakai band di lengan atasnya.
+              Real-time data, real progress.</p>
+            <div class="row hc-cta"><a href="app.html" class="btn btn-primary">Mulai bersama Nova</a></div>
+          </div>
+          <div class="hero-visual"><div class="hero-blob"></div>
+            <img class="hc-art mascot" src="assets/img/mascot-hero.webp" alt="Nova, maskot cheetah Nova-Band berbaju lari merah marun, mengacungkan jempol" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hc-controls">
+      <button class="hc-btn hc-prev" type="button" aria-label="Slide sebelumnya">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <div class="hc-dots" role="tablist" aria-label="Pilih slide"></div>
+      <button class="hc-btn hc-next" type="button" aria-label="Slide berikutnya">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button class="hc-btn hc-pause" type="button" aria-label="Jeda slide otomatis" aria-pressed="false">
+        <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="3.6" height="14" rx="1"/><rect x="13.9" y="5" width="3.6" height="14" rx="1"/></svg>
+        <svg class="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ USE CASES ============ -->
 <section class="section usecase-top" id="use-case">
   <div class="container">
     <div class="sec-head center reveal">
@@ -76,48 +220,6 @@
         <span>Nova-Band · 6 Use Case · ISIF 2026</span>
         <button class="btn btn-ghost btn-sm reel-toggle" aria-pressed="false">Putar</button>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ HERO ============ -->
-<section class="hero" id="beranda">
-  <canvas id="wave-canvas" aria-hidden="true"></canvas>
-  <div class="container hero-inner">
-    <div>
-      <span class="eyebrow"><span class="dot"></span> ISIF 2026 · SMA Negeri 1 Surakarta</span>
-      <h1>Nova<span class="dash">-</span>Band</h1>
-      <p class="hero-title">An AIoT-Driven Upper-Arm Wearable for Real-Time Physiological Monitoring and Running Performance</p>
-      <p class="lead">
-        Armband lengan atas yang memadukan sensor PPG, IMU, dan mikrokontroler ESP32.
-        Posisinya menstabilkan sensor secara mekanis untuk meredam <em>motion artifact</em>,
-        lalu AI mengolah sinyalnya menjadi <strong>Readiness Score</strong> dan peringatan
-        dini — sebelum pelari cedera.
-      </p>
-      <div class="row" style="margin-top:28px">
-        <a href="app.html" class="btn btn-primary">
-          Coba Aplikasi
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </a>
-        <a href="#showreel" class="btn btn-ghost">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
-          Tonton Showreel
-        </a>
-      </div>
-      <div class="hero-stats">
-        <div><div class="n">2,5–3,5%</div><div class="l">MAPE sensor</div></div>
-        <div><div class="n"><span data-count="84.5" data-decimal=",">0</span></div><div class="l">Skor SUS · Grade A</div></div>
-        <div><div class="n"><span data-count="60">0</span></div><div class="l">Responden uji</div></div>
-      </div>
-    </div>
-
-    <div class="hero-visual">
-      <div class="hero-blob"></div>
-      <img class="hero-deco pills" src="assets/3d/pills.webp" alt="" aria-hidden="true">
-      <img class="hero-product" src="assets/img/product-side.webp" alt="Perangkat Nova-Band berwarna merah marun dengan tali elastis" width="592" height="816">
-      <div class="chip chip-1"><img src="assets/3d/heart.webp" alt=""><div>148 BPM<small>Detak jantung real-time</small></div></div>
-      <div class="chip chip-2"><img src="assets/3d/gauge.webp" alt=""><div>Readiness 85%<small>Siap latihan</small></div></div>
-      <div class="chip chip-3"><img src="assets/3d/shield.webp" alt=""><div>Shared Safety Net<small>Pengguna + pengawas</small></div></div>
     </div>
   </div>
 </section>

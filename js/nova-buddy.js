@@ -8,7 +8,9 @@
      (tools/nova-tts-server.py, http://localhost:8765) when it is running;
      otherwise, and always for Indonesian (Pocket TTS has no Indonesian
      model), the device voice through the Web Speech API.
-   - Listening: SpeechRecognition where the browser offers it.
+   - Face: Nova's head lip-syncs from a viseme sprite
+    (assets/img/nova-visemes.webp, blender/nova_visemes.py) and blinks.
+  - Listening: SpeechRecognition where the browser offers it.
    - While running it speaks by itself: heart-rate alerts and every km.
    Nothing is sent to a cloud LLM; the text never leaves the device
    except to the local Pocket TTS server.
@@ -114,6 +116,9 @@
     var vs = speechSynthesis.getVoices().filter(function (v) { return v.lang && v.lang.replace("_", "-").indexOf(u.lang.slice(0, 2)) === 0; });
     if (vs.length) u.voice = vs[0];
     u.rate = 1.03; u.pitch = 1.15;
+    u.onstart = function () { speaking(true); lips.start(text, null); };
+    u.onboundary = function (e) { lips.sync(e.charIndex); };
+    u.onend = u.onerror = function () { speaking(false); lips.stop(); };
     speechSynthesis.speak(u);
   }
   function say(text) {
@@ -123,12 +128,85 @@
       speaking(true);
       fetch(TTS_URL + "/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text: text, lang: "en" }) })
         .then(function (r) { if (!r.ok) throw 0; return r.blob(); })
-        .then(function (b) { audio = new Audio(URL.createObjectURL(b)); audio.onended = function () { speaking(false); }; return audio.play(); })
-        .catch(function () { pocket = false; badge(); speaking(false); deviceSay(text); });
+        .then(function (b) {
+          audio = new Audio(URL.createObjectURL(b));
+          audio.onended = function () { speaking(false); lips.stop(); };
+          lips.start(text, audio);
+          return audio.play();
+        })
+        .catch(function () { pocket = false; badge(); speaking(false); lips.stop(); deviceSay(text); });
     } else {
       deviceSay(text);
     }
   }
+
+  /* ---------------- face: visemes + blink ---------------- */
+  // sprite columns (same order as tools/make-viseme-sprite.py); row 1 = eyes closed
+  var VIS = ["rest", "m", "e", "i", "o", "u", "a"];
+  var lips = (function () {
+    var face = null, col = 0, shut = false, timer = 0, blinkT = 0;
+    var text = "", pos = 0, src = null, meter = null, buf = null, actx = null;
+    function shape(ch) {
+      ch = (ch || "").toLowerCase();
+      if (/[aá]/.test(ch)) return 6;
+      if (/[eé]/.test(ch)) return 2;
+      if (/[iy]/.test(ch)) return 3;
+      if (/o/.test(ch)) return 4;
+      if (/[uw]/.test(ch)) return 5;
+      if (/[mbp]/.test(ch)) return 1;
+      if (/[a-z]/.test(ch)) return 3;   // other consonants: lips slightly apart
+      return 0;
+    }
+    function draw() {
+      if (face) face.style.backgroundPosition = (col * 100 / (VIS.length - 1)) + "% " + (shut ? 100 : 0) + "%";
+    }
+    function blink() {
+      shut = true; draw();
+      setTimeout(function () { shut = false; draw(); }, 130);
+      blinkT = setTimeout(blink, 2500 + Math.random() * 3500);
+    }
+    function level() {
+      if (!meter) return 1;
+      meter.getByteTimeDomainData(buf);
+      var sum = 0;
+      for (var i = 0; i < buf.length; i++) { var v = (buf[i] - 128) / 128; sum += v * v; }
+      return Math.sqrt(sum / buf.length);
+    }
+    function tick() {
+      if (src) {
+        // Pocket TTS: letter by playback position, closed mouth in the pauses
+        var d = src.duration;
+        if (d && isFinite(d)) pos = Math.floor(src.currentTime / d * text.length);
+        col = level() < 0.02 ? (col ? 1 : 0) : shape(text.charAt(pos));
+      } else {
+        // device voice: ~14 letters a second, re-synced on every word boundary
+        col = shape(text.charAt(pos));
+        pos++;
+      }
+      draw();
+    }
+    return {
+      attach: function (el) { face = el; draw(); clearTimeout(blinkT); blinkT = setTimeout(blink, 1800); },
+      start: function (t, audioEl) {
+        text = t || ""; pos = 0; src = audioEl; meter = null;
+        if (audioEl) {
+          try {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            actx = actx || new AC();
+            var node = actx.createMediaElementSource(audioEl);
+            meter = actx.createAnalyser(); meter.fftSize = 512;
+            buf = new Uint8Array(meter.fftSize);
+            node.connect(meter); meter.connect(actx.destination);
+            if (actx.state === "suspended") actx.resume();
+          } catch (e) { meter = null; }
+        }
+        clearInterval(timer);
+        timer = setInterval(tick, 70);
+      },
+      sync: function (i) { if (!src && i >= pos - 2) pos = i; },
+      stop: function () { clearInterval(timer); timer = 0; src = null; col = 0; draw(); }
+    };
+  })();
 
   /* ---------------- UI ---------------- */
   var css = doc.createElement("link");
@@ -140,7 +218,7 @@
   var box = doc.createElement("section");
   box.className = "nb-chat"; box.hidden = true; box.setAttribute("aria-label", "Nova AI Buddy");
   box.innerHTML =
-    '<header class="nb-head"><img class="nb-av" src="assets/img/mascot-wink.webp" alt="">' +
+    '<header class="nb-head"><div class="nb-av nb-face" role="img" aria-label="Nova"></div>' +
     '<div><b class="nb-title"></b><span class="nb-eng"></span></div>' +
     '<div class="nb-ctl"><button class="nb-btn" data-a="lang" title="Bahasa / Language"></button>' +
     '<button class="nb-btn" data-a="voice" title="Suara"></button><button class="nb-btn" data-a="close" aria-label="Tutup">✕</button></div></header>' +
@@ -149,6 +227,7 @@
     '<input maxlength="160" autocomplete="off"><button class="nb-send" aria-label="Kirim">➤</button></form>';
   doc.body.appendChild(fab);
   doc.body.appendChild(box);
+  lips.attach(box.querySelector(".nb-face"));
   var log = box.querySelector(".nb-log"), input = box.querySelector("input"), chips = box.querySelector(".nb-chips");
 
   function speaking(on) { box.classList.toggle("talking", !!on); }
@@ -197,7 +276,7 @@
     var a = e.target.closest("[data-a]");
     if (a) {
       if (a.dataset.a === "close") open(false);
-      if (a.dataset.a === "voice") { pref.voice = !pref.voice; if (!pref.voice && "speechSynthesis" in window) speechSynthesis.cancel(); }
+      if (a.dataset.a === "voice") { pref.voice = !pref.voice; if (!pref.voice) { if ("speechSynthesis" in window) speechSynthesis.cancel(); if (audio) audio.pause(); speaking(false); lips.stop(); } }
       if (a.dataset.a === "lang") { pref.lang = pref.lang === "id" ? "en" : "id"; bubble(L().hello, "nova"); }
       save(); labels();
       return;

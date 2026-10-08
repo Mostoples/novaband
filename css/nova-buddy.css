@@ -15,6 +15,9 @@
 @keyframes nbIn { from { opacity: 0; transform: translateY(14px) scale(.98); } }
 .nb-head { display: flex; align-items: center; gap: 10px; padding: 12px 12px 10px 14px; border-bottom: 1px solid var(--line, rgba(255,255,255,.08)); }
 .nb-av { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; object-position: top; background: radial-gradient(circle, #ff6b7c, #6d0f22); }
+.nb-face { flex: 0 0 auto; background: url(../assets/img/nova-visemes.webp) 0 0 / 700% 200% no-repeat, radial-gradient(circle at 50% 35%, #ff6b7c, #6d0f22);
+  transition: width .25s var(--ease, ease), height .25s var(--ease, ease); }
+.nb-chat.talking .nb-face { width: 72px; height: 72px; }
 .nb-chat.talking .nb-av { box-shadow: 0 0 0 3px rgba(95, 227, 255, .7); animation: nbPulse .9s ease-in-out infinite; }
 @keyframes nbPulse { 50% { box-shadow: 0 0 0 6px rgba(95, 227, 255, .25); } }
 .nb-head b { display: block; font-size: .95rem; }

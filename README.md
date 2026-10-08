@@ -199,6 +199,41 @@ ikon di `assets/pwa/`. Tombol **Pasang** muncul saat browser menawarkan instalas
 Server lokal dengan MIME yang benar (service worker butuh `text/javascript`):
 `python tools/serve.py 5175`.
 
+## Hero: film latar + carousel
+
+Hero `index.html` memutar `assets/novaband-usecases.*` sebagai latar (blur 9 px,
+digelapkan) dengan carousel 5 slide di atasnya (intro, PPG real-time, Readiness
+Score, Shared Safety Net, maskot Nova). Auto-geser 7 detik; berhenti saat
+hover/fokus/tab tersembunyi/tombol jeda; panah kiri-kanan dan swipe. Pengguna
+*reduce-motion* atau *data saver* hanya melihat poster dan slide tidak bergeser
+otomatis. Logika di `js/main.js`, gaya di `css/style.css` (bagian 6b).
+
+## Maskot "Nova" (Blender CLI)
+
+```bash
+python blender/mascot.py --shot all --samples 96      # 11 render -> build/mascot/*.png (satu proses Blender per shot)
+python tools/make-mascot-sheet.py                     # lembar karakter + potongan web -> assets/img/mascot-*.webp
+```
+
+Cheetah plush berwarna wine dengan baju lari, Nova-Band di lengan atas kiri.
+Rig berupa pohon *empty* (FK), jadi pose cukup rotasi sendi: `thumbs`, `run`,
+`stand`. Bintik cheetah = Voronoi di ruang objek; piping putih, manset dan
+garis sepatu = atribut warna *signed distance* yang di-threshold di shader.
+Ekspresi: smirk, wink, fierce, happy. Pemanggilan `blender -b -P` tunggal juga
+bisa (`-- --shot hero`).
+
+### Wajah bicara Nova (AI Buddy)
+
+```bash
+python blender/nova_visemes.py          # 7 viseme x mata buka/tutup -> build/visemes/*.png
+python tools/make-viseme-sprite.py      # sprite 7x2 -> assets/img/nova-visemes.webp (~82 KB)
+```
+
+`js/nova-buddy.js` menukar sel sprite sambil Nova berbicara: huruf teks dipetakan
+ke bentuk mulut (rest, m, e, i, o, u, a). Suara perangkat diselaraskan lewat event
+`onboundary`, sedangkan Pocket TTS diselaraskan lewat posisi audio dan amplitudo
+(Web Audio). Mata berkedip acak setiap 2,5–6 detik.
+
 ## Showreel gym (Blender Cycles + Sketchfab)
 
 ```bash

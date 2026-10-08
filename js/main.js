@@ -201,6 +201,107 @@
     sync();
   });
 
+  /* ---------- Hero: blurred background film ----------
+     Plays muted while the hero is on screen; stays on the poster for
+     reduce-motion or data-saver users. */
+  var heroFilm = doc.querySelector(".hero-bg-video");
+  if (heroFilm) {
+    var saveData = navigator.connection && navigator.connection.saveData;
+    if (still || saveData) {
+      heroFilm.removeAttribute("autoplay");
+      heroFilm.pause();
+    } else if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting && !doc.hidden) heroFilm.play().catch(function () {});
+          else heroFilm.pause();
+        });
+      }, { threshold: 0.05 }).observe(heroFilm);
+    }
+  }
+
+  /* ---------- Hero carousel ----------
+     Slides are stacked in one grid cell (no height jumps). Auto-advances
+     every 7 s; pauses on hover, keyboard focus, hidden tab, or the pause
+     button; reduce-motion starts paused. Inactive slides are `inert`. */
+  var hc = doc.querySelector(".hc");
+  if (hc) (function () {
+    var slides = Array.prototype.slice.call(hc.querySelectorAll(".hc-slide"));
+    var dotsBox = hc.querySelector(".hc-dots");
+    var pauseBtn = hc.querySelector(".hc-pause");
+    var DUR = 7000;
+    var idx = 0, elapsed = 0, last = 0;
+    var userPaused = !!still, hover = false, focus = false;
+    var dots = slides.map(function (s, i) {
+      var b = doc.createElement("button");
+      b.type = "button";
+      b.className = "hc-dot";
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-label", "Slide " + (i + 1));
+      b.innerHTML = "<span></span>";
+      b.addEventListener("click", function () { go(i); });
+      dotsBox.appendChild(b);
+      return b;
+    });
+
+    function go(i) {
+      idx = (i + slides.length) % slides.length;
+      elapsed = 0;
+      slides.forEach(function (s, k) {
+        var on = k === idx;
+        s.classList.toggle("is-active", on);
+        s.setAttribute("aria-hidden", on ? "false" : "true");
+        if (on) s.removeAttribute("inert"); else s.setAttribute("inert", "");
+      });
+      dots.forEach(function (d, k) {
+        d.setAttribute("aria-selected", k === idx ? "true" : "false");
+        d.classList.toggle("is-active", k === idx);
+        d.firstChild.style.transform = "scaleX(" + (k < idx ? 1 : 0) + ")";
+      });
+    }
+    function paused() { return userPaused || hover || focus || doc.hidden; }
+    function syncPause() {
+      hc.classList.toggle("is-paused", userPaused);
+      pauseBtn.setAttribute("aria-pressed", userPaused ? "true" : "false");
+      pauseBtn.setAttribute("aria-label", userPaused ? "Putar slide otomatis" : "Jeda slide otomatis");
+    }
+    function tick(t) {
+      var dt = last ? t - last : 0;
+      last = t;
+      if (!paused()) {
+        elapsed += dt;
+        if (elapsed >= DUR) go(idx + 1);
+      }
+      dots[idx].firstChild.style.transform = "scaleX(" + Math.min(elapsed / DUR, 1) + ")";
+      requestAnimationFrame(tick);
+    }
+
+    hc.querySelector(".hc-prev").addEventListener("click", function () { go(idx - 1); });
+    hc.querySelector(".hc-next").addEventListener("click", function () { go(idx + 1); });
+    pauseBtn.addEventListener("click", function () { userPaused = !userPaused; syncPause(); });
+    hc.addEventListener("mouseenter", function () { hover = true; });
+    hc.addEventListener("mouseleave", function () { hover = false; });
+    hc.addEventListener("focusin", function () { focus = true; });
+    hc.addEventListener("focusout", function (e) { if (!hc.contains(e.relatedTarget)) focus = false; });
+    hc.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowLeft") { go(idx - 1); e.preventDefault(); }
+      else if (e.key === "ArrowRight") { go(idx + 1); e.preventDefault(); }
+    });
+    /* swipe */
+    var x0 = null, y0 = 0;
+    hc.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+    hc.addEventListener("touchend", function (e) {
+      if (x0 === null) return;
+      var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4) go(idx + (dx < 0 ? 1 : -1));
+      x0 = null;
+    }, { passive: true });
+
+    go(0);
+    syncPause();
+    requestAnimationFrame(tick);
+  })();
+
   /* ---------- Three.js ---------- */
   if (window.NovaThree) {
     var wave = doc.getElementById("wave-canvas");
