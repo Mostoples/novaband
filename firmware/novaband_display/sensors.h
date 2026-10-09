@@ -17,6 +17,8 @@
 #include <Wire.h>
 #include <heartRate.h>
 
+#include "pedo_gyro.h"
+
 namespace sensors {
 
 static const int PIN_SDA = 10, PIN_SCL = 11;
@@ -31,6 +33,16 @@ struct Data {
   static constexpr int WAVE_N = 160;
   float wave[WAVE_N] = {0};                        // normalised PPG, 50 Hz
   volatile uint32_t waveN = 0;                     // samples written so far
+  struct Sec { uint16_t w, sd; uint8_t pk, st; };  // per detik: |w| maks (x10), deviasi (x100), puncak lolos ambang, langkah terhitung
+  static constexpr int RING_N = 600;               // 10 menit
+  Sec ring[RING_N] = {};
+  volatile uint32_t ringN = 0;
+  char gdbg[120] = "";                           // debug: register mentah GY-50
+  volatile float wSd = 0;                          // debug: deviasi standar |w| (0 = sensor macet)
+  volatile float wPeakRt = 0;                      // |w| tertinggi dalam ~2 dtk terakhir (untuk cloud)
+  volatile float wPeak = 0;                        // debug: |w| tertinggi (deg/s) sejak terakhir dibaca
+  volatile uint32_t wPeaks = 0;                    // debug: jumlah puncak |w| yang lolos ambang (sebelum gerbang)
+  volatile uint32_t simUntil = 0;                  // uji: sinyal jalan sintetis sampai millis() ini (perintah serial "simwalk N")
   volatile uint32_t steps = 0;                     // validated steps since boot (the model diffs this)
   volatile bool hasMax = false, hasMlx = false, hasGyro = false, hasMpu = false;
 };
@@ -183,49 +195,118 @@ bool gyroInit() {
     Wire1.beginTransmission(a); Wire1.write(0x0F);
     if (Wire1.endTransmission(false) != 0 || Wire1.requestFrom((int)a, 1) != 1) continue;
     if (Wire1.read() != 0xD3) continue;            // WHO_AM_I
-    return gyroWrite(0x20, 0x0F)                   // 100 Hz, normal mode, XYZ on
-        && gyroWrite(0x23, 0xA0);                  // block update, 2000 dps
+    // power-cycle chip (bangunkan paksa), tunggu turn-on 250 ms, BDU mati (keluaran selalu diperbarui), 2000 dps
+    gyroWrite(0x20, 0x00); delay(50);
+    gyroWrite(0x24, 0x80); delay(20);              // CTRL_REG5: BOOT (muat ulang memori internal)
+    delay(100);
+    gyroWrite(0x24, 0x00);
+    bool ok = gyroWrite(0x23, 0x20) && gyroWrite(0x22, 0x08) && gyroWrite(0x20, 0x0F);   // 2000 dps, DRDY int, 100 Hz XYZ on
+    delay(300);
+    return ok;
   }
   gyroAddr = 0;
   return false;
 }
-bool gyroRead(float& dps) {
+// Offset nol (zero-rate) GY-50 ~17 deg/s per unit: dibuang otomatis, tanpa kalibrasi manual.
+//  - saat boot: rata-rata 1 dtk (diterima kalau deviasinya kecil, artinya jam diam)
+//  - berjalan: tiap kali hampir diam (|w| < 3 deg/s selama 0,5 dtk) bias digeser pelan ke pembacaan
+float gBias[3] = {0, 0, 0};
+int gQuiet = 0;
+bool gyroRaw(float* g) {
   Wire1.beginTransmission(gyroAddr); Wire1.write(0x28 | 0x80);   // auto-increment
   if (Wire1.endTransmission(false) != 0 || Wire1.requestFrom((int)gyroAddr, 6) != 6) return false;
   int16_t v[3];
   for (auto& x : v) { uint8_t l = Wire1.read(), h = Wire1.read(); x = (int16_t)((h << 8) | l); }
-  float gx = v[0] * .07f, gy = v[1] * .07f, gz = v[2] * .07f;    // 70 mdps/LSB at 2000 dps
-  dps = sqrtf(gx * gx + gy * gy + gz * gz);
+  for (int i = 0; i < 3; i++) g[i] = v[i] * .07f;                // 70 mdps/LSB at 2000 dps
+  return true;
+}
+void gyroBiasInit() {
+  float sum[3] = {0}, sq[3] = {0}; int n = 0;
+  for (int i = 0; i < 100; i++) {
+    float g[3];
+    if (gyroRaw(g)) { n++; for (int k = 0; k < 3; k++) { sum[k] += g[k]; sq[k] += g[k] * g[k]; } }
+    delay(10);
+  }
+  if (n < 50) return;
+  bool still = true;
+  for (int k = 0; k < 3; k++) { float m = sum[k] / n, sd = sqrtf(fmaxf(sq[k] / n - m * m, 0)); if (sd > 2.f) still = false; }
+  if (still) for (int k = 0; k < 3; k++) gBias[k] = sum[k] / n;
+  Serial.printf("# gyro bias %s: %.1f %.1f %.1f deg/s\n", still ? "dipakai" : "diabaikan (jam bergerak saat boot)", sum[0] / n, sum[1] / n, sum[2] / n);
+}
+uint32_t gSameAt = 0; float gLast[3] = {0, 0, 0};
+volatile bool gFrozen = false;                      // keluaran persis sama > 3 dtk = sensor tidak sampling
+bool gyroRead(float& dps) {
+  float g[3];
+  if (!gyroRaw(g)) return false;
+  uint32_t nowMs = millis();
+  if (g[0] != gLast[0] || g[1] != gLast[1] || g[2] != gLast[2]) { gSameAt = nowMs; gFrozen = false; }
+  else if (nowMs - gSameAt > 3000) gFrozen = true;
+  for (int k = 0; k < 3; k++) gLast[k] = g[k];
+  float c[3], m2 = 0;
+  for (int k = 0; k < 3; k++) { c[k] = g[k] - gBias[k]; m2 += c[k] * c[k]; }
+  dps = sqrtf(m2);
+  if (dps < 3.f) { if (++gQuiet >= 50) for (int k = 0; k < 3; k++) gBias[k] += (g[k] - gBias[k]) * .02f; }
+  else gQuiet = 0;
   return true;
 }
 
-// One peak of the smoothed |w| = one step (arm swing has two |w| peaks per cycle).
+// Penghitung langkah giroskop lengan atas (inti di pedo_gyro.h, diuji di firmware/tools/pedo_test.cpp);
+// di sini hanya statistik diagnosis per detik + menyalin hasil ke `data`.
 struct Cadence {
-  float lp = 0, prev = 0, prev2 = 0, peak = 60, cad = 0;
-  uint32_t lastPeak = 0;
+  GyroPedo core;
+  uint32_t rtAt = 0;
+  float rtMax = 0, rtSum = 0, rtSq = 0; int rtN = 0;
+  float sMax = 0, sSum = 0, sSq = 0; int sN = 0;     // jendela 1 dtk untuk ring
+  uint32_t secAt = 0, lastPk = 0, lastSt = 0;
   void sample(float w, uint32_t now) {
-    lp += (w - lp) * .35f;
-    if (prev > prev2 && prev >= lp && prev > fmaxf(40.f, peak * .5f) && now - lastPeak > 250) {
-      if (lastPeak && now - lastPeak < 1000) {
-        float c = 60000.f / (now - lastPeak);
-        cad = cad ? cad * .7f + c * .3f : c;
-        data.cadence = cad; data.cadAt = now;
-        data.steps = data.steps + 1;
-      }
-      lastPeak = now;
-      peak += (prev - peak) * .2f;
+    if (w > data.wPeak) data.wPeak = w;
+    if (now - rtAt > 2000) {
+      float mean = rtN ? rtSum / rtN : 0;
+      data.wPeakRt = rtMax; data.wSd = sqrtf(fmaxf(rtN ? rtSq / rtN - mean * mean : 0, 0));
+      rtMax = 0; rtSum = rtSq = 0; rtN = 0; rtAt = now;
     }
-    peak *= .9995f;
-    prev2 = prev; prev = lp;
-    if (lastPeak && now - lastPeak > 2500) { cad = 0; data.cadAt = 0; lastPeak = 0; }
+    if (w > rtMax) rtMax = w;
+    rtSum += w; rtSq += w * w; rtN++;
+    if (w > sMax) sMax = w;
+    sSum += w; sSq += w * w; sN++;
+    core.sample(w, now);
+    data.wPeaks = core.peaks;
+    data.steps = core.steps;
+    if (core.cadAt) { data.cadence = core.cadence; data.cadAt = core.cadAt; } else data.cadAt = 0;
+    if (now - secAt >= 1000) {                     // satu baris statistik per detik, tetap tercatat walau WiFi putus
+      float m = sN ? sSum / sN : 0, sd = sqrtf(fmaxf(sN ? sSq / sN - m * m : 0, 0));
+      Data::Sec& e = data.ring[data.ringN % Data::RING_N];
+      e.w = (uint16_t)fminf(sMax * 10, 65000); e.sd = (uint16_t)fminf(sd * 100, 65000);
+      e.pk = (uint8_t)min<uint32_t>(core.peaks - lastPk, 255); e.st = (uint8_t)min<uint32_t>(core.steps - lastSt, 255);
+      lastPk = core.peaks; lastSt = core.steps;
+      data.ringN = data.ringN + 1;
+      sMax = sSum = sSq = 0; sN = 0; secAt = now;
+    }
   }
 };
 Cadence cadState;
 
+// Debug: register kunci GY-50 + data mentah; dipanggil dari task sensor (satu-satunya pemakai Wire1).
+void gyroDebug(uint32_t now) {
+  static uint32_t at = 0;
+  if (now - at < 1000) return;
+  at = now;
+  uint8_t r[8] = {0}; const uint8_t regs[8] = {0x0F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x26, 0x27};
+  for (int i = 0; i < 8; i++) {
+    Wire1.beginTransmission(gyroAddr); Wire1.write(regs[i]);
+    if (Wire1.endTransmission(false) == 0 && Wire1.requestFrom((int)gyroAddr, 1) == 1) r[i] = Wire1.read();
+  }
+  uint8_t o[6] = {0};
+  Wire1.beginTransmission(gyroAddr); Wire1.write(0x28 | 0x80);
+  if (Wire1.endTransmission(false) == 0 && Wire1.requestFrom((int)gyroAddr, 6) == 6) for (auto& b : o) b = Wire1.read();
+  snprintf(data.gdbg, sizeof data.gdbg, "WHO=%02X C1=%02X C2=%02X C3=%02X C4=%02X C5=%02X T=%02X ST=%02X OUT=%02X%02X %02X%02X %02X%02X",
+           r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], o[1], o[0], o[3], o[2], o[5], o[4]);
+}
+
 volatile bool stopReq = false, stopped = false;
 
 void task(void*) {
-  uint32_t mlxAt = 0;
+  uint32_t mlxAt = 0, probeAt = 0, reinitAt = 0;
   TickType_t wake = xTaskGetTickCount();
   for (;;) {
     if (stopReq) { stopped = true; vTaskDelay(pdMS_TO_TICKS(50)); continue; }
@@ -237,12 +318,31 @@ void task(void*) {
         ppg.nextSample();
       }
     }
-    if (data.hasMpu) {
+    // Pulih otomatis, tanpa upload ulang: sensor langkah yang baru disolder terdeteksi sendiri (tiap 3 dtk),
+    // dan giroskop yang macet (keluaran persis sama > 3 dtk) di-power-cycle ulang (maks tiap 5 dtk).
+    if (!data.hasMpu && !data.hasGyro && now - probeAt >= 3000) {
+      probeAt = now;
+      data.hasMpu = mpuInit();
+      if (!data.hasMpu && gyroInit()) { gyroBiasInit(); data.hasGyro = true; }
+      if (data.hasMpu || data.hasGyro) Serial.printf("# sensor langkah terdeteksi: %s\n", data.hasMpu ? "MPU6050" : "GY-50");
+    }
+    if (data.simUntil && (int32_t)(data.simUntil - now) > 0) {   // uji jalur lengkap tanpa sensor fisik
+      static float ph = 0; ph += 2 * M_PI * 0.92f * .01f;       // ~110 langkah/menit, ayun lengan atas
+      cadState.sample(fabsf(60.f * cosf(ph)) + fabsf(0.4f * sinf(ph * 37.f)), now);
+    } else if (data.hasMpu) {
       float g;
       if (mpuRead(g)) pedState.sample(g, now);
     } else if (data.hasGyro) {
       float w;
       if (gyroRead(w)) cadState.sample(w, now);
+      gyroDebug(now);
+      if (gFrozen && now - reinitAt >= 5000) {
+        reinitAt = now;
+        bool ok = gyroInit();
+        Serial.printf("# GY-50 macet (keluaran beku) -> init ulang: %s (cek daya modul / solder)\n", ok ? "ok" : "gagal");
+        if (!ok) data.hasGyro = false;               // hilang dari bus: probe lagi tiap 3 dtk
+        gSameAt = now; gFrozen = false;
+      }
     }
     if (data.hasMlx && now - mlxAt >= 500) {
       mlxAt = now;
@@ -274,7 +374,8 @@ inline void begin() {
   data.hasMlx = Wire1.endTransmission() == 0;
 
   data.hasMpu = mpuInit();
-  data.hasGyro = !data.hasMpu && gyroInit();       // the MPU6050 already gives steps, and shares 0x68/0x69
+  data.hasGyro = !data.hasMpu && gyroInit();
+  if (data.hasGyro) gyroBiasInit();       // the MPU6050 already gives steps, and shares 0x68/0x69
 
   Serial.printf("# sensors: MAX30102 %s, MLX90614 %s, MPU6050 %s, GY-50 %s\n", data.hasMax ? "ok" : "--",
                 data.hasMlx ? "ok" : "--", data.hasMpu ? "ok" : "--", data.hasGyro ? "ok" : "--");

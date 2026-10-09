@@ -28,7 +28,7 @@ void Model::setRealHr(float hr, float now) {
 void Model::setRealSpo2(float v, float now) { m.spo2 = v; realSpo2Until_ = now + 5.f; }
 void Model::setRealCadence(float spm, float now) { m.cadence = spm; realCadUntil_ = now + 3.f; }
 
-void Model::addSteps(uint32_t n) { if (m.running && !m.paused) newSteps_ += n; }
+void Model::addSteps(uint32_t n) { newSteps_ += n; }   // langkah dihitung terus (tidak harus sedang lari); jarak hanya saat lari
 
 void Model::pushPpg(float v) { ppg[ppgHead] = v; ppgHead = (ppgHead + 1) % PPG_N; }
 
@@ -95,13 +95,13 @@ void Model::updateReal(float dt) {
   demo = false;
   m.zone = hrOk ? zoneOf(m.hr) : 1;
   const float stride = 0.00415f * profile.height;            // metres per step
-  if (!moving) newSteps_ = 0;
   struct Flush { uint32_t& n; ~Flush() { n = 0; } } flush{newSteps_};
   float speed = cadOk ? m.cadence / 60.f * stride : 0;       // m/s
   m.pace = moving && speed > .5f ? 1000.f / speed : 0;       // s/km
+  m.steps += newSteps_;                                      // langkah nyata, dihitung terus
   if (moving) {
     m.elapsed += dt;
-    m.steps += newSteps_; m.dist += newSteps_ * stride / 1000.f;   // real counted steps
+    m.dist += newSteps_ * stride / 1000.f;                   // jarak hanya saat sesi lari
     if (hrOk) {
       float kj = (-55.0969f + 0.6309f * m.hr + 0.1988f * profile.weight + 0.2017f * profile.age) / 4.184f;
       if (kj > 0) m.kcal += kj * dt / 60.f;

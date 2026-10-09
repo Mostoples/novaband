@@ -4,3 +4,4 @@
 #define CLOUD_EMAIL "isi@novaband.com"
 #define CLOUD_PASS "isi-password-akun"
 #define CLOUD_ROLE "isi-peran"
+#define OTA_PASS "isi-password-ota"

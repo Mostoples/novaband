@@ -52,7 +52,7 @@ class Model {
   void setRealHr(float hr, float now);
   void setRealSpo2(float v, float now);
   void setRealCadence(float spm, float now);
-  void addSteps(uint32_t n);       // real steps from the pedometer (counted only while running)
+  void addSteps(uint32_t n);       // real steps from the pedometer (always counted; distance only while running)
   void pushPpg(float v);           // one real PPG sample (PPG_HZ)
   void beat() { beats++; }
   int zoneOf(float hr) const;

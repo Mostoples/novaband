@@ -11,6 +11,8 @@
         ".write": "auth != null && auth.token.email === $device + '@novaband.com'",
         "live": { ".validate": "newData.hasChildren()" },
         "info": { ".validate": "newData.hasChildren()" },
+        // diagnosis sensor langkah (teks angka dari firmware): /devices/<nama>/dbg
+        "dbg": { ".validate": "newData.isString() && newData.val().length < 20000" },
         // rekaman lari: /devices/<nama>/runs/<waktu-mulai-ms>
         "runs": { "$run": { ".validate": "newData.hasChildren(['at', 'sec', 'dist'])" } },
         "$other": { ".validate": false }

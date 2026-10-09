@@ -49,6 +49,8 @@ constexpr int RUN_SLOTS = 3;                          // lari yang belum terkiri
 Preferences prefs;
 SemaphoreHandle_t mtx;
 char pending[480];
+String dbgBody;                                      // JSON string besar untuk /devices/<role>/dbg (diagnosis)
+bool dbgDirty = false;
 bool dirty = false;
 char devName[32];
 String idToken, refreshToken, uid;
@@ -138,7 +140,7 @@ void uploadRuns() {
 }
 
 void task(void*) {
-  uint32_t lastSend = 0, lastWifi = 0;
+  uint32_t lastSend = 0, lastWifi = 0, lastDbg = 0;
   bool infoSent = false, ntp = false, wasUp = false;
   for (;;) {
     vTaskDelay(pdMS_TO_TICKS(250));
@@ -175,6 +177,11 @@ void task(void*) {
       infoSent = put("info", s) == 200;
     }
     uploadRuns();
+    if (dbgDirty && now - lastDbg >= 10000 && xSemaphoreTake(mtx, pdMS_TO_TICKS(50))) {
+      String body = dbgBody; dbgDirty = false; xSemaphoreGive(mtx);
+      lastDbg = now;
+      if (put("dbg", body) == 401) idToken = "";
+    }
     if (now - lastSend < SEND_MS) continue;
     char body[560];
     bool have = false;
@@ -215,6 +222,14 @@ inline void publish(const char* json) {
   if (!mtx || !xSemaphoreTake(mtx, 0)) return;
   snprintf(pending, sizeof pending, "%s", json);
   dirty = true;
+  xSemaphoreGive(mtx);
+}
+
+// Titipkan teks diagnosis (hanya angka , ; -) untuk dikirim sebagai /devices/<role>/dbg tiap >= 10 dtk.
+inline void publishDbg(const String& text) {
+  if (!mtx || !xSemaphoreTake(mtx, 0)) return;
+  dbgBody = "\"" + text + "\"";
+  dbgDirty = true;
   xSemaphoreGive(mtx);
 }
 

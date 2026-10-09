@@ -26,6 +26,7 @@
 #include <freertos/queue.h>
 #include <freertos/semphr.h>
 
+#include "battery.h"
 #include "cloud.h"
 #include "runlog.h"
 #include "sensors.h"
@@ -243,6 +244,7 @@ static const uint32_t POWER_HOLD_MS = 2000;
 
 // deep sleep: screen, peripheral rail and backlight held off; the same 2 s hold wakes it again
 static void powerOff() {
+  battery::save();
   sensors::shutdown();                                      // MAX30102 LEDs, gyro
   ledcWrite(PIN_BL, 0);
   ledcDetach(PIN_BL);
@@ -285,12 +287,9 @@ static void wakeGate() {
 
 // ---------------------------------------------------------------- battery
 static void batteryRead() {
-  static float v = 0;
-  float mv = analogReadMilliVolts(PIN_BAT) * 2.f;            // 1:2 divider on the board
-  v = v ? v * .9f + mv * .1f : mv;
-  model.m.usbPower = v > 4350;
-  float pct = (v - 3300) / (4150 - 3300) * 100;
-  model.m.battery = model.m.usbPower ? 100 : constrain((int)pct, 0, 100);
+  battery::update();                                         // median + kurva Li-Po + koreksi saat dicas (battery.h)
+  model.m.usbPower = battery::isCharging();
+  model.m.battery = battery::percent();
 }
 
 // ---------------------------------------------------------------- sensors -> model
@@ -379,7 +378,14 @@ static void linkTick() {
     lastTelem = now;
     proto::telemetry(model, buf, sizeof buf);
     if (usb) Serial.println(buf);
-    cloud::publish(buf);
+    {                                                // + hitungan mentah sensor langkah (rs), puncak (rp), |w| maks (rw) untuk uji tanpa kabel
+      size_t n = strlen(buf);
+      if (n > 2 && buf[n - 1] == '}')
+        snprintf(buf + n - 1, sizeof buf - n + 1, ",\"rs\":%lu,\"rp\":%lu,\"rw\":%d,\"rv\":%d,\"bv\":%d,\"bp\":%d}", (unsigned long)sensors::data.steps,
+                 (unsigned long)sensors::data.wPeaks, (int)(sensors::data.wPeakRt * 10), (int)(sensors::data.wSd * 100),
+                 battery::millivolts(), battery::pinMillivolts());
+      cloud::publish(buf);
+    }
     if (bleClients > 0) {
       chTelem->setValue((uint8_t*)buf, strlen(buf));
       chTelem->notify();
@@ -414,6 +420,11 @@ static void serialPoll() {
     if (ch == '\n' || ch == '\r') {
       if (n) {
         line[n] = 0;
+        if (!strncmp(line, "simwalk", 7)) {            // uji: "simwalk 40" = 40 dtk sinyal jalan sintetis
+          int secs = atoi(line + 7); if (secs <= 0) secs = 30;
+          sensors::data.simUntil = millis() + secs * 1000UL;
+          Serial.printf("# simwalk %d dtk\n", secs); n = 0; continue;
+        }
         Line l = {};
         strncpy(l.s, line, sizeof l.s - 1);
         l.src = 1;
@@ -470,6 +481,7 @@ void setup() {
     }
   }
   touchInit();
+  battery::begin();
   sensors::begin();
   model.real = true;                            // show measured values only
   if (rtcTimeSet && esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0) {   // back from power-off: restore the clock
@@ -531,12 +543,33 @@ void loop() {
 
   applySensors();
   if (model.timeValid) { rtcTimeSet = true; rtcTzMin = model.tzMin; }
+  static uint32_t gdbT = 0;
+  if (millis() - gdbT >= 1000) { gdbT = millis(); if (sensors::data.hasGyro) Serial.printf("# gyro %s\n", sensors::data.gdbg); }
+  static uint32_t batLogT = 0;
+  if (millis() - batLogT >= 10000) {
+    batLogT = millis();
+    Serial.printf("# batt pin %d mV  sel %d mV  %d%%  %s\n", battery::pinMillivolts(), battery::millivolts(), battery::percent(),
+                  battery::isCharging() ? "DICAS (persen perkiraan, maks 99)" : "baterai");
+  }
+  static uint32_t dbgT = 0;
+  if (millis() - dbgT >= 10000) {                   // 400 detik terakhir: "up;detik_ke_belakang,w,sd,pk,st;..." -> /devices/esplilygo/dbg
+    dbgT = millis();
+    uint32_t n = sensors::data.ringN, cnt = n < 400 ? n : 400;
+    String t; t.reserve(cnt * 14 + 40);
+    t += String(millis() / 1000) + ";" + String(sensors::gBias[0], 1) + "," + String(sensors::gBias[1], 1) + "," + String(sensors::gBias[2], 1);
+    for (uint32_t i = 0; i < cnt; i++) {
+      const auto& e = sensors::data.ring[(n - cnt + i) % sensors::Data::RING_N];
+      t += ';'; t += e.w; t += ','; t += e.sd; t += ','; t += e.pk; t += ','; t += e.st;
+    }
+    cloud::publishDbg(t);
+  }
   static uint32_t senT = 0;
   if (millis() - senT >= 2000) {
     senT = millis();
-    Serial.printf("# hr %.0f%s spo2 %.0f%s temp %.1f%s cad %.0f%s finger %d\n", model.m.hr, model.hrOk ? "" : "?",
+    Serial.printf("# hr %.0f%s spo2 %.0f%s temp %.1f%s cad %.0f%s finger %d stp %lu wmax %.0f peaks %lu\n", model.m.hr, model.hrOk ? "" : "?",
                   model.m.spo2, model.spo2Ok ? "" : "?", model.m.temp, model.tempOk ? "" : "?", model.m.cadence,
-                  model.cadOk ? "" : "?", (int)sensors::data.finger);
+                  model.cadOk ? "" : "?", (int)sensors::data.finger, (unsigned long)sensors::data.steps, (float)sensors::data.wPeak, (unsigned long)sensors::data.wPeaks);
+    sensors::data.wPeak = 0;
   }
   model.update(dt, uptime());
   ui.update(dt);
