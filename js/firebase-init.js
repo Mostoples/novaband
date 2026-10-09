@@ -19,6 +19,7 @@ const firebaseConfig = {
   authDomain: "novaband-id.firebaseapp.com",
   projectId: "novaband-id",
   storageBucket: "novaband-id.firebasestorage.app",
+  databaseURL: "https://novaband-id-default-rtdb.asia-southeast1.firebasedatabase.app",
   messagingSenderId: "257524197285",
   appId: "1:257524197285:web:2f710e395620d3ea47ea4c"
 };
@@ -37,11 +38,18 @@ try {
   /* Run sessions: anonymous sign-in, then users/{uid}/sessions/{id} in Firestore (owner-only rules,
      see firestore.rules). Writes are keyed by id, so retrying a sync can never duplicate a session. */
   const V = "https://www.gstatic.com/firebasejs/12.4.0/";
-  const [{ getAuth, signInAnonymously }, { getFirestore, doc, setDoc }] =
-    await Promise.all([import(V + "firebase-auth.js"), import(V + "firebase-firestore.js")]);
-  const auth = getAuth(app), db = getFirestore(app);
+  const [{ getAuth, signInAnonymously }, { getFirestore, doc, setDoc }, rtdb] =
+    await Promise.all([import(V + "firebase-auth.js"), import(V + "firebase-firestore.js"), import(V + "firebase-database.js")]);
+  const auth = getAuth(app), db = getFirestore(app), rt = rtdb.getDatabase(app);
   const uid = async () => auth.currentUser ? auth.currentUser.uid : (await signInAnonymously(auth)).user.uid;
   window.NovaCloud = {
+    /* Realtime Database, read-only from the web: the ESPs write /devices/<role>/{live,info,runs}.
+       watch(path, cb, lastN?) -> unsubscribe fn; cb(value|null). Reads are public (no login needed). */
+    watch: (path, cb, lastN) => {
+      const r = rtdb.ref(rt, path);
+      return rtdb.onValue(lastN ? rtdb.query(r, rtdb.orderByKey(), rtdb.limitToLast(lastN)) : r,
+        (snap) => cb(snap.val()), (e) => console.warn("[NovaBand] RTDB:", e && e.message));
+    },
     saveSession: async (id, data) => {
       const u = await uid();
       await setDoc(doc(db, "users", u, "sessions", String(id)), data);

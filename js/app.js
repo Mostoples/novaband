@@ -899,7 +899,7 @@
       toast("Gagal terhubung: " + (e && e.message ? e.message : e));
     });
   }
-  [["cx-ble", "ble"], ["cx-usb", "usb"]].forEach(function (b) {
+  [["cx-ble", "ble"], ["cx-usb", "usb"], ["cx-cloud", "cloud"]].forEach(function (b) {
     var el = $(b[0]);
     if (el) el.addEventListener("click", function () { linkTo(b[1]); });
   });
@@ -916,16 +916,16 @@
       S.connected = st.connected;
       var dot = $("dot-status"), txt = $("txt-status"), lbl = $("connect-label");
       if (dot) dot.classList.toggle("on", st.connected);
-      if (txt) txt.textContent = st.connected ? (st.transport === "usb" ? "Band · USB" : "Band · Bluetooth") : "Terputus";
+      if (txt) txt.textContent = st.connected ? (st.transport === "usb" ? "Band · USB" : st.transport === "cloud" ? "Band · Cloud" : "Band · Bluetooth") : "Terputus";
       if (lbl) lbl.textContent = st.connected ? "Putuskan" : "Hubungkan";
       var dn = $("band-name"), dt = $("band-transport"), df = $("band-fw");
       if (dn) dn.textContent = st.connected ? (st.name || "NovaBand") : "—";
-      if (dt) dt.textContent = st.connected ? (st.transport === "usb" ? "USB · Web Serial" : "Bluetooth LE · Web Bluetooth") : "Belum terhubung";
+      if (dt) dt.textContent = st.connected ? (st.transport === "usb" ? "USB · Web Serial" : st.transport === "cloud" ? "WiFi · Firebase Realtime Database" : "Bluetooth LE · Web Bluetooth") : "Belum terhubung";
       if (df) df.textContent = st.fw || "—";
       doc.body.classList.toggle("band-live", st.connected);
       if (st.connected && !was) {
         wave.length = 0;
-        alertCard("good", "NovaBand terhubung", "Data langsung dari band via " + (st.transport === "usb" ? "USB." : "Bluetooth LE."));
+        alertCard("good", "NovaBand terhubung", "Data langsung dari band via " + (st.transport === "usb" ? "USB." : st.transport === "cloud" ? "WiFi (Firebase Realtime Database)." : "Bluetooth LE."));
         toast("NovaBand terhubung");
       } else if (!st.connected && was) {
         S.running = false;
@@ -968,6 +968,29 @@
   /* ---------------- activity recorder (Strava-style log of a band run) ---------------- */
   var ACT_KEY = "nova.activities", rec = null;
   function loadActs() { try { return JSON.parse(localStorage.getItem(ACT_KEY)) || []; } catch (e) { return []; } }
+  /* Runs the band itself uploaded to Firebase (/devices/esplilygo/runs) — shown even if this browser never saw them. */
+  var espRuns = [];
+  function allActs() {
+    var mine = loadActs(), out = mine.slice();
+    espRuns.forEach(function (r) {
+      var dup = mine.some(function (a) { return Math.abs(a.at - r.at) < 45000; });   // same run, also recorded by this browser
+      if (!dup) out.push(r);
+    });
+    return out.sort(function (a, b) { return b.at - a.at; });
+  }
+  function watchEspRuns() {
+    if (!window.NovaCloud || !window.NovaCloud.watch) return;
+    window.NovaCloud.watch("devices/esplilygo/runs", function (v) {
+      espRuns = Object.keys(v || {}).map(function (k) {
+        var r = v[k] || {};
+        return { at: +r.at || +k || 0, sec: +r.sec || 0, dist: +r.dist || 0, steps: +r.steps || 0, kcal: +r.kcal || 0,
+          hrAvg: +r.hrAvg || 0, hrMax: +r.hrMax || 0, splits: r.splits || [], hr: r.hr || [], cloud: true, esp: true };
+      }).filter(function (r) { return r.at; });
+      renderActs();
+    }, 30);
+  }
+  doc.addEventListener("novaband:cloud-ready", watchEspRuns);
+  if (window.NovaCloud) watchEspRuns();
   function recordTick(m) {
     if (m.run && !rec) rec = { start: Date.now(), s: [], lastSec: -1 };
     if (rec && m.run && !m.pz && m.sec !== rec.lastSec) {      // one sample per second of running time
@@ -1019,7 +1042,7 @@
   setInterval(syncActs, 60000);
   function renderActs() {
     var box = $("act-list"); if (!box) return;
-    var acts = loadActs();
+    var acts = allActs();
     if (!acts.length) { box.innerHTML = '<p class="tile-note">Belum ada lari tersimpan. Mulai lari dengan NovaBand, lalu stop untuk menyimpan.</p>'; return; }
     box.innerHTML = acts.map(function (a) {
       var pace = a.dist > 0.05 ? a.sec / a.dist / 60 : 0, d = new Date(a.at);
@@ -1030,7 +1053,7 @@
         d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + '</div><div class="tile-note">' + fmtTime(a.sec) + '</div></div>' +
         '<div class="row" style="gap:18px;flex-wrap:wrap"><b class="mono">' + a.dist.toFixed(2).replace(".", ",") + ' km</b><span>' +
         (pace ? fmtPace(pace) + " /km" : "—") + '</span><span>' + a.steps.toLocaleString("id-ID") + ' langkah</span><span>' + a.kcal + ' kkal</span><span>HR ' +
-        a.hrAvg + '/' + a.hrMax + '</span><span class="tile-note">' + (a.cloud ? '☁ tersinkron' : 'belum tersinkron') + '</span></div><svg viewBox="0 0 200 42" width="100%" height="42" preserveAspectRatio="none" aria-label="Grafik detak jantung"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="' + pts + '"/></svg>' +
+        a.hrAvg + '/' + a.hrMax + '</span><span class="tile-note">' + (a.esp ? '☁ dari band (RTDB)' : a.cloud ? '☁ tersinkron' : 'belum tersinkron') + '</span></div><svg viewBox="0 0 200 42" width="100%" height="42" preserveAspectRatio="none" aria-label="Grafik detak jantung"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="' + pts + '"/></svg>' +
         (a.splits.length ? '<div class="tile-note">Split: ' + a.splits.map(function (x, i) { return (i + 1) + "km " + fmtTime(x); }).join(" · ") + '</div>' : "") + '</div>';
     }).join("");
   }

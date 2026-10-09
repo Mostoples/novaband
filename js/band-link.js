@@ -127,8 +127,55 @@
     setStatus(false);
   }
 
+  /* ---------------- Cloud (Firebase Realtime Database) ----------------
+     The band uploads its telemetry to /devices/<ROLE>/live every 2 s over WiFi; the site only reads it.
+     No pairing needed, works from any browser/phone. Commands cannot go back this way (BLE/USB only). */
+  var CLOUD_ROLE = "esplilygo", STALE_MS = 9000;
+  var cloud = null;        // { offLive, offInfo, lastTs, lastAt, timer }
+  var autoCloud = true;    // reconnect to the cloud automatically until the user disconnects on purpose
+
+  function connectCloud() {
+    if (!window.NovaCloud || !window.NovaCloud.watch) return Promise.reject(new Error("Firebase belum siap"));
+    closeCloud();
+    cloud = { lastTs: 0, lastAt: 0, up: false };
+    var c = cloud;
+    c.offInfo = window.NovaCloud.watch("devices/" + CLOUD_ROLE + "/info", function (v) {
+      if (v) { state.name = v.name || "NovaBand"; if (state.connected && state.transport === "cloud") emit("status", state); }
+    });
+    c.offLive = window.NovaCloud.watch("devices/" + CLOUD_ROLE + "/live", function (v) {
+      if (!v || c !== cloud) return;
+      var prev = c.lastTs;
+      c.lastTs = v.ts;
+      /* fresh = the band just uploaded: ts moved on, or (first value) it is recent by the local clock */
+      var fresh = prev ? v.ts !== prev : Math.abs(Date.now() - v.ts) < STALE_MS * 2;
+      if (fresh) c.lastAt = Date.now();
+      if (!c.up) {
+        if (!fresh) return;
+        c.up = true;
+        setStatus(true, "cloud");
+      }
+      if (!fresh) return;
+      if (v.t === "m") emit("telemetry", v);
+    });
+    c.timer = setInterval(function () {          // no new upload for a while: the band is off or out of WiFi
+      if (c.up && Date.now() - c.lastAt > STALE_MS) { c.up = false; setStatus(false); }
+    }, 2000);
+    return Promise.resolve();
+  }
+
+  function closeCloud() {
+    if (!cloud) return;
+    clearInterval(cloud.timer);
+    if (cloud.offLive) cloud.offLive();
+    if (cloud.offInfo) cloud.offInfo();
+    var was = cloud.up;
+    cloud = null;
+    if (was && state.transport === "cloud") setStatus(false);
+  }
+
   /* ---------------- common ---------------- */
   function send(obj) {
+    if (cloud) return Promise.resolve();      // read-only link
     var text = JSON.stringify(obj);
     if (ble) return ble.cmd.writeValueWithResponse(enc.encode(text));
     if (serial) return serial.writer.write(enc.encode(text + "\n"));
@@ -137,6 +184,8 @@
 
   function connect(kind) {
     disconnect();
+    autoCloud = kind === "cloud";
+    if (kind === "cloud") return connectCloud();
     var p = kind === "usb" ? connectUsb() : connectBle();
     return p.then(function () { return hello(); }).then(function () {
       clearInterval(timeSync);                          // keep the band clock on the phone's time
@@ -163,13 +212,19 @@
 
   function disconnect() {
     clearInterval(timeSync);
+    closeCloud();
     if (ble) { try { ble.device.gatt.disconnect(); } catch (e) {} ble = null; }
     if (serial) closeSerial();
     if (state.connected) setStatus(false);
   }
 
+  /* Start listening as soon as Firebase is up, unless a direct link (BLE/USB) is already open. */
+  document.addEventListener("novaband:cloud-ready", function () {
+    if (!state.connected && !ble && !serial && autoCloud && !cloud) connectCloud().catch(function () {});
+  });
+
   window.NovaLink = {
     connect: connect, disconnect: disconnect, send: send, on: on, state: state,
-    support: { ble: !!navigator.bluetooth, usb: !!navigator.serial }
+    support: { ble: !!navigator.bluetooth, usb: !!navigator.serial, cloud: true }
   };
 })();
