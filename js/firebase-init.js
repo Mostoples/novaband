@@ -33,6 +33,22 @@ try {
 
   /* Exposed so future scripts can pick it up without re-initialising. */
   window.novabandFirebase = app;
+
+  /* Run sessions: anonymous sign-in, then users/{uid}/sessions/{id} in Firestore (owner-only rules,
+     see firestore.rules). Writes are keyed by id, so retrying a sync can never duplicate a session. */
+  const V = "https://www.gstatic.com/firebasejs/12.4.0/";
+  const [{ getAuth, signInAnonymously }, { getFirestore, doc, setDoc }] =
+    await Promise.all([import(V + "firebase-auth.js"), import(V + "firebase-firestore.js")]);
+  const auth = getAuth(app), db = getFirestore(app);
+  const uid = async () => auth.currentUser ? auth.currentUser.uid : (await signInAnonymously(auth)).user.uid;
+  window.NovaCloud = {
+    saveSession: async (id, data) => {
+      const u = await uid();
+      await setDoc(doc(db, "users", u, "sessions", String(id)), data);
+      return u;
+    }
+  };
+  document.dispatchEvent(new CustomEvent("novaband:cloud-ready"));
   document.dispatchEvent(new CustomEvent("novaband:firebase-ready", { detail: { app } }));
 } catch (err) {
   /* Offline, blocked, or the CDN is unreachable — the site is fully

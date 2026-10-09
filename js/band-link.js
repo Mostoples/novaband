@@ -26,6 +26,7 @@
   var state = { transport: null, name: "", fw: "", connected: false };
   var ble = null;          // { device, cmd }
   var serial = null;       // { port, writer, reader, keepAlive }
+  var timeSync = null;
   var enc = new TextEncoder(), dec = new TextDecoder();
 
   function emit(ev, data) { (handlers[ev] || []).forEach(function (fn) { try { fn(data); } catch (e) { console.error(e); } }); }
@@ -137,7 +138,12 @@
   function connect(kind) {
     disconnect();
     var p = kind === "usb" ? connectUsb() : connectBle();
-    return p.then(function () { return hello(); });
+    return p.then(function () { return hello(); }).then(function () {
+      clearInterval(timeSync);                          // keep the band clock on the phone's time
+      timeSync = setInterval(function () {
+        send({ cmd: "time", t: Math.floor(Date.now() / 1000), tz: -new Date().getTimezoneOffset() }).catch(function () {});
+      }, 300000);
+    });
   }
 
   function hello() {
@@ -148,6 +154,7 @@
       age: prof.age || 17,
       hrmax: prof.hrmax || 195,
       rest: prof.rest || 62,
+      height: prof.height || 170,
       alert: prof.alert || 185,
       t: Math.floor(Date.now() / 1000),
       tz: -new Date().getTimezoneOffset()
@@ -155,6 +162,7 @@
   }
 
   function disconnect() {
+    clearInterval(timeSync);
     if (ble) { try { ble.device.gatt.disconnect(); } catch (e) {} ble = null; }
     if (serial) closeSerial();
     if (state.connected) setStatus(false);

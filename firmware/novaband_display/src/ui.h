@@ -54,6 +54,7 @@ class Ui {
   float pageF_ = 0, pageV_ = 0;
   int target_ = 0;
   bool dragging_ = false, down_ = false;
+  float dragTarget_ = 0;           // where the finger says the page is; pageF_ eases toward it
   float downX_ = 0, downY_ = 0, downPage_ = 0, downT_ = 0, lastX_ = 0, lastT_ = 0, velX_ = 0;
   // smoothed values shown on screen
   float hrShown_ = 0, readyShown_ = 0, loadShown_ = 0;

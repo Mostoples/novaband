@@ -192,9 +192,14 @@
         <div class="panel" id="p-live">
           <div class="metric-grid">
             <div class="metric"><div class="lbl"><img src="assets/3d/heart.webp" alt="">Detak jantung</div><div class="val" id="m-bpm">— <small>bpm</small></div><div class="delta" id="m-zone">Zona —</div></div>
-            <div class="metric"><div class="lbl"><img src="assets/3d/footsteps.webp" alt="">Cadence</div><div class="val" id="m-cad">— <small>spm</small></div><div class="delta" id="m-cad-note">menunggu data</div></div>
+            <div class="metric"><div class="lbl"><img src="assets/3d/footsteps.webp" alt="">Cadence</div><div class="val" id="m-cad">— <small>spm</small></div><div class="delta" id="m-cad-note">menunggu data</div><div class="delta mono" id="m-steps">0 langkah</div></div>
             <div class="metric"><div class="lbl"><img src="assets/3d/map-pin.webp" alt="">Pace</div><div class="val" id="m-pace">— <small>/km</small></div><div class="delta" id="m-dist">0,00 km</div></div>
             <div class="metric"><div class="lbl"><img src="assets/3d/stopwatch.webp" alt="">Durasi</div><div class="val mono" id="m-time">00:00</div><div class="delta" id="m-kcal">0 kkal</div></div>
+          </div>
+
+          <div class="tile">
+            <div class="tile-head"><div class="tile-title">Riwayat aktivitas</div><div class="tile-note">tersimpan di browser</div></div>
+            <div id="act-list"></div>
           </div>
 
           <div class="tile">
@@ -326,6 +331,9 @@
                 <div class="spec-row"><span>Perangkat</span><span class="mono" id="band-name">—</span></div>
                 <div class="spec-row"><span>Firmware</span><span class="mono" id="band-fw">—</span></div>
                 <div class="spec-row"><span>Sumber data</span><span id="band-data">—</span></div>
+                <div class="spec-row"><span>Detak jantung</span><span id="band-hr">—</span></div>
+                <div class="spec-row"><span>SpO2</span><span id="band-spo2">—</span></div>
+                <div class="spec-row"><span>Suhu kulit</span><span id="band-temp">—</span></div>
                 <div class="spec-row"><span>Koneksi</span><span>Bluetooth LE (Web Bluetooth) · USB (Web Serial)</span></div>
               </div>
               <div class="band-ctl">

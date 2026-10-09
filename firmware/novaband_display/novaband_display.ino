@@ -79,6 +79,7 @@ struct Line { char s[256]; uint8_t src; };      // commands from BLE/USB, handle
 static QueueHandle_t cmdQ;
 static BLECharacteristic *chTelem, *chWave, *chHr, *chBat;
 static volatile int bleClients = 0;
+static volatile uint32_t advAt = 0;                        // millis() at which to restart advertising, 0 = none
 static uint32_t usbSeenMs = 0;                  // last command over USB
 static bool usbStream = false;
 
@@ -169,16 +170,17 @@ static bool assetsInit() {
 }
 
 // ---------------------------------------------------------------- touch (CST816)
-static bool touchRead(int& x, int& y) {
+// returns 1 finger down (x,y set), 2 lifted, 0 no finger, -1 no usable information (ghost / bus error)
+static int touchRead(int& x, int& y) {
   Wire.beginTransmission(0x15);
   Wire.write(0x02);
-  if (Wire.endTransmission(false) != 0) return false;
-  if (Wire.requestFrom(0x15, 5) != 5) return false;
+  if (Wire.endTransmission(false) != 0) return -1;
+  if (Wire.requestFrom(0x15, 5) != 5) return -1;
   uint8_t n = Wire.read(), xh = Wire.read(), xl = Wire.read(), yh = Wire.read(), yl = Wire.read();
-  if (!(n & 0x0F)) return false;
+  if (!(n & 0x0F)) return 0;
+  if ((xh >> 6) == 1) return 2;                            // the chip's own "lift" event
   int tx = ((xh & 0x0F) << 8) | xl, ty = ((yh & 0x0F) << 8) | yl;
-  static uint32_t lastLog = 0;
-  if (millis() - lastLog > 250) { Serial.printf("# touch raw %d,%d\n", tx, ty); lastLog = millis(); }
+  if (tx >= 4000 || ty >= 4000) return -1;                 // 4095,4095 = ghost read, not a finger
 #if TOUCH_SWAP
   x = ty; y = tx;
 #else
@@ -190,7 +192,22 @@ static bool touchRead(int& x, int& y) {
 #if TOUCH_FLIP_Y
   y = gfx::H - 1 - y;
 #endif
-  return true;
+  return 1;
+}
+
+// Polled several times per frame (see the end of loop) so a swipe follows the finger at the panel's own rate.
+static bool tdown = false;
+static int tlx = 0, tly = 0;
+static void touchPoll() {
+  static uint32_t upSince = 0;
+  int tx, ty;
+  int tr = touchRead(tx, ty);
+  if (tr == 1) { tdown = true; tlx = tx; tly = ty; upSince = 0; }
+  else if (tr == 2) { tdown = false; upSince = 0; }
+  else if (tr == 0 || (tr < 0 && tdown)) {                 // release only after ~40 ms without a finger
+    if (!upSince) upSince = millis();
+    if (millis() - upSince > 40) tdown = false;
+  }
 }
 
 static void touchInit() {
@@ -201,6 +218,7 @@ static void touchInit() {
   delay(60);
   pinMode(PIN_TINT, INPUT);
   Wire.begin(PIN_SDA, PIN_SCL, 400000);
+  Wire.beginTransmission(0x15); Wire.write(0xFE); Wire.write(0xFF); Wire.endTransmission();   // no auto-standby: it dropped the first swipe
 }
 
 // ---------------------------------------------------------------- buttons
@@ -219,6 +237,48 @@ struct Button {
 };
 static Button bPrev{PIN_BTN_PREV}, bNext{PIN_BTN_NEXT};
 
+// ---------------------------------------------------------------- power (hold left BOOT button 2 s)
+static const uint32_t POWER_HOLD_MS = 2000;
+
+// deep sleep: screen, peripheral rail and backlight held off; the same 2 s hold wakes it again
+static void powerOff() {
+  sensors::shutdown();                                      // MAX30102 LEDs, gyro
+  ledcWrite(PIN_BL, 0);
+  ledcDetach(PIN_BL);
+  pinMode(PIN_BL, OUTPUT);
+  digitalWrite(PIN_BL, LOW);
+  digitalWrite(PIN_PWR, LOW);
+  gpio_hold_en((gpio_num_t)PIN_BL);
+  gpio_hold_en((gpio_num_t)PIN_PWR);
+  gpio_deep_sleep_hold_en();
+  while (digitalRead(PIN_BTN_PREV) == LOW) delay(10);      // wait for release, else it wakes at once
+  delay(50);
+  esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_BTN_PREV, 0);
+  esp_deep_sleep_start();
+}
+
+// after a button wake-up: stay on only if the button is still held after 2 s, otherwise sleep again
+// The phone's time survives a power-off: the system clock runs through deep sleep.
+RTC_DATA_ATTR static bool rtcTimeSet = false;
+RTC_DATA_ATTR static int rtcTzMin = 0;
+
+static void wakeGate() {
+  if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_EXT0) return;
+  pinMode(PIN_BTN_PREV, INPUT_PULLUP);
+  uint32_t t0 = millis();
+  while (millis() - t0 < POWER_HOLD_MS) {
+    if (digitalRead(PIN_BTN_PREV) != LOW) {
+      esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_BTN_PREV, 0);
+      esp_deep_sleep_start();
+    }
+    delay(10);
+  }
+  gpio_deep_sleep_hold_dis();
+  gpio_hold_dis((gpio_num_t)PIN_BL);
+  gpio_hold_dis((gpio_num_t)PIN_PWR);
+  while (digitalRead(PIN_BTN_PREV) == LOW) delay(10);      // don't let the hold count as a UI press
+}
+
 // ---------------------------------------------------------------- battery
 static void batteryRead() {
   static float v = 0;
@@ -234,20 +294,30 @@ static void batteryRead() {
 static void applySensors() {
   using namespace sensors;
   uint32_t ms = millis();
-  float up = uptime();
   auto fresh = [&](uint32_t at) { return at && ms - at < VALID_MS; };
-  if (fresh(data.hrAt)) model.setRealHr(data.hr, up);
-  if (fresh(data.spo2At)) model.setRealSpo2(data.spo2, up);
-  if (fresh(data.cadAt)) model.setRealCadence(data.cadence, up);
-  model.m.temp = fresh(data.tempAt) ? data.temp : 0;
+  model.hrOk = fresh(data.hrAt);
+  model.spo2Ok = fresh(data.spo2At);
+  model.cadOk = fresh(data.cadAt);
+  model.tempOk = fresh(data.tempAt);
+  model.m.hr = model.hrOk ? data.hr : 0;
+  model.m.spo2 = model.spo2Ok ? data.spo2 : 0;
+  model.m.cadence = model.cadOk ? data.cadence : 0;
+  model.m.temp = model.tempOk ? data.temp : 0;
+  static uint32_t seen = 0, beats = 0;
+  uint32_t n = data.waveN;
+  if (n - seen > Model::PPG_N) seen = n - Model::PPG_N;
+  while (seen != n) model.pushPpg(data.wave[seen++ % Data::WAVE_N]);
+  static uint32_t stepsSeen = 0;
+  model.addSteps(data.steps - stepsSeen); stepsSeen = data.steps;
+  while (beats != data.beats) { model.beat(); beats++; }
 }
 
 // ---------------------------------------------------------------- BLE
 class SrvCb : public BLEServerCallbacks {
   void onConnect(BLEServer*) override { bleClients++; }
-  void onDisconnect(BLEServer* s) override {
+  void onDisconnect(BLEServer*) override {
     if (bleClients > 0) bleClients--;
-    s->startAdvertising();                                  // stay discoverable
+    advAt = millis() + 400;                                 // re-advertise from loop(), after the stack settled
   }
 };
 class CmdCb : public BLECharacteristicCallbacks {
@@ -306,7 +376,7 @@ static void linkTick() {
   bool usb = usbStream && now - usbSeenMs < 8000;
   ui.setLink(bleClients > 0 ? Link::Ble : usb ? Link::Usb : Link::Advertising,
              bleClients > 0 ? "Web Bluetooth" : usb ? "Web Serial" : "");
-  char buf[256];
+  char buf[320];
   if (now - lastTelem >= 1000) {
     lastTelem = now;
     proto::telemetry(model, buf, sizeof buf);
@@ -370,9 +440,11 @@ static void handleCommands() {
 
 // ---------------------------------------------------------------- setup / loop
 void setup() {
+  wakeGate();
   pinMode(PIN_PWR, OUTPUT);
   digitalWrite(PIN_PWR, HIGH);                  // peripheral power (LCD, touch) on battery
   Serial.begin(115200);
+  Serial.setTxTimeoutMs(0);                     // never block the render loop when nobody reads the USB port
   pinMode(PIN_BTN_PREV, INPUT_PULLUP);
   pinMode(PIN_BTN_NEXT, INPUT_PULLUP);
   ledcAttach(PIN_BL, 20000, 8);
@@ -398,6 +470,15 @@ void setup() {
   }
   touchInit();
   sensors::begin();
+  model.real = true;                            // show measured values only
+  if (rtcTimeSet && esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT0) {   // back from power-off: restore the clock
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    model.epochOffset = (int64_t)tv.tv_sec + rtcTzMin * 60 - (int64_t)uptime();
+    model.tzMin = rtcTzMin;
+    model.timeValid = true;
+  }
+  model.m.readiness = 0;                        // no HRV / sleep data to base it on
   cmdQ = xQueueCreate(8, sizeof(Line));
   ui.begin(&assets, &model);
   ui.setDeviceName(devName);
@@ -417,25 +498,34 @@ void loop() {
   uint32_t nowUs = micros();
   float dt = (nowUs - last) / 1e6f;
   last = nowUs;
+  static float worstDt = 0;
+  if (dt > worstDt) worstDt = dt;
   if (dt > .1f) dt = .1f;
 
   // input
-  int tx, ty;
-  bool td = touchRead(tx, ty);
-  static int lx = 0, ly = 0;
-  if (td) { lx = tx; ly = ty; }
-  ui.touch(td, lx, ly);
+  touchPoll();
+  ui.touch(tdown, tlx, tly);
   int e = bNext.poll();
   if (e) ui.buttonNext(e == 2);
   e = bPrev.poll();
   if (e) ui.buttonPrev(e == 2);
+  if (bPrev.down && millis() - bPrev.downAt >= POWER_HOLD_MS) powerOff();
 
   serialPoll();
+  if (advAt && (int32_t)(millis() - advAt) >= 0) { advAt = 0; BLEDevice::startAdvertising(); }
   handleCommands();
   static uint32_t batT = 0;
   if (millis() - batT > 500) { batT = millis(); batteryRead(); }
 
   applySensors();
+  if (model.timeValid) { rtcTimeSet = true; rtcTzMin = model.tzMin; }
+  static uint32_t senT = 0;
+  if (millis() - senT >= 2000) {
+    senT = millis();
+    Serial.printf("# hr %.0f%s spo2 %.0f%s temp %.1f%s cad %.0f%s finger %d\n", model.m.hr, model.hrOk ? "" : "?",
+                  model.m.spo2, model.spo2Ok ? "" : "?", model.m.temp, model.tempOk ? "" : "?", model.m.cadence,
+                  model.cadOk ? "" : "?", (int)sensors::data.finger);
+  }
   model.update(dt, uptime());
   ui.update(dt);
   linkTick();
@@ -448,19 +538,23 @@ void loop() {
   uint32_t r0 = micros();
   xSemaphoreGive(goTop);                        // core 0 starts on the top band
   xSemaphoreTake(bandFree[1], portMAX_DELAY);   // bottom band off the bus?
+  uint32_t r1 = micros();
   ui.render(canvasBot);                         // core 1 draws the bottom band
+  uint32_t r2 = micros();
   xSemaphoreTake(doneTop, portMAX_DELAY);
+  if (micros() - nowUs > 150000) Serial.printf("# slow frame: input %u ms, wait bus %u ms, render %u ms, wait top %u ms\n",
+      (unsigned)((r0 - nowUs) / 1000), (unsigned)((r1 - r0) / 1000), (unsigned)((r2 - r1) / 1000), (unsigned)((micros() - r2) / 1000));
   renderMs += (micros() - r0) / 1000.f;
   esp_lcd_panel_draw_bitmap(panel, 0, 0, gfx::W, BAND, band[0]);
   esp_lcd_panel_draw_bitmap(panel, 0, BAND, gfx::W, gfx::H, band[1]);
 
   frames++;
   if (millis() - statT >= 5000) {
-    Serial.printf("# fps %.1f  render %.1f ms  heap %u  ble %d  page %d\n", frames * 1000.f / (millis() - statT),
-                  renderMs / frames, (unsigned)ESP.getFreeHeap(), bleClients, ui.page());
+    Serial.printf("# fps %.1f  render %.1f ms  worst frame %.0f ms  heap %u  ble %d  page %d\n", frames * 1000.f / (millis() - statT),
+                  renderMs / frames, worstDt * 1000, (unsigned)ESP.getFreeHeap(), bleClients, ui.page());
+    worstDt = 0;
     statT = millis(); frames = 0; renderMs = 0;
   }
   // cap at ~60 fps
-  uint32_t spent = micros() - nowUs;
-  if (spent < 15000) delay((16000 - spent) / 1000);       // yields to the BLE / USB tasks
+  while (micros() - nowUs < 15500) { touchPoll(); delay(3); }   // keep sampling the panel; also yields to BLE / USB
 }

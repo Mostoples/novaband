@@ -17,7 +17,8 @@
       "**/*.ttf",
       "deck/**",
       "firmware/**",
-      "hardware/**"
+      "hardware/**",
+      "firestore.rules"
     ],
     "headers": [
       {
@@ -97,5 +98,8 @@
         "destination": "/app.html"
       }
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
   }
 }

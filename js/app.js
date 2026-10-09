@@ -49,7 +49,7 @@
   window.NovaState = S;
   /* profile sent to the band on connect (js/band-link.js) */
   window.NovaProfile = function () {
-    return { name: "Runner", age: 17, hrmax: S.maxHR, rest: S.restHR, alert: S.thr.hr };
+    return { name: "Runner", age: 17, hrmax: S.maxHR, rest: S.restHR, alert: S.thr.hr, height: 170 };
   };
 
   var ZONES = [
@@ -592,7 +592,7 @@
   function render() {
     /* live metrics */
     var zi = currentZone();
-    setText("m-bpm", S.connected ? Math.round(S.hr) + " " : "— ", "bpm");
+    setText("m-bpm", S.connected && S.hrOk !== false ? Math.round(S.hr) + " " : "— ", "bpm");
     setText("m-cad", S.running ? Math.round(S.cadence) + " " : "— ", "spm");
     setText("m-pace", S.running ? fmtPace(S.pace) + " " : "— ", "/km");
     var mt = $("m-time"); if (mt) mt.textContent = fmtTime(S.t);
@@ -640,7 +640,7 @@
     updateLegMap();
 
     var dgBpm = $("dg-bpm");
-    if (dgBpm) dgBpm.textContent = S.connected ? Math.round(S.hr) + " bpm" : "— bpm";
+    if (dgBpm) dgBpm.textContent = S.connected && S.hrOk !== false ? Math.round(S.hr) + " bpm" : "— bpm";
 
     /* readiness ring */
     var ring = $("ring-prog");
@@ -741,6 +741,7 @@
      the models the band does not run (zones, soft tissue, readiness factors),
      driven by the measured heart rate instead of the effort slider. */
   function bandPhysics(dt) {
+    if (S.hrOk === false) return;                  // no finger: nothing to base zones or warnings on
     S.effort = clamp((S.hr - S.restHR) / (S.maxHR - S.restHR) * 110, 0, 100);
     if (!S.running) return;
     S.zoneSec[currentZone()] += dt;
@@ -934,10 +935,18 @@
       render();
     });
     L.on("telemetry", function (m) {
-      S.hr = m.hr; S.spo2 = m.sp; S.cadence = m.cad;
+      S.hrOk = m.hok !== 0;                            // false = no finger on the PPG sensor
+      if (S.hrOk) S.hr = m.hr;
+      if (m.sok !== 0) S.spo2 = m.sp;
+      S.cadence = m.cad;
+      S.temp = m.tok ? m.tmp : 0;
+      S.spo2Ok = m.sok !== 0;
       S.pace = m.pace > 0 ? m.pace / 60 : 0;           // band: s/km, app: min/km
       S.dist = m.dist; S.kcal = m.kcal; S.battery = m.bat; S.bandDemo = !!m.demo;
       if (m.run) S.t = m.sec;
+      S.steps = m.stp || 0;
+      var se = $("m-steps"); if (se) se.textContent = S.steps.toLocaleString("id-ID") + " langkah";
+      recordTick(m);
       var run = !!m.run && !m.pz;
       if (run !== S.running) {                         // started / paused on the band itself
         S.running = run;
@@ -945,12 +954,87 @@
         if (lbl) lbl.textContent = run ? "Jeda Sesi" : (S.t > 0 ? "Lanjutkan" : "Mulai Sesi");
       }
       var bd = $("band-data");
-      if (bd) bd.textContent = m.demo ? "Simulasi di band (belum ada sensor PPG)" : "Sensor PPG";
+      if (bd) bd.textContent = m.demo ? "Simulasi di band (belum ada sensor PPG)" : "Sensor asli · MAX30102 · MLX90614 · MPU6050";
+      var bt = $("band-temp"); if (bt) bt.textContent = S.temp > 0 ? S.temp.toFixed(1).replace(".", ",") + " °C" : "—";
+      var bs = $("band-spo2"); if (bs) bs.textContent = S.spo2Ok && m.sp > 0 ? Math.round(m.sp) + " %" : "—";
+      var bh = $("band-hr"); if (bh) bh.textContent = S.hrOk ? Math.round(m.hr) + " bpm" : "Letakkan jari di sensor";
     });
     L.on("wave", function (samples) {
       samples.forEach(function (v) { wave.push(v); if (wave.length > WAVE_LEN) wave.shift(); });
     });
   }
+
+
+  /* ---------------- activity recorder (Strava-style log of a band run) ---------------- */
+  var ACT_KEY = "nova.activities", rec = null;
+  function loadActs() { try { return JSON.parse(localStorage.getItem(ACT_KEY)) || []; } catch (e) { return []; } }
+  function recordTick(m) {
+    if (m.run && !rec) rec = { start: Date.now(), s: [], lastSec: -1 };
+    if (rec && m.run && !m.pz && m.sec !== rec.lastSec) {      // one sample per second of running time
+      rec.lastSec = m.sec;
+      rec.s.push([m.sec, m.hok === 0 ? 0 : m.hr, +m.dist.toFixed(3), m.stp || 0, m.cad || 0, m.kcal || 0]);
+    }
+    if (rec && !m.run) { saveActivity(); rec = null; }
+  }
+  function saveActivity() {
+    var s = rec.s; if (s.length < 10) return;
+    var last = s[s.length - 1], hrs = s.map(function (x) { return x[1]; }).filter(Boolean);
+    var splits = [], kmMark = 0, tMark = 0;
+    s.forEach(function (x) { if (x[2] >= kmMark + 1) { splits.push(Math.round(x[0] - tMark)); tMark = x[0]; kmMark += 1; } });
+    var acts = loadActs();
+    acts.unshift({ at: rec.start, sec: last[0], dist: last[2], steps: last[3], kcal: Math.round(last[5]),
+      hrAvg: hrs.length ? Math.round(hrs.reduce(function (a, b) { return a + b; }, 0) / hrs.length) : 0,
+      hrMax: hrs.length ? Math.max.apply(null, hrs) : 0, splits: splits,
+      hr: s.filter(function (x, i) { return i % Math.max(1, Math.floor(s.length / 60)) === 0; }).map(function (x) { return x[1]; }),
+      series: s.filter(function (x, i) { return i % Math.max(1, Math.ceil(s.length / 300)) === 0; }),   // [sec, hr, km, steps, cad, kcal]
+      cloud: false });
+    putActs(acts.slice(0, 30));
+    renderActs(); toast("Aktivitas tersimpan"); syncActs();
+  }
+  function putActs(a) { try { localStorage.setItem(ACT_KEY, JSON.stringify(a)); } catch (e) {} }
+  /* Push every session that is not in Firebase yet; failures (offline, rules) are retried later. */
+  var syncing = false;
+  function syncActs() {
+    if (syncing || !window.NovaCloud) return;
+    var todo = loadActs().filter(function (a) { return !a.cloud; });
+    if (!todo.length) return;
+    syncing = true;
+    var chain = Promise.resolve();
+    todo.forEach(function (a) {
+      chain = chain.then(function () {
+        var d = {}; Object.keys(a).forEach(function (k) { if (k !== "cloud") d[k] = a[k]; });
+        d.savedAt = Date.now(); d.source = "novaband";
+        return window.NovaCloud.saveSession(a.at, d).then(function () {
+          var all = loadActs(); all.forEach(function (x) { if (x.at === a.at) x.cloud = true; });
+          putActs(all); renderActs();
+        });
+      });
+    });
+    chain.then(function () { toast("Sesi tersimpan ke Firebase"); })
+      .catch(function (e) { console.warn("[NovaBand] sync gagal:", e && e.message); })
+      .then(function () { syncing = false; });
+  }
+  doc.addEventListener("novaband:cloud-ready", syncActs);
+  window.addEventListener("online", syncActs);
+  setInterval(syncActs, 60000);
+  function renderActs() {
+    var box = $("act-list"); if (!box) return;
+    var acts = loadActs();
+    if (!acts.length) { box.innerHTML = '<p class="tile-note">Belum ada lari tersimpan. Mulai lari dengan NovaBand, lalu stop untuk menyimpan.</p>'; return; }
+    box.innerHTML = acts.map(function (a) {
+      var pace = a.dist > 0.05 ? a.sec / a.dist / 60 : 0, d = new Date(a.at);
+      var mx = Math.max.apply(null, a.hr.concat([1])), mn = Math.min.apply(null, a.hr.filter(Boolean).concat([mx]));
+      var pts = a.hr.map(function (v, i) { return (i * 200 / Math.max(1, a.hr.length - 1)).toFixed(1) + "," + (38 - (v - mn) / Math.max(1, mx - mn) * 34).toFixed(1); }).join(" ");
+      return '<div class="tile" style="margin-bottom:10px"><div class="tile-head"><div class="tile-title">' +
+        d.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "short" }) + " · " +
+        d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }) + '</div><div class="tile-note">' + fmtTime(a.sec) + '</div></div>' +
+        '<div class="row" style="gap:18px;flex-wrap:wrap"><b class="mono">' + a.dist.toFixed(2).replace(".", ",") + ' km</b><span>' +
+        (pace ? fmtPace(pace) + " /km" : "—") + '</span><span>' + a.steps.toLocaleString("id-ID") + ' langkah</span><span>' + a.kcal + ' kkal</span><span>HR ' +
+        a.hrAvg + '/' + a.hrMax + '</span><span class="tile-note">' + (a.cloud ? '☁ tersinkron' : 'belum tersinkron') + '</span></div><svg viewBox="0 0 200 42" width="100%" height="42" preserveAspectRatio="none" aria-label="Grafik detak jantung"><polyline fill="none" stroke="currentColor" stroke-width="1.5" points="' + pts + '"/></svg>' +
+        (a.splits.length ? '<div class="tile-note">Split: ' + a.splits.map(function (x, i) { return (i + 1) + "km " + fmtTime(x); }).join(" · ") + '</div>' : "") + '</div>';
+    }).join("");
+  }
+  renderActs(); syncActs();
 
   /* band controls in the Perangkat panel */
   var bmSend = $("band-msg-send"), bmText = $("band-msg");
@@ -1060,6 +1144,8 @@
   if (location.hash === "#device") {
     var devBtn = doc.querySelector('.side-item[data-panel="p-device"]');
     if (devBtn) setTimeout(function () { devBtn.click(); }, 0);
+    // scanning the band's QR = "connect me": open the picker right away (the browser still needs one tap on Bluetooth)
+    setTimeout(function () { if (!S.band && !S.connected) openConnect(); }, 400);
   }
 
   /* date */

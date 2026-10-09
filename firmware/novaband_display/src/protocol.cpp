@@ -2,6 +2,7 @@
 
 #include <ArduinoJson.h>
 #include <stdio.h>
+#include <sys/time.h>
 #include <string.h>
 
 #include "gfx.h"
@@ -13,10 +14,11 @@ int telemetry(const Model& md, char* out, size_t n) {
   return snprintf(out, n,
                   "{\"t\":\"m\",\"hr\":%d,\"sp\":%d,\"cad\":%d,\"pace\":%d,\"dist\":%.2f,\"sec\":%d,"
                   "\"kcal\":%d,\"load\":%d,\"rdy\":%d,\"z\":%d,\"bat\":%d,\"usb\":%d,\"run\":%d,\"pz\":%d,"
-                  "\"stp\":%lu,\"tmp\":%.1f,\"demo\":%d}",
+                  "\"stp\":%lu,\"tmp\":%.1f,\"demo\":%d,\"hok\":%d,\"sok\":%d,\"cok\":%d,\"tok\":%d}",
                   (int)(m.hr + .5f), (int)(m.spo2 + .5f), (int)(m.cadence + .5f), (int)m.pace, m.dist,
                   (int)m.elapsed, (int)m.kcal, (int)m.load, m.readiness, m.zone, m.battery, m.usbPower,
-                  m.running, m.paused, (unsigned long)m.steps, m.temp, md.demo ? 1 : 0);
+                  m.running, m.paused, (unsigned long)m.steps, m.temp, md.demo ? 1 : 0,
+                  !md.real || md.hrOk, !md.real || md.spo2Ok, !md.real || md.cadOk, md.real && md.tempOk);
 }
 
 static void setTime(Model& m, JsonVariantConst doc, float up) {
@@ -26,6 +28,9 @@ static void setTime(Model& m, JsonVariantConst doc, float up) {
   int tz = doc["tz"] | 0;                          // minutes east of UTC (WIB = 420)
   m.epochOffset = (int64_t)t + tz * 60 - (int64_t)up;
   m.timeValid = true;
+  struct timeval tv = {(time_t)t, 0};                // system clock keeps counting through deep sleep
+  settimeofday(&tv, nullptr);
+  m.tzMin = tz;
 }
 
 int handle(const char* json, size_t len, const Env& env, char* reply, size_t n) {
@@ -43,6 +48,7 @@ int handle(const char* json, size_t len, const Env& env, char* reply, size_t n) 
     p.hrMax = doc["hrmax"] | (220 - p.age);
     p.hrRest = doc["rest"] | p.hrRest;
     p.weight = doc["weight"] | p.weight;
+    p.height = doc["height"] | p.height;
     p.alertHr = doc["alert"] | p.alertHr;
     setTime(m, doc.as<JsonVariantConst>(), up);
     char t[48];

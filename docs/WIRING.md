@@ -21,9 +21,10 @@ touch bawaan board (GPIO 17/18) tidak disentuh. Semua sensor di **3V3**, bukan 5
 | CST816 (touch, bawaan) | 0x15 | `Wire` — GPIO 18 / 17 |
 | MAX30102 | 0x57 | `Wire1` — GPIO 10 / 11 |
 | GY-50 (L3G4200D) | 0x69 (SDO=3V3) atau 0x68 (SDO=GND) | `Wire1` |
+| MPU6050 (GY-521) | 0x68 (AD0=GND) atau 0x69 (AD0=3V3) | `Wire1` — pakai pin SDA/SCL yang sama |
 | MLX90614 | 0x5A | `Wire1` |
 
-Tidak ada alamat yang bentrok. Firmware mencoba 0x69 lalu 0x68 untuk GY-50.
+MPU6050 dan GY-50 berbagi 0x68/0x69; jangan pasang keduanya di alamat yang sama. Kalau MPU6050 ada, firmware memakainya (langkah dari akselerometer) dan melewati GY-50.
 
 ## 3. Diagram
 
@@ -48,10 +49,11 @@ Semua SDA disambung ke IO10 yang sama, semua SCL ke IO11 yang sama (topologi bus
 |---|---|---|
 | MAX30102 | IR + Red, 100 Hz | detak jantung (deteksi puncak), SpO₂ (rasio AC/DC) |
 | MLX90614 | suhu objek, 2 Hz | suhu kulit → field `tmp` di telemetri |
-| GY-50 | gyro 3 sumbu, 100 Hz | kadensi (puncak |ω| = 1 langkah) → langkah |
+| MPU6050 | akselerometer 100 Hz | langkah asli: puncak magnitudo |a| (ambang adaptif, jeda ≥240 ms, gerbang 4 langkah beruntun) → `stp`, kadensi → `cad` |
+| GY-50 (cadangan) | gyro 3 sumbu, 100 Hz | kadensi (puncak |ω| = 1 langkah) → langkah |
 
 Kalau sensor tidak terdeteksi saat boot, nilainya tetap simulasi (`demo`).
-Status boot tercetak di serial: `# sensors: MAX30102 ok, MLX90614 ok, GY-50 ok`.
+Status boot tercetak di serial: `# sensors: MAX30102 ok, MLX90614 ok, MPU6050 ok, GY-50 --`.
 
 ## 5. Catatan pemasangan
 
