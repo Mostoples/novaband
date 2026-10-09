@@ -259,6 +259,13 @@ inline void begin() {
   Wire1.begin(PIN_SDA, PIN_SCL, 100000);
   Wire1.setTimeOut(20);
 
+  Serial.print("# i2c scan Wire1:");                // every address that ACKs, to debug wiring
+  for (uint8_t a = 1; a < 127; a++) {
+    Wire1.beginTransmission(a);
+    if (Wire1.endTransmission() == 0) Serial.printf(" 0x%02X", a);
+  }
+  Serial.println();
+
   data.hasMax = ppg.begin(Wire1, I2C_SPEED_STANDARD);
   if (data.hasMax)
     ppg.setup(0x3C, 4, 2, 400, 411, 4096);         // LED 12 mA, avg 4, red+IR, 400 sps -> 100 Hz, 18-bit

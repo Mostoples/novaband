@@ -32,3 +32,6 @@ kartu-nama/
 
 # previews of the letters (regenerated)
 berkas/_preview/
+
+# kredensial WiFi / akun Firebase perangkat
+firmware/**/secrets.h

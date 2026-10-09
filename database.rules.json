@@ -1,0 +1,20 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "devices": {
+      // Web tanpa login: siapa pun boleh MEMBACA data perangkat (live, info, runs).
+      ".read": true,
+      // Satu node per perangkat: /devices/esplilygo dan /devices/esp32c3.
+      // Hanya akun <nama>@novaband.com yang boleh MENULIS node <nama>; tidak bisa menimpa node lain.
+      "$device": {
+        ".write": "auth != null && auth.token.email === $device + '@novaband.com'",
+        "live": { ".validate": "newData.hasChildren()" },
+        "info": { ".validate": "newData.hasChildren()" },
+        // rekaman lari: /devices/<nama>/runs/<waktu-mulai-ms>
+        "runs": { "$run": { ".validate": "newData.hasChildren(['at', 'sec', 'dist'])" } },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}

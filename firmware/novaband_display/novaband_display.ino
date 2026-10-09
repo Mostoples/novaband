@@ -15,10 +15,7 @@
 //   esp32:esp32:esp32s3:CDCOnBoot=cdc,FlashSize=16M,PSRAM=opi,PartitionScheme=custom
 // ============================================================
 #include <Arduino.h>
-#include <BLE2902.h>
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEUtils.h>
+#include <NimBLEDevice.h>   // NimBLE, bukan Bluedroid: ~80 KB RAM internal lebih hemat, supaya WiFi + TLS muat
 #include <Wire.h>
 #include <esp_lcd_io_i80.h>
 #include <esp_lcd_panel_io.h>
@@ -29,6 +26,8 @@
 #include <freertos/queue.h>
 #include <freertos/semphr.h>
 
+#include "cloud.h"
+#include "runlog.h"
 #include "sensors.h"
 #include "src/assets.h"
 #include "src/gfx.h"
@@ -41,6 +40,7 @@ static const int PIN_PWR = 15, PIN_BL = 38, PIN_RD = 9, PIN_WR = 8, PIN_DC = 7, 
 static const int PIN_D[8] = {39, 40, 41, 42, 45, 46, 47, 48};
 static const int PIN_SDA = 18, PIN_SCL = 17, PIN_TINT = 16, PIN_TRST = 21;
 static const int PIN_BTN_PREV = 0, PIN_BTN_NEXT = 14, PIN_BAT = 4;
+static const int PIN_LINK = 12;      // ke GPIO 3 ESP32-C3: HIGH = jam hidup, LOW = jam mati (C3 tidur)
 static const uint32_t PCLK_HZ = 20 * 1000 * 1000;
 
 // Touch panel -> landscape screen, as in LILYGO's own example (swap XY,
@@ -77,8 +77,9 @@ static int brightness = 220;
 
 struct Line { char s[256]; uint8_t src; };      // commands from BLE/USB, handled in loop()
 static QueueHandle_t cmdQ;
-static BLECharacteristic *chTelem, *chWave, *chHr, *chBat;
+static NimBLECharacteristic *chTelem, *chWave, *chHr, *chBat;
 static volatile int bleClients = 0;
+static bool bleUp = false;                                  // bleInit() sudah jalan
 static volatile uint32_t advAt = 0;                        // millis() at which to restart advertising, 0 = none
 static uint32_t usbSeenMs = 0;                  // last command over USB
 static bool usbStream = false;
@@ -134,7 +135,7 @@ static void displayInit() {
   esp_lcd_panel_disp_on_off(panel, true);
 
   for (int i = 0; i < 2; i++) {
-    band[i] = (uint16_t*)esp_lcd_i80_alloc_draw_buffer(io, gfx::W * BAND * 2, MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
+    band[i] = (uint16_t*)esp_lcd_i80_alloc_draw_buffer(io, gfx::W * BAND * 2, MALLOC_CAP_DMA | MALLOC_CAP_SPIRAM);   // PSRAM: 108 KB RAM internal tersisa untuk BLE + WiFi + TLS
     memset(band[i], 0, gfx::W * BAND * 2);
     bandFree[i] = xSemaphoreCreateBinary();
     xSemaphoreGive(bandFree[i]);
@@ -247,7 +248,9 @@ static void powerOff() {
   ledcDetach(PIN_BL);
   pinMode(PIN_BL, OUTPUT);
   digitalWrite(PIN_BL, LOW);
+  digitalWrite(PIN_LINK, LOW);                              // beri tahu ESP32-C3: jam mati
   digitalWrite(PIN_PWR, LOW);
+  gpio_hold_en((gpio_num_t)PIN_LINK);                       // tetap LOW selama deep sleep
   gpio_hold_en((gpio_num_t)PIN_BL);
   gpio_hold_en((gpio_num_t)PIN_PWR);
   gpio_deep_sleep_hold_en();
@@ -276,6 +279,7 @@ static void wakeGate() {
   gpio_deep_sleep_hold_dis();
   gpio_hold_dis((gpio_num_t)PIN_BL);
   gpio_hold_dis((gpio_num_t)PIN_PWR);
+  gpio_hold_dis((gpio_num_t)PIN_LINK);
   while (digitalRead(PIN_BTN_PREV) == LOW) delay(10);      // don't let the hold count as a UI press
 }
 
@@ -313,17 +317,17 @@ static void applySensors() {
 }
 
 // ---------------------------------------------------------------- BLE
-class SrvCb : public BLEServerCallbacks {
-  void onConnect(BLEServer*) override { bleClients++; }
-  void onDisconnect(BLEServer*) override {
+class SrvCb : public NimBLEServerCallbacks {
+  void onConnect(NimBLEServer*, NimBLEConnInfo&) override { bleClients++; }
+  void onDisconnect(NimBLEServer*, NimBLEConnInfo&, int) override {
     if (bleClients > 0) bleClients--;
     advAt = millis() + 400;                                 // re-advertise from loop(), after the stack settled
   }
 };
-class CmdCb : public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic* c) override {
+class CmdCb : public NimBLECharacteristicCallbacks {
+  void onWrite(NimBLECharacteristic* c, NimBLEConnInfo&) override {
     Line l = {};
-    String v = c->getValue();
+    std::string v = c->getValue();
     strncpy(l.s, v.c_str(), sizeof l.s - 1);
     l.src = 0;
     xQueueSend(cmdQ, &l, 0);
@@ -331,38 +335,31 @@ class CmdCb : public BLECharacteristicCallbacks {
 };
 
 static void bleInit() {
-  BLEDevice::init(devName);
-  BLEDevice::setMTU(247);
-  BLEServer* srv = BLEDevice::createServer();
+  NimBLEDevice::init(devName);
+  NimBLEDevice::setMTU(247);
+  NimBLEServer* srv = NimBLEDevice::createServer();
   srv->setCallbacks(new SrvCb());
 
-  BLEService* hrs = srv->createService(BLEUUID((uint16_t)0x180D));
-  chHr = hrs->createCharacteristic(BLEUUID((uint16_t)0x2A37), BLECharacteristic::PROPERTY_NOTIFY);
-  chHr->addDescriptor(new BLE2902());
-  BLECharacteristic* loc = hrs->createCharacteristic(BLEUUID((uint16_t)0x2A38), BLECharacteristic::PROPERTY_READ);
+  NimBLEService* hrs = srv->createService(NimBLEUUID((uint16_t)0x180D));
+  chHr = hrs->createCharacteristic(NimBLEUUID((uint16_t)0x2A37), NIMBLE_PROPERTY::NOTIFY);
+  NimBLECharacteristic* loc = hrs->createCharacteristic(NimBLEUUID((uint16_t)0x2A38), NIMBLE_PROPERTY::READ);
   uint8_t other = 0;                                        // body sensor location: "other" (upper arm)
   loc->setValue(&other, 1);
-  hrs->start();
 
-  BLEService* bas = srv->createService(BLEUUID((uint16_t)0x180F));
-  chBat = bas->createCharacteristic(BLEUUID((uint16_t)0x2A19), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-  chBat->addDescriptor(new BLE2902());
-  bas->start();
+  NimBLEService* bas = srv->createService(NimBLEUUID((uint16_t)0x180F));
+  chBat = bas->createCharacteristic(NimBLEUUID((uint16_t)0x2A19), NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
 
-  BLEService* nb = srv->createService(NB_SVC);
-  chTelem = nb->createCharacteristic(NB_TELEM, BLECharacteristic::PROPERTY_NOTIFY | BLECharacteristic::PROPERTY_READ);
-  chTelem->addDescriptor(new BLE2902());
-  chWave = nb->createCharacteristic(NB_WAVE, BLECharacteristic::PROPERTY_NOTIFY);
-  chWave->addDescriptor(new BLE2902());
-  BLECharacteristic* cmd = nb->createCharacteristic(NB_CMD, BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
+  NimBLEService* nb = srv->createService(NB_SVC);
+  chTelem = nb->createCharacteristic(NB_TELEM, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
+  chWave = nb->createCharacteristic(NB_WAVE, NIMBLE_PROPERTY::NOTIFY);
+  NimBLECharacteristic* cmd = nb->createCharacteristic(NB_CMD, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR);
   cmd->setCallbacks(new CmdCb());
-  nb->start();
 
-  BLEAdvertising* adv = BLEDevice::getAdvertising();
+  NimBLEAdvertising* adv = NimBLEDevice::getAdvertising();
   adv->addServiceUUID(NB_SVC);
-  adv->addServiceUUID(BLEUUID((uint16_t)0x180D));
-  adv->setScanResponse(true);
-  BLEDevice::startAdvertising();
+  adv->addServiceUUID(NimBLEUUID((uint16_t)0x180D));
+  adv->enableScanResponse(true);
+  adv->start();
 }
 
 static void send(const char* s, uint8_t src) {
@@ -371,6 +368,7 @@ static void send(const char* s, uint8_t src) {
 }
 
 static void linkTick() {
+  runlog::tick(model);
   static uint32_t lastTelem = 0, lastWave = 0;
   uint32_t now = millis();
   bool usb = usbStream && now - usbSeenMs < 8000;
@@ -381,6 +379,7 @@ static void linkTick() {
     lastTelem = now;
     proto::telemetry(model, buf, sizeof buf);
     if (usb) Serial.println(buf);
+    cloud::publish(buf);
     if (bleClients > 0) {
       chTelem->setValue((uint8_t*)buf, strlen(buf));
       chTelem->notify();
@@ -445,6 +444,8 @@ void setup() {
   digitalWrite(PIN_PWR, HIGH);                  // peripheral power (LCD, touch) on battery
   Serial.begin(115200);
   Serial.setTxTimeoutMs(0);                     // never block the render loop when nobody reads the USB port
+  pinMode(PIN_LINK, OUTPUT);
+  digitalWrite(PIN_LINK, HIGH);                 // jam hidup (wakeGate() sudah lolos)
   pinMode(PIN_BTN_PREV, INPUT_PULLUP);
   pinMode(PIN_BTN_NEXT, INPUT_PULLUP);
   ledcAttach(PIN_BL, 20000, 8);
@@ -482,7 +483,9 @@ void setup() {
   cmdQ = xQueueCreate(8, sizeof(Line));
   ui.begin(&assets, &model);
   ui.setDeviceName(devName);
-  bleInit();
+  cloud::begin(devName);                        // jalur utama: WiFi -> Realtime Database. BLE menyusul di loop()
+  Serial.printf("# mem: %u internal bebas, blok terbesar %u\n", (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+                (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
   goTop = xSemaphoreCreateBinary();
   doneTop = xSemaphoreCreateBinary();
   xTaskCreatePinnedToCore(renderTopTask, "render0", 6144, nullptr, 3, nullptr, 0);
@@ -512,7 +515,16 @@ void loop() {
   if (bPrev.down && millis() - bPrev.downAt >= POWER_HOLD_MS) powerOff();
 
   serialPoll();
-  if (advAt && (int32_t)(millis() - advAt) >= 0) { advAt = 0; BLEDevice::startAdvertising(); }
+  // BLE hanya formalitas (menyambung ke jam dari web): dinyalakan setelah cloud login, atau setelah 30 dtk
+  // tanpa cloud; dilewati kalau RAM internal tidak cukup, supaya WiFi/RTDB tidak pernah dikorbankan.
+  static bool bleTried = false;
+  if (!bleTried && (cloud::status.authed || millis() > 30000)) {
+    bleTried = true;
+    size_t freeInt = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+    if (freeInt >= 85000) { bleInit(); bleUp = true; }
+    Serial.printf("# ble %s (internal bebas %u)\n", bleUp ? "aktif" : "dilewati: RAM kurang", (unsigned)freeInt);
+  }
+  if (bleUp && advAt && (int32_t)(millis() - advAt) >= 0) { advAt = 0; NimBLEDevice::startAdvertising(); }
   handleCommands();
   static uint32_t batT = 0;
   if (millis() - batT > 500) { batT = millis(); batteryRead(); }

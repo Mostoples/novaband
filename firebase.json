@@ -18,7 +18,8 @@
       "deck/**",
       "firmware/**",
       "hardware/**",
-      "firestore.rules"
+      "firestore.rules",
+      "database.rules.json"
     ],
     "headers": [
       {
@@ -101,5 +102,8 @@
   },
   "firestore": {
     "rules": "firestore.rules"
+  },
+  "database": {
+    "rules": "database.rules.json"
   }
 }
