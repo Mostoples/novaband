@@ -14,6 +14,8 @@
 //   /devices/esplilygo/runs/<id>  rekaman satu lari (id = waktu mulai, ms) — lihat saveRun()
 //   /devices/esp32c3/info     idem
 //   /devices/esp32c3/live     telemetri sensor C3
+// Perangkat boleh juga MEMBACA node perangkat lain (watch()): jam membaca /devices/esp32c3/live
+// supaya HR/SpO2/suhu dari MAX30102 + MLX90614 di C3 tampil di jam.
 // Tiap perangkat hanya menulis dua daun miliknya (PUT .../info dan .../live), tidak pernah ke
 // /devices, jadi data perangkat lain tidak pernah tertimpa.
 #pragma once
@@ -40,6 +42,16 @@ struct Status {
 };
 inline Status status;
 
+// Telemetri sensor perangkat lain (ESP32-C3) yang dibaca dari RTDB lewat watch(). Ditulis task cloud,
+// dibaca loop(). `seenAt` = millis() saat penghitung `up` perangkat itu terakhir berubah (0 = belum
+// pernah) - tidak bergantung jam, jadi data basi terdeteksi kalau perangkat itu mati/tidur.
+struct Remote {
+  volatile float hr = 0, spo2 = 0, temp = 0;
+  volatile bool finger = false, hasMax = false, hasMlx = false;
+  volatile uint32_t seenAt = 0, upSeen = 0;
+};
+inline Remote remote;
+
 namespace {
 
 extern "C" const uint8_t rootca_bundle_start[] asm("_binary_x509_crt_bundle_start");
@@ -53,6 +65,7 @@ String dbgBody;                                      // JSON string besar untuk 
 bool dbgDirty = false;
 bool dirty = false;
 char devName[32];
+char watchRole[24] = "";                             // node perangkat lain yang dibaca ("" = tidak membaca)
 String idToken, refreshToken, uid;
 uint32_t tokenExpiry = 0;                            // millis() at which to refresh
 NetworkClientSecure tls;
@@ -103,9 +116,10 @@ bool refresh() {
   return true;
 }
 
+HTTPClient http;                                     // dipakai put() dan getRemote(): satu koneksi TLS tetap hidup
+
 // PUT body at /devices/{uid}/{leaf}.json. Returns the HTTP code.
 int put(const char* leaf, const String& body) {
-  static HTTPClient http;
   String url = String(DB_URL) + "/devices/" + CLOUD_ROLE + "/" + leaf + ".json?auth=" + idToken;
   http.setReuse(true);
   http.setTimeout(8000);
@@ -113,6 +127,28 @@ int put(const char* leaf, const String& body) {
   http.addHeader("Content-Type", "application/json");
   int code = http.PUT(body);
   if (code != 200) { String r = http.getString(); Serial.printf("# cloud: PUT %s -> %d %s\n", leaf, code, r.substring(0, 100).c_str()); }
+  http.end();
+  return code;
+}
+
+// Ambil /devices/<watchRole>/live dan salin sensornya ke `remote`. Mengembalikan kode HTTP.
+int getRemote() {
+  String url = String(DB_URL) + "/devices/" + watchRole + "/live.json?auth=" + idToken;
+  http.setReuse(true);
+  http.setTimeout(8000);
+  if (!http.begin(tls, url)) return -1;
+  int code = http.GET();
+  if (code == 200) {
+    JsonDocument d;
+    if (!deserializeJson(d, http.getString()) && d.is<JsonObject>()) {
+      remote.hasMax = d["mx"] | 0; remote.hasMlx = d["ml"] | 0; remote.finger = d["finger"] | 0;
+      remote.hr = d["hr"] | 0.f; remote.spo2 = d["sp"] | 0.f; remote.temp = d["tmp"] | 0.f;
+      uint32_t up = d["up"] | 0u;
+      if (up != remote.upSeen) { remote.upSeen = up; remote.seenAt = millis() ? millis() : 1; }
+    }
+  } else {
+    Serial.printf("# cloud: GET %s -> %d\n", watchRole, code);
+  }
   http.end();
   return code;
 }
@@ -140,7 +176,7 @@ void uploadRuns() {
 }
 
 void task(void*) {
-  uint32_t lastSend = 0, lastWifi = 0, lastDbg = 0;
+  uint32_t lastSend = 0, lastWifi = 0, lastDbg = 0, lastGet = 0;
   bool infoSent = false, ntp = false, wasUp = false;
   for (;;) {
     vTaskDelay(pdMS_TO_TICKS(250));
@@ -182,6 +218,12 @@ void task(void*) {
       lastDbg = now;
       if (put("dbg", body) == 401) idToken = "";
     }
+    if (watchRole[0] && now - lastGet >= SEND_MS) {
+      lastGet = now;
+      int code = getRemote();
+      if (code == 401) idToken = "";
+      if (code < 0) tls.stop();
+    }
     if (now - lastSend < SEND_MS) continue;
     char body[560];
     bool have = false;
@@ -216,6 +258,9 @@ inline void begin(const char* name) {
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   xTaskCreatePinnedToCore(task, "cloud", 14336, nullptr, 1, nullptr, 0);
 }
+
+// Baca juga sensor perangkat lain (mis. "esp32c3") dari RTDB ke `cloud::remote`. Panggil sebelum/sesudah begin().
+inline void watch(const char* role) { snprintf(watchRole, sizeof watchRole, "%s", role); }
 
 // Titipkan telemetri terbaru (objek JSON, diakhiri '}'). Aman dipanggil dari task mana pun.
 inline void publish(const char* json) {

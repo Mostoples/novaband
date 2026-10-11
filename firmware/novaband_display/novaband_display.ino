@@ -294,6 +294,24 @@ static void batteryRead() {
 
 // ---------------------------------------------------------------- sensors -> model
 // Fresh readings replace the simulation; a stale one lets the model take over again.
+// Waktu otomatis: begitu WiFi tersambung dan NTP (dijalankan task cloud) sudah benar, jam layar mengikutinya
+// (WIB, UTC+7). Waktu dari HP (BLE) tetap menang: setelah HP mengirim waktu, NTP tidak menimpa zonanya.
+static const int NTP_TZ_MIN = 420;
+static void ntpClockTick() {
+  static int64_t mine = 0;                                   // offset yang terakhir kita tulis; beda = HP yang menulis
+  static uint32_t lastSync = 0;
+  if (model.timeValid && model.epochOffset != mine) { mine = 0; lastSync = 0; return; }   // diatur HP
+  if (lastSync && millis() - lastSync < 3600000UL) return;   // sinkron ulang tiap jam
+  time_t t = time(nullptr);
+  if (t < 1700000000) return;                                // NTP belum sinkron
+  mine = model.epochOffset = (int64_t)t + NTP_TZ_MIN * 60 - (int64_t)uptime();
+  model.tzMin = NTP_TZ_MIN;
+  model.timeValid = true;
+  lastSync = millis();
+  Serial.println("# waktu: sinkron NTP (WIB)");
+}
+
+static const uint32_t REMOTE_VALID_MS = 8000;               // C3 mengirim tiap 2 dtk, dibaca tiap 2 dtk
 static void applySensors() {
   using namespace sensors;
   uint32_t ms = millis();
@@ -306,6 +324,13 @@ static void applySensors() {
   model.m.spo2 = model.spo2Ok ? data.spo2 : 0;
   model.m.cadence = model.cadOk ? data.cadence : 0;
   model.m.temp = model.tempOk ? data.temp : 0;
+  // Sensor lokal tidak ada/basi -> pakai bacaan ESP32-C3 dari Realtime Database (MAX30102 + MLX90614 di sana).
+  const auto& rc = cloud::remote;
+  if (rc.seenAt && ms - rc.seenAt < REMOTE_VALID_MS) {
+    if (!model.hrOk && rc.hasMax && rc.finger && rc.hr >= 40) { model.hrOk = true; model.m.hr = rc.hr; }
+    if (!model.spo2Ok && rc.hasMax && rc.finger && rc.spo2 >= 70) { model.spo2Ok = true; model.m.spo2 = rc.spo2; }
+    if (!model.tempOk && rc.hasMlx && rc.temp > 0) { model.tempOk = true; model.m.temp = rc.temp; }
+  }
   static uint32_t seen = 0, beats = 0;
   uint32_t n = data.waveN;
   if (n - seen > Model::PPG_N) seen = n - Model::PPG_N;
@@ -495,6 +520,7 @@ void setup() {
   cmdQ = xQueueCreate(8, sizeof(Line));
   ui.begin(&assets, &model);
   ui.setDeviceName(devName);
+  cloud::watch("esp32c3");                      // baca sensor C3 (/devices/esp32c3/live)
   cloud::begin(devName);                        // jalur utama: WiFi -> Realtime Database. BLE menyusul di loop()
   Serial.printf("# mem: %u internal bebas, blok terbesar %u\n", (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
                 (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
@@ -571,6 +597,7 @@ void loop() {
                   model.cadOk ? "" : "?", (int)sensors::data.finger, (unsigned long)sensors::data.steps, (float)sensors::data.wPeak, (unsigned long)sensors::data.wPeaks);
     sensors::data.wPeak = 0;
   }
+  ntpClockTick();
   model.update(dt, uptime());
   ui.update(dt);
   linkTick();
