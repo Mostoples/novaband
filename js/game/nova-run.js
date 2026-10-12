@@ -346,6 +346,10 @@ stage.addEventListener("touchend", (e) => {
 /* ---------------- camera + pose ---------------- */
 const video = $("video"), skel = $("skel"), sctx = skel.getContext("2d");
 const moves = new Moves();
+// start fetching the pose model (~15 MB over the internet) as soon as the page is up
+let poseReady = null;
+const preload = () => { if (!poseReady) poseReady = loadPose().catch((e) => { poseReady = null; throw e; }); return poseReady; };
+setTimeout(() => preload().catch(() => {}), 1500);
 let landmarker = null, lastVideoT = -1, lastLm = null, poseOut = null, poseLaneShown = 0;
 
 async function startCamera() {
@@ -357,7 +361,7 @@ async function startCamera() {
     await video.play();
     $("cam").classList.add("on");
     $("calibMsg").textContent = "Memuat pelacak gerakan…";
-    landmarker = await loadPose();
+    landmarker = await preload();
     useCam = true;
     return true;
   } catch (e) {
@@ -399,6 +403,7 @@ async function beginCalib() {
 }
 let calibSince = 0;
 function calibTick(now) {
+  if (!landmarker) { $("calibMsg").textContent = "Memuat pelacak gerakan… (pertama kali butuh beberapa detik)"; $("count").textContent = ""; return; }
   if (!poseOut || !poseOut.present) { $("calibMsg").innerHTML = "Mundur sampai <b>kepala sampai pinggul</b> terlihat di kamera."; calibSince = 0; $("count").textContent = ""; return; }
   $("calibMsg").innerHTML = "Bagus! Berdiri tegak di <b>tengah</b>…";
   if (!calibSince) calibSince = now;
