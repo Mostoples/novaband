@@ -21,6 +21,8 @@
       "berkas/**",
       "docs/**",
       "kartu-nama/**",
+      "dokumentasi/**",
+      "data/**",
       "**/*.docx",
       "**/*.pptx",
       "**/*.py",

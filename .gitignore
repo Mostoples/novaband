@@ -34,3 +34,9 @@ kartu-nama/
 berkas/_preview/
 data/
 berkas/mersif/
+
+# raw event photos/videos + letters (personal data, ~600 MB): kept local
+dokumentasi/
+
+# Nova Run libraries (~25 MB): python tools/fetch-game-vendor.py
+assets/game/vendor/

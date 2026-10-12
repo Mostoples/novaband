@@ -246,3 +246,29 @@ python tools/make-showreel2.py                                    # -> assets/no
 Ruang gym, pelari, treadmill dan properti adalah model Sketchfab berlisensi
 CC-BY (daftar lengkap: `build/sketchfab/credits.json`, juga di slide kredit
 deck). Pod purwarupa, layar firmware yang hidup, dan NovaBand adalah model kami.
+
+## Nova Run — game lari dengan motion capture (`game.html`)
+
+Endless runner 3 jalur (gaya Subway Surfers) untuk menarik pengunjung booth.
+Nova berlari di jalan kota yang dipenuhi billboard Nova-Band; pemain mengendalikan
+Nova dengan **gerakan tubuh** lewat webcam (MediaPipe Pose, diproses di perangkat,
+tidak direkam/dikirim):
+
+| Gerakan | Aksi |
+|---|---|
+| geser badan kiri / kanan | pindah jalur |
+| lompat | lewati gawang |
+| jongkok | merunduk di bawah palang |
+| lari di tempat (≥90 / ≥140 langkah/menit) | skor ×2 / ×3 |
+| angkat kedua tangan | mulai / main lagi |
+
+Tanpa kamera: ← → ↑ ↓ atau swipe. Saat tidak ada yang main, Nova berlari sendiri
+(mode attract). Layout potret 9:16; di layar lebar muncul panel cara main + fakta Nova-Band.
+
+```bash
+python blender/game_sprites.py          # sprite Nova dari belakang (14 frame) -> build/game_sprites
+python tools/make-game-sprites.py       # -> assets/game/nova-sheet.webp + band.webp
+python tools/fetch-game-vendor.py       # Three.js + MediaPipe untuk offline (assets/game/vendor, git-ignored)
+```
+
+Kamera butuh HTTPS atau `localhost` (`python tools/serve.py 5175` → http://localhost:5175/game.html).

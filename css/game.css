@@ -1,0 +1,82 @@
+/* Nova Run (game.html): portrait 9:16 stage, branded side panels on wide screens. */
+:root {
+  --wine: #6d0f22; --red: #ff4f63; --ink: #fff; --cream: #f3e3d3; --muted: #d7c8cd;
+  --bg: #1a0610; --font: "Poppins", system-ui, sans-serif; --serif: "Fraunces", Georgia, serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: radial-gradient(circle at 50% 40%, #4a0c1c, var(--bg) 70%); color: var(--ink); font-family: var(--font); }
+body { display: flex; justify-content: center; align-items: stretch; gap: 3vh; }
+
+#stage { position: relative; height: 100svh; width: min(100vw, calc(100svh * 9 / 16)); overflow: hidden; background: #8fd3ff;
+  box-shadow: 0 0 60px rgba(0, 0, 0, .5); }
+#world { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* HUD */
+.hud { position: absolute; top: 2.2%; left: 4%; right: 4%; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; }
+.score { background: rgba(26, 6, 16, .72); border-radius: 18px; padding: .35em .9em .45em; display: flex; align-items: baseline; gap: .35em;
+  font-size: clamp(16px, 2.6svh, 30px); backdrop-filter: blur(6px); }
+.score small { font-size: .5em; letter-spacing: .14em; color: var(--muted); }
+.score b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.score i { font-style: normal; font-size: .6em; color: var(--muted); }
+.mult { background: var(--red); color: #fff; font-weight: 800; border-radius: 999px; padding: .4em .9em; font-size: clamp(13px, 2svh, 24px);
+  box-shadow: 0 6px 20px rgba(255, 79, 99, .5); }
+.mult small { font-weight: 600; opacity: .85; margin-left: .3em; }
+
+/* camera inset, bottom centre (like a mirror) */
+.cam { position: absolute; left: 50%; bottom: 3.2%; transform: translateX(-50%); width: 34%; aspect-ratio: 3 / 4; border-radius: 22px;
+  border: 4px solid #fff; overflow: visible; background: #2b2b33; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
+.cam video, .cam #skel { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 18px; transform: scaleX(-1); }
+.cam-off { position: absolute; inset: 0; margin: 0; display: grid; place-content: center; text-align: center; font-size: clamp(11px, 1.6svh, 18px);
+  color: var(--muted); line-height: 1.4; }
+.cam.on .cam-off { display: none; }
+.bubble { position: absolute; left: 50%; top: 0; transform: translate(-50%, -62%); z-index: 2; background: #fff; color: #222; border-radius: 999px;
+  display: flex; align-items: center; gap: .3em; padding: .25em .7em .25em .35em; font-size: clamp(14px, 2.4svh, 28px); font-weight: 800;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .3); border: 3px solid var(--red); }
+.bubble img { width: 1.5em; height: 1.5em; }
+.bubble.pop { animation: pop .35s ease; }
+@keyframes pop { 40% { transform: translate(-50%, -62%) scale(1.25); } }
+.cue { position: absolute; left: 50%; top: 8%; transform: translateX(-50%); font-size: clamp(18px, 3svh, 34px); font-weight: 800;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, .6); pointer-events: none; }
+
+/* panels */
+.panel { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  padding: 8% 8% 52%; background: linear-gradient(180deg, rgba(26, 6, 16, .82), rgba(26, 6, 16, .35) 70%, transparent); gap: .6em; }
+.panel[hidden] { display: none; }
+.panel h1 { margin: 0; font-size: clamp(40px, 8svh, 96px); font-weight: 800; letter-spacing: .02em; line-height: 1;
+  background: linear-gradient(180deg, #fff, #ffd2a0); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 4px 0 var(--wine)); }
+.panel h2 { margin: 0; font-size: clamp(26px, 4.6svh, 54px); font-weight: 800; }
+.panel p { margin: 0; font-size: clamp(14px, 2.1svh, 24px); line-height: 1.4; }
+.logo { font-weight: 800; font-size: clamp(18px, 3svh, 34px); }
+.logo span { color: var(--red); }
+.lead { color: var(--cream); }
+.pulse { font-weight: 800; animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: scale(1.06); opacity: .75; } }
+.btns { display: flex; flex-direction: column; gap: .5em; margin-top: .4em; }
+.btns button { font: 600 clamp(13px, 1.9svh, 20px) var(--font); color: #fff; background: rgba(255, 255, 255, .14); border: 2px solid rgba(255, 255, 255, .5);
+  padding: .6em 1.3em; border-radius: 999px; cursor: pointer; }
+.btns button.primary { background: var(--red); border-color: var(--red); box-shadow: 0 8px 24px rgba(255, 79, 99, .45); }
+.best { color: var(--muted); font-size: clamp(12px, 1.8svh, 20px) !important; }
+.count { font-size: clamp(60px, 14svh, 160px); font-weight: 800; line-height: 1; }
+.result b { font-size: clamp(56px, 11svh, 130px); font-weight: 800; line-height: 1; }
+.result span { display: block; color: var(--muted); font-size: clamp(14px, 2svh, 24px); }
+.promo { color: var(--cream); max-width: 26em; }
+.privacy { position: absolute; bottom: .4%; left: 0; right: 0; text-align: center; font-size: clamp(8px, 1.1svh, 12px); color: rgba(255, 255, 255, .8);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .6); pointer-events: none; }
+
+/* side panels (only when there is room beside the 9:16 stage) */
+.side { display: none; width: min(26vw, 380px); align-self: center; padding: 2vh 1vw; }
+@media (min-aspect-ratio: 13/10) { .side { display: block; } }
+.side h2 { font-size: clamp(18px, 3svh, 36px); margin: 0 0 .6em; }
+.moves { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.6svh; }
+.moves li { display: flex; gap: .8em; align-items: center; font-size: clamp(13px, 2svh, 22px); line-height: 1.25; }
+.moves b { width: 2.2em; height: 2.2em; border-radius: 14px; display: grid; place-items: center; background: rgba(255, 255, 255, .1); border: 2px solid var(--red);
+  font-size: 1.2em; flex: none; }
+.moves small, .keys { color: var(--muted); }
+.keys { font-size: clamp(11px, 1.6svh, 16px); margin-top: 2svh; }
+.side-r .logo { font-size: clamp(26px, 5svh, 60px); }
+.tag { font-family: var(--serif); font-style: italic; color: var(--cream); font-size: clamp(14px, 2.4svh, 26px); margin: .2em 0 1.4em; }
+.facts { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.4svh; font-size: clamp(12px, 1.9svh, 20px); color: var(--muted); }
+.facts b { display: block; color: #fff; font-size: 1.5em; }
+.url { margin-top: 2.4svh; font-weight: 800; color: var(--red); font-size: clamp(14px, 2.2svh, 24px); }
+.team { color: var(--muted); font-size: clamp(11px, 1.5svh, 15px); }
