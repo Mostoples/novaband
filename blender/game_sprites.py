@@ -2,7 +2,8 @@
 # Nova seen from behind, for the "Nova Run" motion-capture runner (game.html):
 # a 12-frame run cycle, a tucked jump and a slide, transparent.
 #   python blender/game_sprites.py                    # driver (resumes after crashes)
-#   blender -b -P blender/game_sprites.py -- --job sprites [--test 1]
+#   blender -b -P blender/game_sprites.py -- --job sprites [--test 1] [--view side]
+#   python blender/game_sprites.py --view side       # side view -> build/game_sprites_side
 # Output: build/game_sprites/f_####.png (frames 1-12 run, 13 jump, 14 slide)
 #   -> tools/make-game-sprites.py packs them into assets/game/nova-sheet.webp
 # ============================================================
@@ -15,7 +16,9 @@ sys.path.insert(0, HERE)
 import nova_scene as NS  # noqa: E402
 
 N = 14
-OUT = os.path.join(NS.ROOT, "build", "game_sprites")
+# --view side: the same poses from the side, for the phone sprint game (shake.html)
+SIDE = "--view" in sys.argv and sys.argv[sys.argv.index("--view") + 1] == "side"
+OUT = os.path.join(NS.ROOT, "build", "game_sprites_side" if SIDE else "game_sprites")
 
 if NS.bpy is None:
     os.makedirs(OUT, exist_ok=True)
@@ -67,7 +70,10 @@ def pose_at(f):
 def main():
     sc, lids = NS.build_nova("happy", "stand")
     # behind Nova, a little above: the runner camera of the game
-    M.studio((0, 0, 0.95), 1.22, 180, 12, 50, (400, 520))
+    if SIDE:
+        M.studio((0, 0, 0.95), 1.22, 90, 4, 50, (400, 520))
+    else:
+        M.studio((0, 0, 0.95), 1.22, 180, 12, 50, (400, 520))
     catcher = bpy.data.objects.get("catcher")
     if catcher:
         bpy.data.objects.remove(catcher, do_unlink=True)   # the game draws its own blob shadow

@@ -272,3 +272,15 @@ python tools/fetch-game-vendor.py       # Three.js + MediaPipe untuk offline (as
 ```
 
 Kamera butuh HTTPS atau `localhost` (`python tools/serve.py 5175` → http://localhost:5175/game.html).
+
+### Nova Arena — tiga pilihan game (`arena.html`)
+
+| Game | Kendali | Cocok untuk |
+|---|---|---|
+| **Nova Run** (`game.html`) | seluruh badan, webcam | area pameran luas |
+| **Nova Shake Sprint** (`shake.html`) | accelerometer HP pengunjung (scan QR) | antrean ramai, tanpa ruang |
+| **Nova Boxing** (`boxing.html`) | badan atas, webcam — pukul mitt + miringkan kepala menghindari pukulan | booth sempit, bisa sambil duduk |
+
+Nova Shake menghitung **irama** ayunan (kadens), bukan kekuatan; guncangan > ±3 g memicu
+peringatan "Pelan! HP aman dulu" dan Nova tersandung. Tanpa sensor: tap kiri-kanan bergantian.
+Sprite samping: `python blender/game_sprites.py --view side` lalu `python tools/make-game-sprites.py`.

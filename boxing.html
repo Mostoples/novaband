@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nova Boxing · Nova-Band</title>
+<meta name="description" content="Boxing bersama Nova: pukul mitt dan hindari pukulan — cukup badan bagian atas, bisa sambil duduk.">
+<meta name="theme-color" content="#2a0a12">
+<link rel="icon" href="assets/pwa/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Fraunces:ital,wght@1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/arena.css">
+</head>
+<body class="punch boxing">
+<main id="app">
+  <video id="video" playsinline muted></video>
+  <canvas id="fx"></canvas>
+
+  <header class="hud">
+    <a class="back" href="arena.html" aria-label="Pilihan game">←</a>
+    <div class="chip"><small>WAKTU</small><b id="left">45</b><i>s</i></div>
+    <div class="chip"><small>SKOR</small><b id="score">0</b></div>
+    <div class="chip combo" id="combo" hidden></div>
+  </header>
+
+  <div class="coach"><img src="assets/img/mascot-wink.webp" alt=""><p id="say">Ayo, siap?</p></div>
+  <div class="big" id="big"></div>
+  <div class="dodge" id="dodge" hidden></div>
+
+  <section class="panel" id="start">
+    <h1>NOVA BOXING</h1>
+    <p class="lead">Sparring dengan Nova! Cukup <b>badan bagian atas</b> — boleh sambil duduk.</p>
+    <ul class="rules">
+      <li>📷 Pastikan <b>kepala, bahu, dan kedua tangan</b> terlihat</li>
+      <li>🥊 <b>Pukul</b> mitt sebelum lingkarannya habis</li>
+      <li>↔️ Ada sarung tinju datang? <b>Miringkan kepala</b> ke arah sebaliknya</li>
+      <li>⭐ Mitt emas = poin ganda · beruntun = combo</li>
+    </ul>
+    <p class="pulse" id="hint">🙌 Angkat kedua tangan untuk mulai</p>
+    <div class="btns"><button id="go" class="primary">Nyalakan kamera &amp; mulai</button></div>
+    <p class="best" id="bestP"></p>
+  </section>
+
+  <section class="panel" id="result" hidden>
+    <h2 id="resTitle">Ronde selesai!</h2>
+    <div class="result"><b id="resScore">0</b><span>poin</span></div>
+    <ul class="stats">
+      <li><b id="resHits">0</b><span>pukulan kena</span></li>
+      <li><b id="resAcc">0%</b><span>akurasi</span></li>
+      <li><b id="resDodge">0/0</b><span>menghindar</span></li>
+    </ul>
+    <p class="promo">Latihan intensitas tinggi menaikkan detak jantung dengan cepat — Nova-Band memantaunya dari lengan atas dan memberi peringatan dini.</p>
+    <p class="pulse">🙌 Angkat kedua tangan untuk main lagi</p>
+    <div class="btns"><button id="again" class="primary">Main lagi</button><a class="btn" href="arena.html">Game lain</a></div>
+  </section>
+  <footer class="privacy">Privasi: video kamera diproses di perangkat ini saja, tidak direkam dan tidak dikirim.</footer>
+</main>
+<script type="module" src="js/game/boxing.js"></script>
+</body>
+</html>

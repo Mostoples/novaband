@@ -80,3 +80,4 @@ body { display: flex; justify-content: center; align-items: stretch; gap: 3vh; }
 .facts b { display: block; color: #fff; font-size: 1.5em; }
 .url { margin-top: 2.4svh; font-weight: 800; color: var(--red); font-size: clamp(14px, 2.2svh, 24px); }
 .team { color: var(--muted); font-size: clamp(11px, 1.5svh, 15px); }
+.arena-link { color: var(--muted); font-size: clamp(12px, 1.7svh, 18px); text-decoration: none; margin-top: .2em; }

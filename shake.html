@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Nova Shake Sprint · Nova-Band</title>
+<meta name="description" content="Balap lari 100 m bersama Nova: ayunkan HP-mu dengan irama, bukan dengan kekuatan.">
+<meta name="theme-color" content="#2a0a12">
+<link rel="icon" href="assets/pwa/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Fraunces:ital,wght@1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/arena.css">
+</head>
+<body class="shake">
+<main id="app">
+  <canvas id="track"></canvas>
+
+  <header class="hud">
+    <a class="back" href="arena.html" aria-label="Pilihan game">←</a>
+    <div class="chip"><small>WAKTU</small><b id="time">0.00</b><i>s</i></div>
+    <div class="chip"><small>JARAK</small><b id="dist">0</b><i>/100 m</i></div>
+  </header>
+
+  <section class="meters">
+    <div class="meter">
+      <div class="lab"><span>Kadens ayunan</span><b id="spm">0</b><small>/menit</small><em id="zone" class="zone">—</em></div>
+      <div class="bar zones"><i id="spmBar"></i></div>
+    </div>
+    <div class="meter">
+      <div class="lab"><span>Kekuatan ayunan</span><em id="force" class="safe">aman</em></div>
+      <div class="bar force"><i id="forceBar"></i></div>
+    </div>
+  </section>
+
+  <div class="warn" id="warn" hidden>✋ Pelan! HP aman dulu</div>
+  <div class="big" id="big"></div>
+  <div class="taps" id="taps" hidden><button data-side="L">KIRI</button><button data-side="R">KANAN</button></div>
+
+  <section class="panel" id="start">
+    <img class="hero" src="assets/img/mascot-run.webp" alt="">
+    <h1>NOVA SHAKE<br>SPRINT</h1>
+    <p class="lead">Balap 100 m! Ayunkan HP naik-turun seperti mengayun lengan saat berlari.</p>
+    <ul class="rules">
+      <li>📱 Pegang HP <b>erat dengan kedua tangan</b> (atau pakai tali)</li>
+      <li>🎵 Yang dihitung <b>irama</b>, bukan kekuatan — mengayun lebih keras <b>tidak</b> menambah skor</li>
+      <li>✋ Terlalu keras? Nova tersandung. Jangan lempar HP!</li>
+    </ul>
+    <button id="go" class="primary">Mulai balapan</button>
+    <p class="best" id="bestS"></p>
+  </section>
+
+  <section class="panel" id="result" hidden>
+    <h2 id="resTitle">Finish!</h2>
+    <div class="result"><b id="resTime">0.00</b><span>detik untuk 100 m</span></div>
+    <ul class="stats">
+      <li><b id="resSpm">0</b><span>kadens rata-rata</span></li>
+      <li><b id="resZone">—</b><span>zona</span></li>
+      <li><b id="resSafe">100%</b><span>ayunan aman</span></li>
+    </ul>
+    <p class="promo">Nova-Band membaca <b>kadens dan detak jantung</b> seperti ini langsung dari lengan atas saat kamu berlari sungguhan.</p>
+    <div class="btns"><button id="again" class="primary">Balap lagi</button><a class="btn" href="arena.html">Game lain</a></div>
+  </section>
+</main>
+<script type="module" src="js/game/shake.js"></script>
+</body>
+</html>
