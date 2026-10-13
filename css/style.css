@@ -779,3 +779,8 @@ body.band-live .band-tile { border-color: color-mix(in srgb, var(--red) 45%, var
 .tamu-card span { font-size: .78rem; color: var(--ink-2, #cbb); }
 .tamu-card time { font-size: .72rem; color: var(--ink-3, #998); }
 #tamu[hidden] { display: none; }
+.tamu-empty { grid-column: 1 / -1; text-align: center; color: var(--ink-3, #998); margin: 0; }
+@media (max-width: 1180px) { .nav-tamu .t { display: none; } .nav-tamu { padding-inline: .75em; } }
+@media (max-width: 440px) { .nav-actions .theme-toggle { display: none; } }
+#tamu { scroll-margin-top: 80px; }
+@media (max-width: 380px) { .nav-actions { gap: 5px; } .brand { gap: 6px; } .brand span, .brand b { font-size: .95em; } }

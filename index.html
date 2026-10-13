@@ -52,6 +52,7 @@
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4M12 19.6V22M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2 12h2.4M19.6 12H22M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>
       </button>
+      <a href="#tamu" class="btn btn-ghost btn-sm nav-tamu" aria-label="Buku tamu pameran" title="Buku tamu pameran">📖<span class="t"> Buku Tamu</span></a>
       <a href="app.html" class="btn btn-primary btn-sm">Buka App</a>
       <button class="icon-btn burger" aria-label="Buka menu" aria-expanded="false"><span></span><span></span><span></span></button>
     </div>
@@ -724,15 +725,18 @@
 </section>
 
 <!-- ============ TAMU PAMERAN (buku tamu, js/bukutamu/terbaru.js) ============ -->
-<section class="section" id="tamu" hidden>
+<section class="section" id="tamu">
   <div class="container">
     <div class="sec-head center">
       <span class="eyebrow"><span class="dot"></span> Buku Tamu Pameran</span>
       <h2>Terima kasih sudah <span class="serif red">mampir!</span></h2>
-      <p class="lead">Tamu terbaru di stand Nova-Band · diperbarui langsung</p>
+      <p class="lead">Datang ke stand Nova-Band? <b>Scan QR buku tamu di stand</b>, isi nama, lalu selfie bareng Nova.</p>
     </div>
-    <div class="tamu-grid" id="tamuGrid"></div>
-    <p style="text-align:center;margin-top:18px"><a href="hadir/" class="btn btn-ghost">Lihat semua daftar hadir</a></p>
+    <div class="row" style="justify-content:center;gap:12px;margin-bottom:22px">
+      <a href="hadir/" class="btn btn-primary">📖 Lihat Daftar Hadir</a>
+      <a href="arena.html" class="btn btn-ghost">🎮 Main game Nova</a>
+    </div>
+    <div class="tamu-grid" id="tamuGrid"><p class="tamu-empty">Jadilah tamu pertama hari ini — scan QR di stand!</p></div>
   </div>
 </section>
 <script type="module" src="js/bukutamu/terbaru.js"></script>
