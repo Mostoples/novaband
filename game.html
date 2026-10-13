@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nova Run · Nova-Band</title>
+<meta name="description" content="Game lari Nova-Band: gerakkan tubuhmu di depan kamera untuk mengendalikan Nova.">
+<meta name="theme-color" content="#2a0a12">
+<link rel="icon" href="assets/pwa/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Fraunces:ital,wght@1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/game.css">
+<script type="importmap">{ "imports": { "three": "./assets/game/vendor/three.module.min.js" } }</script>
+</head>
+<body>
+<aside class="side side-l" aria-hidden="true">
+  <h2>Cara main</h2>
+  <ol class="moves">
+    <li><b>⇆</b><span>Geser badan ke kiri / kanan<br><small>pindah jalur</small></span></li>
+    <li><b>⤒</b><span>Lompat<br><small>lewati gawang</small></span></li>
+    <li><b>⤓</b><span>Jongkok<br><small>merunduk di bawah palang</small></span></li>
+    <li><b>🏃</b><span>Lari di tempat<br><small>skor ×2 · ×3</small></span></li>
+    <li><b>🙌</b><span>Angkat kedua tangan<br><small>mulai / main lagi</small></span></li>
+  </ol>
+  <p class="keys">Tanpa kamera: ← → ↑ ↓ atau geser layar</p>
+</aside>
+
+<main id="stage">
+  <canvas id="world"></canvas>
+
+  <header class="hud">
+    <div class="score"><small>JARAK</small><b id="score">0</b><i>m</i></div>
+    <div class="mult" id="mult" hidden></div>
+  </header>
+
+  <div class="cam" id="cam">
+    <div class="bubble"><img src="assets/game/band.webp" alt=""><b id="bands">0</b></div>
+    <video id="video" playsinline muted></video>
+    <canvas id="skel"></canvas>
+    <p class="cam-off" id="camOff">Kamera mati<br><small>pakai ← → ↑ ↓</small></p>
+    <span class="cue" id="cue"></span>
+  </div>
+
+  <section class="panel" id="attract">
+    <div class="logo">Nova<span>-</span>Band</div>
+    <h1>NOVA RUN</h1>
+    <p class="lead">Kendalikan Nova dengan <b>gerakan tubuhmu</b>.</p>
+    <p class="pulse">🙌 Angkat kedua tangan untuk mulai</p>
+    <div class="btns">
+      <button id="btnCam" class="primary">Main dengan kamera</button>
+      <button id="btnKeys">Main pakai keyboard / sentuh</button>
+      <a class="arena-link" href="arena.html">← Pilihan game lain</a>
+    </div>
+    <p class="best" id="bestA"></p>
+  </section>
+
+  <section class="panel" id="calib" hidden>
+    <h2>Siap-siap!</h2>
+    <p id="calibMsg">Mundur sampai <b>kepala sampai pinggul</b> terlihat di kamera, lalu berdiri tegak di tengah.</p>
+    <div class="count" id="count"></div>
+  </section>
+
+  <section class="panel" id="over" hidden>
+    <h2>Nova tersandung!</h2>
+    <div class="result"><b id="finalScore">0</b><span>meter</span></div>
+    <p class="sub" id="finalBands"></p>
+    <p class="best" id="bestO"></p>
+    <p class="promo">Nova-Band memantau <b>detak jantung, pace, dan kadens</b> dari lengan atas — saat kamu berlari sungguhan.</p>
+    <p class="pulse">🙌 Angkat kedua tangan untuk main lagi</p>
+    <div class="btns"><button id="btnAgain" class="primary">Main lagi</button></div>
+  </section>
+
+  <footer class="privacy">Privasi: video kamera diproses di perangkat ini saja, tidak direkam dan tidak dikirim.</footer>
+</main>
+
+<aside class="side side-r" aria-hidden="true">
+  <div class="logo">Nova<span>-</span>Band</div>
+  <p class="tag">Upper-arm wearable untuk pelari</p>
+  <ul class="facts">
+    <li><b>2,5–3,5%</b> MAPE terhadap alat acuan</li>
+    <li><b>84,5</b> skor SUS · Grade A</li>
+    <li><b>Readiness Score</b> harian 0–100</li>
+    <li><b>Shared Safety Net</b>: pelatih ikut memantau</li>
+  </ul>
+  <p class="url">novaband-id.web.app</p>
+  <p class="team">Tim Peneliti SMA Negeri 1 Surakarta · ISIF 2026</p>
+</aside>
+
+<script type="module" src="js/game/nova-run.js"></script>
+</body>
+</html>

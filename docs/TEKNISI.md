@@ -145,3 +145,37 @@ Uji BLE ujung-ke-ujung dari laptop: `python tools/ble_test.py`.
   `credits.json` (otomatis lewat `tools/sketchfab.py get`) dan di slide kredit.
 - Setelah mengubah firmware, perbarui `firmware/prebuilt/` agar rekan tanpa
   toolchain tetap bisa flash versi terbaru.
+
+## 7. Maskot Nova: animasi, aplikasi, dan video penjelasan
+
+Nova (cheetah, `blender/mascot.py`) dianimasikan lewat kode, tanpa file .blend.
+
+| Langkah | Perintah | Hasil |
+|---|---|---|
+| Render 8 klip (idle, wave, run, talk, flex, thumbs, cheer, alert) | `python blender/mascot_anim.py --anim all --samples 24` | `build/mascot_anim/<klip>/f_####.png` |
+| Klip untuk aplikasi | `python tools/make-mascot-webp.py` | `assets/mascot/nova-<klip>.webm` (VP9 transparan) + `.webp` (cadangan Safari) |
+| Narasi suara | `python tools/nova-voice.py` | `build/nova_vo/*.mp3` (edge-tts, suara id-ID; butuh internet) |
+| Video penjelasan | `python tools/make-nova-explainer.py` | `assets/nova-explainer.{mp4,webm}` + poster |
+
+- Render Blender 4.0 kadang crash di tengah klip; driver otomatis mengulang dan
+  melanjutkan dari frame terakhir. Jalankan render panjang sebagai proses
+  terpisah, jangan dua driver sekaligus (frame saling menimpa).
+- Naskah narasi ada di `SCRIPT` dalam `tools/nova-voice.py`; ubah di sana lalu
+  jalankan ulang dengan `--force`, kemudian render ulang videonya.
+- Di aplikasi, perilaku Nova diatur `js/app-nova.js` (membaca `window.NovaState`):
+  melambai saat dibuka, berlari saat sesi berjalan, gestur stop saat ada
+  peringatan detak jantung, melompat saat sesi selesai. Tampilan imersif ada di
+  `css/app-future.css` (dimuat hanya oleh `app.html`).
+
+## 8. AI Buddy (chat dengan Nova) + suara Pocket TTS
+
+- Tombol bulat Nova di kanan bawah `app.html` membuka chat (`js/nova-buddy.js`, `css/nova-buddy.css`).
+  Otak: pencocok intent di perangkat (`assets/buddy/intents.json`, ID + EN, 28 intent) yang
+  membaca data live `window.NovaState`; bisa memulai/menjeda sesi. Pertanyaan darurat
+  (nyeri dada, sesak napas, mau pingsan) selalu dicek lebih dulu → arahkan berhenti + 112/119.
+- Suara: **Bahasa Inggris** → Kyutai Pocket TTS di laptop:
+  `pip install pocket-tts` lalu `python tools/nova-tts-server.py` (port 8765, CPU, unduh model saat
+  pertama jalan). Aplikasi mendeteksinya otomatis (label "Voice: Pocket TTS").
+  **Bahasa Indonesia** → suara bawaan HP/browser (Pocket TTS belum punya model Indonesia).
+- Saat sesi berjalan Nova bicara sendiri: peringatan bila HR > ambang (maks. tiap 45 dtk) dan setiap 1 km.
+- Tidak ada LLM cloud; teks hanya dikirim ke server Pocket TTS lokal.

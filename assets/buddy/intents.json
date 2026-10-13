@@ -1,0 +1,760 @@
+[
+ {
+  "intent": "greet",
+  "kw_id": [
+   "halo",
+   "hai",
+   "hi",
+   "pagi",
+   "siang",
+   "malam",
+   "apa kabar",
+   "mulai"
+  ],
+  "kw_en": [
+   "hello",
+   "hi",
+   "hey",
+   "morning",
+   "evening",
+   "greetings"
+  ],
+  "id": [
+   "Hai, aku Nova! Siap temani lari kamu hari ini?",
+   "Halo, cheetah siap lari! Mau mulai sesi sekarang?"
+  ],
+  "en": [
+   "Hey, I'm Nova! Ready to run with you today?",
+   "Hello, cheetah ready to run! Want to start a session now?"
+  ]
+ },
+ {
+  "intent": "hr_now",
+  "kw_id": [
+   "detak jantung",
+   "bpm",
+   "heart rate",
+   "hr",
+   "nadi",
+   "jantung sekarang",
+   "berapa detak"
+  ],
+  "kw_en": [
+   "heart rate",
+   "bpm",
+   "hr",
+   "pulse",
+   "current heart rate"
+  ],
+  "id": [
+   "Detak jantung kamu sekarang {hr} bpm, zona {zoneName}. Terus pantau ya!",
+   "HR kamu {hr} bpm di zona {zone}. Mantap, jaga ritmenya!"
+  ],
+  "en": [
+   "Your heart rate is {hr} bpm, zone {zoneName}. Keep watching it!",
+   "Your HR is {hr} bpm in zone {zone}. Nice, hold that rhythm!"
+  ]
+ },
+ {
+  "intent": "zone",
+  "kw_id": [
+   "zona",
+   "zone",
+   "zona hr",
+   "target zona",
+   "zona latihan",
+   "zona berapa"
+  ],
+  "kw_en": [
+   "zone",
+   "hr zone",
+   "training zone",
+   "which zone"
+  ],
+  "id": [
+   "Kamu sedang di zona {zone} ({zoneName}). Sesuaikan napas dan langkah ya!",
+   "Zona kamu {zone} dengan nama {zoneName}. Kalau mau lebih santai, turunkan pace sedikit."
+  ],
+  "en": [
+   "You're in zone {zone} ({zoneName}). Match your breath and stride!",
+   "Your zone is {zone}, called {zoneName}. If you want it easier, slow the pace a bit."
+  ]
+ },
+ {
+  "intent": "readiness",
+  "kw_id": [
+   "readiness",
+   "kesiapan",
+   "skor siap",
+   "readiness score",
+   "siap latihan",
+   "kondisi tubuh"
+  ],
+  "kw_en": [
+   "readiness",
+   "readiness score",
+   "ready to train",
+   "body condition"
+  ],
+  "id": [
+   "Readiness Score kamu {ready} dari 100. Dengarkan tubuhmu sebelum push lebih jauh!",
+   "Skor kesiapan kamu {ready}. Kalau rendah, pilih sesi ringan dulu ya."
+  ],
+  "en": [
+   "Your Readiness Score is {ready} out of 100. Listen to your body before pushing harder!",
+   "Your readiness is {ready}. If it's low, pick an easy session first."
+  ]
+ },
+ {
+  "intent": "should_train",
+  "kw_id": [
+   "harus latihan",
+   "boleh lari",
+   "latihan hari ini",
+   "sebaiknya latihan",
+   "siap lari",
+   "latihan atau istirahat"
+  ],
+  "kw_en": [
+   "should train",
+   "can i run",
+   "train today",
+   "should i train",
+   "train or rest"
+  ],
+  "id": [
+   "Readiness kamu {ready}, jadi latihan ringan sampai sedang aman. Kalau badan lelah, pilih istirahat aktif ya!",
+   "Dengan skor {ready}, kamu bisa latihan, tapi mulai pelan. Berhenti kalau ada nyeri atau pusing."
+  ],
+  "en": [
+   "Your readiness is {ready}, so light to moderate training is fine. If you're tired, choose active rest!",
+   "With a score of {ready}, you can train, but start easy. Stop if you feel pain or dizziness."
+  ],
+  "id_rest": [
+   "Readiness kamu {ready}, di bawah ambang. Hari ini istirahat atau jalan santai dulu ya, biar tubuh pulih.",
+   "Skor {ready} artinya tubuhmu masih capek. Pilih pemulihan: jalan santai, peregangan, tidur cukup."
+  ],
+  "en_rest": [
+   "Your readiness is {ready}, below your threshold. Rest or take an easy walk today so your body recovers.",
+   "A score of {ready} means you're still tired. Go for recovery: easy walk, stretching, good sleep."
+  ]
+ },
+ {
+  "intent": "pace",
+  "kw_id": [
+   "pace",
+   "kecepatan",
+   "tempo lari",
+   "pace sekarang",
+   "menit per km",
+   "laju"
+  ],
+  "kw_en": [
+   "pace",
+   "speed",
+   "running pace",
+   "min per km",
+   "tempo"
+  ],
+  "id": [
+   "Pace kamu sekarang {pace}. Stabil dan konsisten, cheetah!",
+   "Pace {pace} nih, jaga ritme biar tidak boncos di akhir."
+  ],
+  "en": [
+   "Your pace is {pace} now. Steady and consistent, cheetah!",
+   "Pace is {pace}, hold the rhythm so you don't fade at the end."
+  ]
+ },
+ {
+  "intent": "distance",
+  "kw_id": [
+   "jarak",
+   "dist",
+   "kilometer",
+   "km",
+   "sudah berapa jauh",
+   "jarak tempuh"
+  ],
+  "kw_en": [
+   "distance",
+   "dist",
+   "kilometers",
+   "how far",
+   "distance covered"
+  ],
+  "id": [
+   "Kamu sudah menempuh {dist}. Semangat, sedikit lagi!",
+   "Jarak kamu {dist} sejauh ini. Terus melangkah ya!"
+  ],
+  "en": [
+   "You've covered {dist}. Keep going, almost there!",
+   "Your distance is {dist} so far. Keep stepping!"
+  ]
+ },
+ {
+  "intent": "cadence",
+  "kw_id": [
+   "cadence",
+   "kadens",
+   "langkah per menit",
+   "spm",
+   "irama langkah",
+   "ritme kaki"
+  ],
+  "kw_en": [
+   "cadence",
+   "steps per minute",
+   "spm",
+   "stride rate",
+   "leg rhythm"
+  ],
+  "id": [
+   "Cadence kamu {cad} spm. Langkah ringan dan cepat bikin lebih efisien!",
+   "Kadens {cad} spm nih, coba jaga tetap stabil ya."
+  ],
+  "en": [
+   "Your cadence is {cad} spm. Light, quick steps are more efficient!",
+   "Cadence is {cad} spm, try to keep it steady."
+  ]
+ },
+ {
+  "intent": "calories",
+  "kw_id": [
+   "kalori",
+   "kcal",
+   "energi terbakar",
+   "berapa kalori",
+   "pembakaran"
+  ],
+  "kw_en": [
+   "calories",
+   "kcal",
+   "energy burned",
+   "how many calories",
+   "burn"
+  ],
+  "id": [
+   "Kamu sudah membakar sekitar {kcal} kkal. Bagus, terus bergerak!",
+   "Perkiraan kalori terbakar {kcal} kkal. Jangan lupa minum ya!"
+  ],
+  "en": [
+   "You've burned about {kcal} kcal. Nice, keep moving!",
+   "Estimated calories burned: {kcal} kcal. Don't forget to drink!"
+  ]
+ },
+ {
+  "intent": "battery",
+  "kw_id": [
+   "baterai",
+   "batt",
+   "daya",
+   "sisa baterai",
+   "cas",
+   "charge"
+  ],
+  "kw_en": [
+   "battery",
+   "batt",
+   "power",
+   "battery left",
+   "charge"
+  ],
+  "id": [
+   "Baterai Nova-Band kamu {batt}. Kalau di bawah 20%, cas dulu sebelum sesi panjang ya!",
+   "Sisa daya {batt}. Isi ulang biar tidak mati di tengah lari."
+  ],
+  "en": [
+   "Your Nova-Band battery is {batt}. If it's under 20%, charge before a long session!",
+   "Battery left: {batt}. Top it up so it won't die mid-run."
+  ]
+ },
+ {
+  "intent": "steps",
+  "kw_id": [
+   "langkah",
+   "steps",
+   "jumlah langkah",
+   "berapa langkah",
+   "step count"
+  ],
+  "kw_en": [
+   "steps",
+   "step count",
+   "how many steps",
+   "walking steps"
+  ],
+  "id": [
+   "Kamu sudah {steps} langkah hari ini. Tambah sedikit lagi yuk!",
+   "Total langkah kamu {steps}. Mantap, jaga momentumnya!"
+  ],
+  "en": [
+   "You've taken {steps} steps today. Let's add a few more!",
+   "Your total steps are {steps}. Nice, keep the momentum!"
+  ]
+ },
+ {
+  "intent": "connect_help",
+  "kw_id": [
+   "koneksi",
+   "connect",
+   "tidak terhubung",
+   "pairing",
+   "bluetooth",
+   "gagal konek",
+   "sinkron",
+   "konek",
+   "hubungkan",
+   "sambung"
+  ],
+  "kw_en": [
+   "connect",
+   "connection",
+   "not connected",
+   "pairing",
+   "bluetooth",
+   "sync"
+  ],
+  "id": [
+   "Coba nyalakan Bluetooth, buka app Nova, lalu pilih Nova-Band di menu perangkat. Kalau masih gagal, restart band dan app ya!",
+   "Pastikan band terisi daya dan dekat ponsel, lalu pairing ulang. Biasanya itu menyelesaikan masalah koneksi."
+  ],
+  "en": [
+   "Turn on Bluetooth, open the Nova app, then pick Nova-Band in the device menu. If it still fails, restart the band and the app!",
+   "Make sure the band is charged and near your phone, then re-pair. That usually fixes connection issues."
+  ]
+ },
+ {
+  "intent": "how_to_wear",
+  "kw_id": [
+   "cara pakai",
+   "cara memakai",
+   "posisi band",
+   "pasang band",
+   "letak sensor",
+   "pakai di mana"
+  ],
+  "kw_en": [
+   "how to wear",
+   "wearing position",
+   "put on band",
+   "sensor placement",
+   "where to wear"
+  ],
+  "id": [
+   "Pasang Nova-Band di lengan atas, sekitar 2-3 cm di atas otot bisep, dan kencangkan tapi tidak menekan. Pastikan sensornya menempel rata di kulit ya!",
+   "Letakkan band di lengan atas dengan sensor menghadap kulit dan tali cukup kencang. Kalau goyang saat lari, sedikit kencangkan lagi."
+  ],
+  "en": [
+   "Wear Nova-Band on your upper arm, about 2-3 cm above the biceps, snug but not tight. Make sure the sensor sits flat on your skin!",
+   "Place the band on your upper arm with the sensor against your skin and the strap snug. If it shifts while running, tighten it a bit."
+  ]
+ },
+ {
+  "intent": "why_upper_arm",
+  "kw_id": [
+   "kenapa lengan atas",
+   "mengapa lengan atas",
+   "beda dengan jam",
+   "sensor lengan atas",
+   "alasan upper arm"
+  ],
+  "kw_en": [
+   "why upper arm",
+   "upper arm reason",
+   "vs wrist",
+   "arm sensor",
+   "why not wrist"
+  ],
+  "id": [
+   "Lengan atas punya aliran darah dan otot yang lebih stabil, jadi sinyal PPG biasanya lebih bersih dibanding pergelangan. Ini membantu estimasi HR dan zona lebih konsisten saat lari.",
+   "Di lengan atas, sensor lebih dekat ke otot besar dan gerakannya lebih sedikit, sehingga pembacaan detak jantung cenderung lebih stabil."
+  ],
+  "en": [
+   "The upper arm has steadier blood flow and muscle, so the PPG signal is usually cleaner than at the wrist. That helps HR and zone estimates stay consistent while running.",
+   "On the upper arm, the sensor sits near a big muscle with less movement, so heart rate readings tend to be more stable."
+  ]
+ },
+ {
+  "intent": "alert_explain",
+  "kw_id": [
+   "peringatan",
+   "alert",
+   "kenapa bergetar",
+   "notifikasi hr",
+   "ambang batas",
+   "thr",
+   "peringatan dini"
+  ],
+  "kw_en": [
+   "alert",
+   "warning",
+   "why vibrating",
+   "hr notification",
+   "threshold",
+   "early warning"
+  ],
+  "id": [
+   "Nova-Band memberi peringatan saat HR kamu melewati ambang {thr} bpm. Kalau muncul, coba turunkan intensitas dan atur napas dulu ya!",
+   "Itu peringatan dini karena detak jantungmu di atas ambang {thr} bpm. Pelankan pace sebentar supaya aman."
+  ],
+  "en": [
+   "Nova-Band alerts you when your HR goes above the {thr} bpm threshold. If it pops up, ease the intensity and control your breathing first!",
+   "That's an early warning because your heart rate is above the {thr} bpm threshold. Slow your pace for a bit to stay safe."
+  ]
+ },
+ {
+  "intent": "warmup",
+  "kw_id": [
+   "pemanasan",
+   "warmup",
+   "warming up",
+   "sebelum lari",
+   "stretching awal"
+  ],
+  "kw_en": [
+   "warmup",
+   "warm up",
+   "before running",
+   "pre-run",
+   "dynamic stretch"
+  ],
+  "id": [
+   "Mulai dengan 5-10 menit jalan cepat atau jogging ringan, lalu gerakan dinamis seperti leg swing. Ini bikin otot siap dan HR naik bertahap!",
+   "Pemanasan cukup 5-10 menit: jogging pelan plus dynamic stretching. Jangan langsung ngebut ya!"
+  ],
+  "en": [
+   "Start with 5-10 minutes of brisk walking or easy jogging, then dynamic moves like leg swings. That primes your muscles and raises HR gradually!",
+   "A 5-10 minute warmup is enough: slow jog plus dynamic stretching. Don't sprint right away!"
+  ]
+ },
+ {
+  "intent": "cooldown",
+  "kw_id": [
+   "pendinginan",
+   "cooldown",
+   "cool down",
+   "setelah lari",
+   "stretching akhir"
+  ],
+  "kw_en": [
+   "cooldown",
+   "cool down",
+   "after running",
+   "post-run",
+   "static stretch"
+  ],
+  "id": [
+   "Setelah lari, jalan santai 5-10 menit sampai napas dan HR turun, lalu stretching statis. Tubuhmu bakal lebih cepat pulih!",
+   "Cooldown dengan jalan pelan 5-10 menit dan peregangan ringan. Jangan langsung duduk ya!"
+  ],
+  "en": [
+   "After your run, walk easy for 5-10 minutes until your breath and HR settle, then do static stretches. Your body will recover faster!",
+   "Cool down with 5-10 minutes of easy walking and light stretching. Don't sit down right away!"
+  ]
+ },
+ {
+  "intent": "hydration",
+  "kw_id": [
+   "hidrasi",
+   "minum",
+   "air",
+   "dehidrasi",
+   "cukup minum",
+   "haus"
+  ],
+  "kw_en": [
+   "hydration",
+   "drink",
+   "water",
+   "dehydrated",
+   "thirsty"
+  ],
+  "id": [
+   "Minum air sedikit-sedikit sebelum haus, terutama kalau lari lebih dari 30 menit. Kalau cuaca panas, tambah frekuensinya ya!",
+   "Jaga hidrasi dengan minum rutin sebelum, saat, dan setelah lari. Urin gelap itu tanda kamu perlu minum lebih banyak."
+  ],
+  "en": [
+   "Sip water before you get thirsty, especially on runs over 30 minutes. If it's hot, drink more often!",
+   "Stay hydrated by drinking before, during, and after your run. Dark urine is a sign you need more fluids."
+  ]
+ },
+ {
+  "intent": "pain_injury",
+  "kw_id": [
+   "nyeri",
+   "sakit",
+   "cedera",
+   "pegal",
+   "keseleo",
+   "otot sakit",
+   "nyeri lutut"
+  ],
+  "kw_en": [
+   "pain",
+   "injury",
+   "sore",
+   "sprain",
+   "muscle pain",
+   "knee pain"
+  ],
+  "id": [
+   "Kalau ada nyeri, sebaiknya berhenti atau kurangi intensitas dulu, dan jangan paksakan. Bila nyeri berlanjut atau makin berat, periksa ke tenaga kesehatan ya!",
+   "Hentikan dulu latihan kalau nyeri terasa mengganggu, lalu kompres dan istirahatkan. Kalau tidak membaik, konsultasi ke tenaga kesehatan."
+  ],
+  "en": [
+   "If you feel pain, it's best to stop or reduce intensity and don't push through it. If the pain continues or worsens, see a healthcare professional!",
+   "Stop training for now if the pain bothers you, then ice and rest it. If it doesn't improve, consult a healthcare professional."
+  ]
+ },
+ {
+  "intent": "chest_pain_emergency",
+  "kw_id": [
+   "nyeri dada",
+   "dada sakit",
+   "sesak",
+   "sesak napas berat",
+   "mau pingsan",
+   "pusing berat",
+   "jantung sakit"
+  ],
+  "kw_en": [
+   "chest pain",
+   "chest tightness",
+   "shortness of breath",
+   "fainting",
+   "severe dizziness",
+   "heart pain"
+  ],
+  "id": [
+   "SEGERA berhenti, duduk, dan minta bantuan orang terdekat. Hubungi 112 atau 119 sekarang juga!",
+   "Ini tanda darurat: berhenti lari, duduk, jangan sendirian, dan segera hubungi 112/119. Jangan tunda ya!"
+  ],
+  "en": [
+   "STOP immediately, sit down, and ask someone nearby for help. Call 112 or 119 right now!",
+   "This is an emergency sign: stop running, sit down, don't stay alone, and call 112/119 immediately. Don't delay!"
+  ]
+ },
+ {
+  "intent": "sleep_recovery",
+  "kw_id": [
+   "tidur",
+   "istirahat",
+   "recovery",
+   "pemulihan",
+   "kurang tidur",
+   "jam tidur",
+   "capek",
+   "lelah",
+   "pegal semua",
+   "tired",
+   "exhausted"
+  ],
+  "kw_en": [
+   "sleep",
+   "rest",
+   "recovery",
+   "sleep debt",
+   "sleep hours"
+  ],
+  "id": [
+   "Tidur cukup 7-9 jam bikin Readiness Score kamu lebih tinggi dan pemulihan lebih cepat. Kalau kurang tidur, pilih sesi ringan dulu ya!",
+   "Recovery terbaik itu tidur berkualitas. Coba tidur 7-9 jam supaya tubuh siap untuk sesi berikutnya."
+  ],
+  "en": [
+   "Getting 7-9 hours of sleep boosts your Readiness Score and speeds recovery. If you're short on sleep, pick an easy session first!",
+   "The best recovery is quality sleep. Aim for 7-9 hours so your body is ready for the next session."
+  ]
+ },
+ {
+  "intent": "start_session",
+  "kw_id": [
+   "mulai sesi",
+   "start",
+   "mulai lari",
+   "rekam lari",
+   "mulai latihan"
+  ],
+  "kw_en": [
+   "start session",
+   "start",
+   "start run",
+   "record run",
+   "begin workout"
+  ],
+  "id": [
+   "Sesi dimulai! Aku catat HR, pace, dan jarak kamu dari sekarang. Ayo gas, cheetah!",
+   "Oke, sesi berjalan! Fokus ke ritme dan nikmati setiap langkah ya."
+  ],
+  "en": [
+   "Session started! I'm tracking your HR, pace, and distance from now. Let's go, cheetah!",
+   "Okay, session is on! Focus on your rhythm and enjoy every step."
+  ]
+ },
+ {
+  "intent": "stop_session",
+  "kw_id": [
+   "stop",
+   "berhenti",
+   "selesai",
+   "akhiri sesi",
+   "matikan sesi",
+   "udahan"
+  ],
+  "kw_en": [
+   "stop",
+   "stop session",
+   "end",
+   "finish",
+   "end workout"
+  ],
+  "id": [
+   "Sesi dihentikan. Ringkasan HR, pace, jarak, dan kalori sudah aku simpan ya!",
+   "Oke, sesi selesai! Jangan lupa cooldown dan minum dulu sebelum lanjut aktivitas."
+  ],
+  "en": [
+   "Session stopped. I've saved your HR, pace, distance, and calories summary!",
+   "Okay, session's done! Don't forget to cool down and drink before your next activity."
+  ]
+ },
+ {
+  "intent": "motivation",
+  "kw_id": [
+   "semangat",
+   "motivasi",
+   "capek",
+   "males",
+   "lelah",
+   "give up",
+   "nyerah"
+  ],
+  "kw_en": [
+   "motivation",
+   "motivate",
+   "tired",
+   "lazy",
+   "give up",
+   "encourage me"
+  ],
+  "id": [
+   "Kamu sudah sejauh ini, jangan berhenti sekarang! Satu langkah lagi selalu lebih baik daripada nol.",
+   "Capek itu wajar, cheetah. Pelankan pace, tarik napas, dan lanjutkan pelan-pelan—kamu pasti bisa!"
+  ],
+  "en": [
+   "You've come this far, don't stop now! One more step always beats zero.",
+   "Being tired is normal, cheetah. Slow your pace, breathe, and keep going easy—you've got this!"
+  ]
+ },
+ {
+  "intent": "about_novaband",
+  "kw_id": [
+   "novaband",
+   "nova-band",
+   "apa itu nova",
+   "tentang aplikasi",
+   "fitur nova",
+   "band lengan"
+  ],
+  "kw_en": [
+   "novaband",
+   "nova-band",
+   "what is nova",
+   "about the app",
+   "nova features",
+   "arm band"
+  ],
+  "id": [
+   "Nova-Band adalah band lengan atas dengan sensor PPG dan IMU yang terhubung ke app Nova untuk memantau HR, zona, Readiness Score, dan peringatan dini. Aku Nova, maskot cheetah sekaligus AI running buddy kamu!",
+   "Nova-Band dipakai di lengan atas untuk membaca detak jantung dan gerakan, lalu app Nova mengolahnya jadi zona HR, Readiness Score, dan alert. Aku siap temani lari kamu!"
+  ],
+  "en": [
+   "Nova-Band is an upper-arm band with PPG and IMU sensors that connects to the Nova app to track HR, zones, Readiness Score, and early warnings. I'm Nova, your cheetah mascot and AI running buddy!",
+   "Nova-Band is worn on the upper arm to read heart rate and motion, then the Nova app turns it into HR zones, Readiness Score, and alerts. I'm here to run with you!"
+  ]
+ },
+ {
+  "intent": "about_team",
+  "kw_id": [
+   "tim",
+   "siapa yang buat",
+   "pembuat",
+   "isif",
+   "sekolah",
+   "sma negeri 1 surakarta",
+   "tentang tim",
+   "siapa yang membuat",
+   "siapa pembuat",
+   "dibuat oleh",
+   "made by",
+   "who made"
+  ],
+  "kw_en": [
+   "team",
+   "who made this",
+   "creators",
+   "isif",
+   "school",
+   "about the team"
+  ],
+  "id": [
+   "Nova-Band dikembangkan oleh tim SMA Negeri 1 Surakarta untuk ISIF 2026. Kami senang kamu ikut berlari bersama kami!",
+   "Tim di balik Nova-Band adalah siswa SMA Negeri 1 Surakarta untuk ISIF 2026. Terima kasih sudah mendukung karya kami!"
+  ],
+  "en": [
+   "Nova-Band is developed by the team from SMA Negeri 1 Surakarta for ISIF 2026. We're glad you're running with us!",
+   "The team behind Nova-Band is from SMA Negeri 1 Surakarta for ISIF 2026. Thanks for supporting our work!"
+  ]
+ },
+ {
+  "intent": "thanks",
+  "kw_id": [
+   "terima kasih",
+   "makasih",
+   "thanks",
+   "thx",
+   "terimakasih",
+   "syukur"
+  ],
+  "kw_en": [
+   "thanks",
+   "thank you",
+   "thx",
+   "appreciate it",
+   "cheers"
+  ],
+  "id": [
+   "Sama-sama, cheetah! Aku selalu siap temani lari kamu kapan pun.",
+   "Dengan senang hati! Ayo lanjut jaga ritme dan tetap semangat ya."
+  ],
+  "en": [
+   "You're welcome, cheetah! I'm always ready to run with you anytime.",
+   "My pleasure! Let's keep the rhythm and stay motivated."
+  ]
+ },
+ {
+  "intent": "fallback",
+  "kw_id": [
+   "tidak tahu",
+   "bingung",
+   "apa",
+   "hah",
+   "gak ngerti",
+   "lain kali"
+  ],
+  "kw_en": [
+   "i don't know",
+   "confused",
+   "what",
+   "huh",
+   "don't understand",
+   "not sure"
+  ],
+  "id": [
+   "Maaf, aku belum paham maksudmu. Coba tanya soal detak jantung, zona, pace, atau kesiapan latihan ya!",
+   "Hmm, aku belum mengerti itu. Kamu bisa tanya tentang HR, jarak, kalori, atau cara pakai Nova-Band."
+  ],
+  "en": [
+   "Sorry, I didn't quite get that. Try asking about heart rate, zones, pace, or readiness!",
+   "Hmm, I didn't understand that. You can ask about HR, distance, calories, or how to wear Nova-Band."
+  ]
+ }
+]

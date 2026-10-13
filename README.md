@@ -199,6 +199,41 @@ ikon di `assets/pwa/`. Tombol **Pasang** muncul saat browser menawarkan instalas
 Server lokal dengan MIME yang benar (service worker butuh `text/javascript`):
 `python tools/serve.py 5175`.
 
+## Hero: film latar + carousel
+
+Hero `index.html` memutar `assets/novaband-usecases.*` sebagai latar (blur 9 px,
+digelapkan) dengan carousel 5 slide di atasnya (intro, PPG real-time, Readiness
+Score, Shared Safety Net, maskot Nova). Auto-geser 7 detik; berhenti saat
+hover/fokus/tab tersembunyi/tombol jeda; panah kiri-kanan dan swipe. Pengguna
+*reduce-motion* atau *data saver* hanya melihat poster dan slide tidak bergeser
+otomatis. Logika di `js/main.js`, gaya di `css/style.css` (bagian 6b).
+
+## Maskot "Nova" (Blender CLI)
+
+```bash
+python blender/mascot.py --shot all --samples 96      # 11 render -> build/mascot/*.png (satu proses Blender per shot)
+python tools/make-mascot-sheet.py                     # lembar karakter + potongan web -> assets/img/mascot-*.webp
+```
+
+Cheetah plush berwarna wine dengan baju lari, Nova-Band di lengan atas kiri.
+Rig berupa pohon *empty* (FK), jadi pose cukup rotasi sendi: `thumbs`, `run`,
+`stand`. Bintik cheetah = Voronoi di ruang objek; piping putih, manset dan
+garis sepatu = atribut warna *signed distance* yang di-threshold di shader.
+Ekspresi: smirk, wink, fierce, happy. Pemanggilan `blender -b -P` tunggal juga
+bisa (`-- --shot hero`).
+
+### Wajah bicara Nova (AI Buddy)
+
+```bash
+python blender/nova_visemes.py          # 7 viseme x mata buka/tutup -> build/visemes/*.png
+python tools/make-viseme-sprite.py      # sprite 7x2 -> assets/img/nova-visemes.webp (~82 KB)
+```
+
+`js/nova-buddy.js` menukar sel sprite sambil Nova berbicara: huruf teks dipetakan
+ke bentuk mulut (rest, m, e, i, o, u, a). Suara perangkat diselaraskan lewat event
+`onboundary`, sedangkan Pocket TTS diselaraskan lewat posisi audio dan amplitudo
+(Web Audio). Mata berkedip acak setiap 2,5–6 detik.
+
 ## Showreel gym (Blender Cycles + Sketchfab)
 
 ```bash
@@ -211,3 +246,41 @@ python tools/make-showreel2.py                                    # -> assets/no
 Ruang gym, pelari, treadmill dan properti adalah model Sketchfab berlisensi
 CC-BY (daftar lengkap: `build/sketchfab/credits.json`, juga di slide kredit
 deck). Pod purwarupa, layar firmware yang hidup, dan NovaBand adalah model kami.
+
+## Nova Run — game lari dengan motion capture (`game.html`)
+
+Endless runner 3 jalur (gaya Subway Surfers) untuk menarik pengunjung booth.
+Nova berlari di jalan kota yang dipenuhi billboard Nova-Band; pemain mengendalikan
+Nova dengan **gerakan tubuh** lewat webcam (MediaPipe Pose, diproses di perangkat,
+tidak direkam/dikirim):
+
+| Gerakan | Aksi |
+|---|---|
+| geser badan kiri / kanan | pindah jalur |
+| lompat | lewati gawang |
+| jongkok | merunduk di bawah palang |
+| lari di tempat (≥90 / ≥140 langkah/menit) | skor ×2 / ×3 |
+| angkat kedua tangan | mulai / main lagi |
+
+Tanpa kamera: ← → ↑ ↓ atau swipe. Saat tidak ada yang main, Nova berlari sendiri
+(mode attract). Layout potret 9:16; di layar lebar muncul panel cara main + fakta Nova-Band.
+
+```bash
+python blender/game_sprites.py          # sprite Nova dari belakang (14 frame) -> build/game_sprites
+python tools/make-game-sprites.py       # -> assets/game/nova-sheet.webp + band.webp
+python tools/fetch-game-vendor.py       # Three.js + MediaPipe untuk offline (assets/game/vendor, git-ignored)
+```
+
+Kamera butuh HTTPS atau `localhost` (`python tools/serve.py 5175` → http://localhost:5175/game.html).
+
+### Nova Arena — tiga pilihan game (`arena.html`)
+
+| Game | Kendali | Cocok untuk |
+|---|---|---|
+| **Nova Run** (`game.html`) | seluruh badan, webcam | area pameran luas |
+| **Nova Shake Sprint** (`shake.html`) | accelerometer HP pengunjung (scan QR) | antrean ramai, tanpa ruang |
+| **Nova Boxing** (`boxing.html`) | badan atas, webcam — pukul mitt + miringkan kepala menghindari pukulan | booth sempit, bisa sambil duduk |
+
+Nova Shake menghitung **irama** ayunan (kadens), bukan kekuatan; guncangan > ±3 g memicu
+peringatan "Pelan! HP aman dulu" dan Nova tersandung. Tanpa sensor: tap kiri-kanan bergantian.
+Sprite samping: `python blender/game_sprites.py --view side` lalu `python tools/make-game-sprites.py`.

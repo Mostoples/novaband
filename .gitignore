@@ -32,6 +32,14 @@ kartu-nama/
 
 # previews of the letters (regenerated)
 berkas/_preview/
+data/
+berkas/mersif/
+
+# raw event photos/videos + letters (personal data, ~600 MB): kept local
+dokumentasi/
+
+# Nova Run libraries (~25 MB): python tools/fetch-game-vendor.py
+assets/game/vendor/
 
 # kredensial WiFi / akun Firebase perangkat
 firmware/**/secrets.h

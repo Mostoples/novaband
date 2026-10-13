@@ -18,10 +18,27 @@
       "deck/**",
       "firmware/**",
       "hardware/**",
+      "berkas/**",
+      "docs/**",
+      "kartu-nama/**",
+      "dokumentasi/**",
+      "data/**",
+      "**/*.docx",
+      "**/*.pptx",
+      "**/*.py",
       "firestore.rules",
       "database.rules.json"
     ],
     "headers": [
+      {
+        "source": "/rekap-kuesioner.html",
+        "headers": [
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, nofollow"
+          }
+        ]
+      },
       {
         "source": "/sw.js",
         "headers": [
