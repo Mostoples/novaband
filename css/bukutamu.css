@@ -87,3 +87,4 @@ input:disabled { opacity: .4; }
 .poster .note { color: var(--muted); margin: 0; }
 .poster .url { color: var(--red); font-weight: 800; font-size: clamp(18px, 3vh, 32px); margin: 0; }
 @media print { body { background: #1a0610 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .noprint { display: none; } }
+.again { width: 100%; }

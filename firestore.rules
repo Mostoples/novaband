@@ -23,25 +23,26 @@ service cloud.firestore {
     }
 
     // ---- exhibition guestbook (bukutamu/) ----
-    // Self-service, open to anyone (a button on the landing page, or the QR at
-    // the stand): no event code. One entry per phone: the document id must be
-    // the visitor's anonymous uid and entries can only be created, never
-    // changed. Each entry is two documents written in one batch: the public
-    // card (name, institution, selfie) shown on /hadir/, and the private contact
-    // details that only the team reads (tools/bukutamu-admin.py).
-    match /bukutamu_publik/{uid} {
+    // Self-service and unlimited: anyone (signed in anonymously by the page)
+    // may add entries, as many as they like from one device (a shared tablet
+    // at the stand works too). Each entry is two documents with the same random
+    // id, written in one batch: the public card (name, institution, selfie)
+    // shown on /hadir/, and the private contact details that only the team
+    // reads (tools/bukutamu-admin.py). Entries can never be read back
+    // (private half), changed or deleted from a browser.
+    match /bukutamu_publik/{id} {
       allow get, list: if true;
       allow update, delete: if false;
-      allow create: if request.auth != null && request.auth.uid == uid
+      allow create: if request.auth != null
                     && validPublik(request.resource.data)
-                    && existsAfter(/databases/$(db)/documents/bukutamu_privat/$(uid))
-                    && getAfter(/databases/$(db)/documents/bukutamu_privat/$(uid)).data.nama == request.resource.data.nama;
+                    && existsAfter(/databases/$(db)/documents/bukutamu_privat/$(id))
+                    && getAfter(/databases/$(db)/documents/bukutamu_privat/$(id)).data.nama == request.resource.data.nama;
     }
-    match /bukutamu_privat/{uid} {
+    match /bukutamu_privat/{id} {
       allow read, update, delete: if false;
-      allow create: if request.auth != null && request.auth.uid == uid
+      allow create: if request.auth != null
                     && validPrivat(request.resource.data)
-                    && existsAfter(/databases/$(db)/documents/bukutamu_publik/$(uid));
+                    && existsAfter(/databases/$(db)/documents/bukutamu_publik/$(id));
     }
 
     // everything else stays closed

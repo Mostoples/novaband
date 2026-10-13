@@ -1,9 +1,10 @@
 /* ============================================================
    Buku tamu pameran Nova-Band (bukutamu/index.html)
    Self-service: opened from the landing-page button or the QR at the stand,
-   no code and no staff needed. Anonymous sign-in gives each phone one uid =
-   one entry; the entry is two documents in one batch (public card + private
-   contact). An old QR link's ?k= is still accepted and recorded as "kode"
+   no code and no staff needed, and no limit: one device (a visitor's phone or
+   a shared tablet at the stand) can add as many entries as it likes. Each
+   entry is two documents with the same random id, written in one batch
+   (public card + private contact). An old QR link's ?k= is still accepted and recorded as "kode"
    (where the visitor came from); nothing depends on it.
    ============================================================ */
 import { firebase, auth } from "./fb.js";
@@ -26,8 +27,6 @@ async function boot() {
   try {
     fb = await firebase();
     user = await auth(fb.app);
-    const mine = await fb.F.getDoc(fb.F.doc(fb.db, "bukutamu_publik", user.uid));
-    if (mine.exists()) return done(mine.data(), true);
   } catch (e) {
     console.warn("[bukutamu]", e);
     $("loadMsg").textContent = "Koneksi bermasalah. Coba muat ulang halaman ini.";
@@ -115,8 +114,9 @@ async function submit() {
   const priv = { nama: data.nama, hp: data.hp, instagram: data.ig, instansi: data.org, setuju: true, kode, acara, dibuat: now };
   try {
     const b = F.writeBatch(db);
-    b.set(F.doc(db, "bukutamu_publik", user.uid), pub);
-    b.set(F.doc(db, "bukutamu_privat", user.uid), priv);
+    const id = F.doc(F.collection(db, "bukutamu_publik")).id;          // new random id per entry
+    b.set(F.doc(db, "bukutamu_publik", id), pub);
+    b.set(F.doc(db, "bukutamu_privat", id), priv);
     await Promise.race([b.commit(), new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 25000))]);
     try { localStorage.setItem(DONE_KEY, "1"); } catch (e) { /* private mode */ }
     if (booth) booth.stop();
@@ -126,7 +126,7 @@ async function submit() {
     const denied = e && e.code === "permission-denied";
     $("camErr").hidden = false;
     $("camErr").textContent = denied
-      ? "Tidak bisa disimpan: HP ini sepertinya sudah pernah mengisi buku tamu. Muat ulang halaman untuk melihat entri kamu."
+      ? "Tidak bisa disimpan (data ditolak). Periksa isian lalu coba lagi."
       : "Gagal mengirim (sinyal lemah?). Coba tekan Kirim lagi.";
     btns.forEach((b) => (b.disabled = false));
     $("send").textContent = "Kirim ✔";
@@ -134,18 +134,26 @@ async function submit() {
   sending = false;
 }
 
-function done(d, already) {
+function done(d) {
   show("sDone");
-  $("doneTitle").textContent = already ? "Kamu sudah terdaftar ✅" : "Terima kasih! 🎉";
-  $("doneMsg").innerHTML = already
-    ? "HP ini sudah mengisi buku tamu sebagai <b></b>. Satu HP untuk satu tamu."
-    : "Halo <b></b>, namamu sudah tercatat di buku tamu Nova-Band.";
+  $("doneTitle").textContent = "Terima kasih! 🎉";
+  $("doneMsg").innerHTML = "Halo <b></b>, namamu sudah tercatat di buku tamu Nova-Band.";
   $("doneMsg").querySelector("b").textContent = d.nama;
-  if (d.foto) {
-    $("doneImg").src = d.foto; $("doneImg").hidden = false;
-    $("save").href = d.foto; $("save").hidden = false;
-  }
+  $("doneImg").hidden = !d.foto; $("save").hidden = !d.foto;
+  if (d.foto) { $("doneImg").src = d.foto; $("save").href = d.foto; }
+  scrollTo(0, 0);
 }
+
+/* next guest on the same device: empty the form and the photo */
+$("again").addEventListener("click", () => {
+  for (const id of ["fNama", "fOrg", "fHp", "fIg"]) $(id).value = "";
+  $("fNoHp").checked = false; $("fHp").disabled = false; $("fSetuju").checked = false;
+  $("formErr").hidden = true; $("camErr").hidden = true;
+  photo = ""; data = null;
+  $("send").textContent = "Kirim ✔"; $("send").disabled = false; $("noPhoto").disabled = false;
+  $("doneImg").removeAttribute("src");
+  show("sForm"); scrollTo(0, 0); $("fNama").focus();
+});
 
 boot();
 window.BukuTamu = { show, booth: () => booth };   // for testing

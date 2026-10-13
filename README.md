@@ -289,7 +289,8 @@ Sprite samping: `python blender/game_sprites.py --view side` lalu `python tools/
 
 Mandiri, tanpa petugas dan tanpa kode: tombol **Buku Tamu** di landing page atau QR di stand → `/bukutamu/` → isi nama (wajib), HP (opsional, bisa "tidak mengisi" → `-`),
 Instagram, instansi, centang persetujuan → selfie (kamera depan, hitung mundur 3-2-1, filter wajah MediaPipe
-FaceDetector, Nova ikut foto) → tersimpan. Login anonim Firebase: **satu HP = satu entri**.
+FaceDetector, Nova ikut foto) → tersimpan. **Tanpa batas**: satu perangkat (HP pengunjung atau tablet bersama di stand)
+bisa mengisi berkali-kali; tombol "Isi lagi untuk tamu berikutnya" mengosongkan formulir.
 
 - `bukutamu_publik/{uid}`: nama, instansi, foto (JPEG ≤ 400 KB), waktu — tampil di `/hadir/` (live) dan 8 terbaru di landing page.
 - `bukutamu_privat/{uid}`: + HP, Instagram, persetujuan, kode acara — **tidak bisa dibaca browser**.

@@ -8,9 +8,9 @@ Buku tamu pameran Nova-Band — alat tim (butuh login admin: gcloud atau `fireba
 
 Data:
   Buku tamu mandiri: siapa pun bisa mengisi lewat tombol di landing page atau QR, tanpa kode.
-  Satu HP = satu entri (login anonim). ?k= di link lama hanya dicatat sebagai sumber.
-  bukutamu_publik/{uid}   {nama, instansi, foto, acara, dibuat}        tampil di /hadir/ dan landing page
-  bukutamu_privat/{uid}   {nama, hp, instagram, instansi, setuju, kode, acara, dibuat}   hanya admin
+  Tanpa batas per perangkat (setiap entri ber-ID acak). ?k= di link lama hanya dicatat sebagai sumber.
+  bukutamu_publik/{id}   {nama, instansi, foto, acara, dibuat}        tampil di /hadir/ dan landing page
+  bukutamu_privat/{id}   {nama, hp, instagram, instansi, setuju, kode, acara, dibuat}   hanya admin
 Semua keluaran berisi data pribadi: disimpan di data/ (tidak masuk git, tidak ikut deploy).
 """
 import base64
