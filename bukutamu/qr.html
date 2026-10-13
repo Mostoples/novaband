@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QR Buku Tamu · Nova-Band</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/assets/pwa/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/bukutamu.css">
+</head>
+<body class="poster">
+<!-- The event code travels in the #hash of this page's link (never sent to the server, never in the
+     deployed files). Get the link from: python tools/bukutamu-admin.py kode -->
+<main>
+  <div class="logo">Nova<span>-</span>Band</div>
+  <h1>BUKU TAMU</h1>
+  <p class="sub">Scan · isi nama · selfie bareng Nova!</p>
+  <div class="qrbox"><div id="qr"></div><img class="nova" src="/assets/img/mascot-wink.webp" alt=""></div>
+  <p class="note">Nomor HP &amp; Instagram tidak ditampilkan publik.</p>
+  <p class="url">novaband-id.web.app</p>
+  <p class="err" id="err" hidden>Tautan ini belum berisi kode acara. Buka tautan poster dari tim (berakhiran <b>#k=…</b>).</p>
+  <button class="btn ghost noprint" onclick="print()">Cetak poster</button>
+</main>
+<script src="/assets/vendor/qrcode.js"></script>
+<script>
+  const k = new URLSearchParams(location.hash.slice(1)).get("k");
+  if (!k) document.getElementById("err").hidden = false;
+  else {
+    const q = qrcode(0, "M");
+    q.addData(location.origin + "/bukutamu/?k=" + encodeURIComponent(k));
+    q.make();
+    document.getElementById("qr").innerHTML = q.createSvgTag({ cellSize: 10, margin: 2, scalable: true });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daftar Hadir · Nova-Band</title>
+<meta name="description" content="Tamu stand Nova-Band, diperbarui langsung.">
+<meta name="theme-color" content="#2a0a12">
+<link rel="icon" href="/assets/pwa/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/bukutamu.css">
+</head>
+<body class="hadir">
+<header class="hd">
+  <div>
+    <div class="logo">Nova<span>-</span>Band</div>
+    <h1>Daftar Hadir</h1>
+  </div>
+  <div class="count"><b id="n">0</b><span>tamu</span></div>
+</header>
+<p class="empty" id="empty">Memuat daftar hadir…</p>
+<section class="grid" id="grid"></section>
+<footer class="foot">Diperbarui langsung · nomor HP &amp; Instagram tidak ditampilkan · <a href="/">novaband-id.web.app</a></footer>
+<script type="module">
+  import { watchGuests, waktu, tanggal, esc } from "/js/bukutamu/fb.js";
+  const grid = document.getElementById("grid"), empty = document.getElementById("empty");
+  const seen = new Set();
+  let first = true;
+  const nova = "/assets/img/mascot-wink.webp";
+  watchGuests(500, (rows) => {
+    document.getElementById("n").textContent = rows.length;
+    empty.hidden = rows.length > 0;
+    if (!rows.length) empty.textContent = "Belum ada tamu. Jadilah yang pertama — scan QR di stand!";
+    let lastDay = "";
+    grid.innerHTML = rows.map((r) => {
+      const day = tanggal(r.dibuat);
+      const head = day !== lastDay ? `<h2 class="day">${esc(day)}</h2>` : "";
+      lastDay = day;
+      const fresh = !first && !seen.has(r.id);
+      seen.add(r.id);
+      return head + `<article class="guest${fresh ? " new" : ""}">
+        <img src="${r.foto ? esc(r.foto) : nova}" alt="" loading="lazy" class="${r.foto ? "" : "nophoto"}">
+        <div><b>${esc(r.nama)}</b><span>${esc(r.instansi || "")}</span><time>${waktu(r.dibuat)}</time></div></article>`;
+    }).join("");
+    first = false;
+  }, (e) => { empty.hidden = false; empty.textContent = "Daftar hadir belum bisa dimuat (koneksi?)."; console.warn(e); });
+</script>
+</body>
+</html>

@@ -22,7 +22,31 @@ service cloud.firestore {
                     && existsAfter(/databases/$(db)/documents/kuesioner_pelari/$(id));
     }
 
-    // everything else stays closed
+    // ---- exhibition guestbook (bukutamu/) ----
+    // One entry per phone: the document id must be the visitor's anonymous uid
+    // and entries can only be created, never changed. Each entry is two
+    // documents written in one batch: the public card (name, institution,
+    // selfie) shown on /hadir/, and the private contact details that only the
+    // team reads (tools/bukutamu-admin.py). The private half must carry the
+    // event code from the stand's QR; the code lives in bukutamu_config, which
+    // no browser can read.
+    match /bukutamu_publik/{uid} {
+      allow get, list: if true;
+      allow update, delete: if false;
+      allow create: if request.auth != null && request.auth.uid == uid
+                    && validPublik(request.resource.data)
+                    && existsAfter(/databases/$(db)/documents/bukutamu_privat/$(uid))
+                    && getAfter(/databases/$(db)/documents/bukutamu_privat/$(uid)).data.nama == request.resource.data.nama;
+    }
+    match /bukutamu_privat/{uid} {
+      allow read, update, delete: if false;
+      allow create: if request.auth != null && request.auth.uid == uid
+                    && validPrivat(request.resource.data)
+                    && request.resource.data.kode == get(/databases/$(db)/documents/bukutamu_config/acara).data.kode
+                    && existsAfter(/databases/$(db)/documents/bukutamu_publik/$(uid));
+    }
+
+    // everything else stays closed (including bukutamu_config)
     match /{document=**} {
       allow read, write: if false;
     }
@@ -31,6 +55,24 @@ service cloud.firestore {
     function req(v, max) { return str(v, max) && v.size() > 0; }
     function likert(v) { return v is int && v >= 1 && v <= 5; }
     function pick(v) { return v is list && v.size() >= 1 && v.size() <= 10; }
+
+    function validPublik(d) {
+      return d.keys().hasOnly(['nama', 'instansi', 'foto', 'acara', 'dibuat'])
+          && d.keys().hasAll(['nama', 'instansi', 'foto', 'acara', 'dibuat'])
+          && req(d.nama, 60) && str(d.instansi, 80) && str(d.acara, 80)
+          && d.foto is string && d.foto.size() < 450000
+          && (d.foto == '' || d.foto.matches('data:image/jpeg;base64,[A-Za-z0-9+/=]+'))
+          && d.dibuat == request.time;
+    }
+
+    function validPrivat(d) {
+      return d.keys().hasOnly(['nama', 'hp', 'instagram', 'instansi', 'setuju', 'kode', 'acara', 'dibuat'])
+          && d.keys().hasAll(['nama', 'hp', 'instagram', 'instansi', 'setuju', 'kode', 'acara', 'dibuat'])
+          && req(d.nama, 60) && req(d.hp, 24) && str(d.instagram, 40) && str(d.instansi, 80)
+          && str(d.acara, 80) && req(d.kode, 40)
+          && d.setuju == true
+          && d.dibuat == request.time;
+    }
 
     function validResponse(d) {
       return d.keys().hasOnly([

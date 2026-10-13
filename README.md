@@ -284,3 +284,22 @@ Kamera butuh HTTPS atau `localhost` (`python tools/serve.py 5175` → http://loc
 Nova Shake menghitung **irama** ayunan (kadens), bukan kekuatan; guncangan > ±3 g memicu
 peringatan "Pelan! HP aman dulu" dan Nova tersandung. Tanpa sensor: tap kiri-kanan bergantian.
 Sprite samping: `python blender/game_sprites.py --view side` lalu `python tools/make-game-sprites.py`.
+
+## Buku tamu pameran (`/bukutamu/`, `/hadir/`)
+
+Pengunjung memindai QR di stand → `/bukutamu/?k=<kode acara>` → isi nama (wajib), HP (opsional, bisa "tidak mengisi" → `-`),
+Instagram, instansi, centang persetujuan → selfie (kamera depan, hitung mundur 3-2-1, filter wajah MediaPipe
+FaceDetector, Nova ikut foto) → tersimpan. Login anonim Firebase: **satu HP = satu entri**.
+
+- `bukutamu_publik/{uid}`: nama, instansi, foto (JPEG ≤ 400 KB), waktu — tampil di `/hadir/` (live) dan 8 terbaru di landing page.
+- `bukutamu_privat/{uid}`: + HP, Instagram, persetujuan, kode acara — **tidak bisa dibaca browser**.
+- `bukutamu_config/acara`: kode acara rahasia; `firestore.rules` hanya menerima entri dengan kode yang benar.
+
+```bash
+python tools/bukutamu-admin.py kode "Nama acara"   # kode baru + URL + poster QR (data/bukutamu/)
+python tools/bukutamu-admin.py ekspor              # CSV kontak + foto -> data/bukutamu/<tanggal>/
+python tools/bukutamu-admin.py hapus-uji           # hapus entri bernama "UJI COBA ..."
+```
+
+Poster di layar: `/bukutamu/qr.html#k=<kode>` (kode hanya di #hash, tidak ikut ter-deploy).
+Ganti kode = QR lama otomatis tidak berlaku.

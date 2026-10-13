@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Buku Tamu · Nova-Band</title>
+<meta name="description" content="Buku tamu stand Nova-Band: isi nama dan selfie bareng Nova.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#2a0a12">
+<link rel="icon" href="/assets/pwa/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/bukutamu.css">
+</head>
+<body class="bt">
+<main class="wrap">
+  <header class="top">
+    <div class="logo">Nova<span>-</span>Band</div>
+    <p class="sub">Buku tamu pameran</p>
+  </header>
+
+  <!-- 0. loading / errors -->
+  <section class="card" id="sLoad"><div class="spin"></div><p id="loadMsg">Menyiapkan buku tamu…</p></section>
+
+  <section class="card" id="sNoCode" hidden>
+    <img class="nova" src="/assets/img/mascot-wink.webp" alt="">
+    <h1>Scan QR di stand</h1>
+    <p>Buku tamu ini dibuka dengan memindai <b>kode QR di stand Nova-Band</b>.</p>
+    <a class="btn ghost" href="/hadir/">Lihat daftar hadir</a>
+  </section>
+
+  <!-- 1. form -->
+  <form class="card" id="sForm" hidden novalidate>
+    <h1>Halo! 👋</h1>
+    <p class="lead">Terima kasih sudah mampir. Isi sebentar, lalu selfie bareng Nova.</p>
+    <label>Nama <b class="req">*</b>
+      <input id="fNama" maxlength="60" autocomplete="name" required placeholder="Nama lengkap">
+    </label>
+    <label>Instansi / sekolah / komunitas <small>(opsional)</small>
+      <input id="fOrg" maxlength="80" autocomplete="organization" placeholder="mis. SMA Negeri 1 Surakarta">
+    </label>
+    <label>Nomor HP / WhatsApp <small>(opsional · tidak tampil publik)</small>
+      <input id="fHp" type="tel" inputmode="tel" maxlength="20" autocomplete="tel" placeholder="08xxxxxxxxxx">
+    </label>
+    <label class="check small"><input type="checkbox" id="fNoHp"> Tidak mengisi nomor HP</label>
+    <label>Instagram <small>(opsional · tidak tampil publik)</small>
+      <input id="fIg" maxlength="40" autocapitalize="off" autocomplete="off" placeholder="@akunmu">
+    </label>
+    <label class="check"><input type="checkbox" id="fSetuju">
+      <span>Saya setuju data ini disimpan tim Nova-Band untuk keperluan pameran. <b>Nama, instansi, dan foto</b> tampil di daftar hadir;
+      <b>nomor HP dan Instagram tidak ditampilkan</b> dan hanya dipakai tim untuk menghubungi saya.</span></label>
+    <p class="err" id="formErr" hidden></p>
+    <button class="btn primary" id="toSelfie" type="submit">Lanjut ke selfie 📸</button>
+  </form>
+
+  <!-- 2. selfie -->
+  <section class="card" id="sSelfie" hidden>
+    <h1>Selfie bareng Nova!</h1>
+    <div class="booth">
+      <video id="video" playsinline muted></video>
+      <canvas id="preview"></canvas>
+      <img id="shot" alt="" hidden>
+      <div class="flash" id="flash"></div>
+    </div>
+    <div class="filters" id="filters"></div>
+    <p class="err" id="camErr" hidden></p>
+    <div class="row" id="shootRow">
+      <button class="btn primary" id="shootBtn" type="button">📸 Ambil foto</button>
+    </div>
+    <div class="row" id="reviewRow" hidden>
+      <button class="btn ghost" id="retake" type="button">Ulangi</button>
+      <button class="btn primary" id="send" type="button">Kirim ✔</button>
+    </div>
+    <button class="link" id="noPhoto" type="button">Lanjut tanpa foto</button>
+    <button class="link" id="back" type="button">← Ubah data</button>
+  </section>
+
+  <!-- 3. done -->
+  <section class="card" id="sDone" hidden>
+    <h1 id="doneTitle">Terima kasih! 🎉</h1>
+    <img class="result" id="doneImg" alt="Foto buku tamu" hidden>
+    <p id="doneMsg">Namamu sudah tercatat di buku tamu Nova-Band.</p>
+    <div class="row">
+      <a class="btn primary" id="save" download="selfie-novaband.jpg" hidden>Simpan foto</a>
+      <a class="btn ghost" href="/hadir/">Lihat daftar hadir</a>
+    </div>
+    <a class="link" href="/">Kenalan dengan Nova-Band →</a>
+  </section>
+
+  <footer class="foot">Data kontak hanya untuk tim Nova-Band · kamera diproses di HP-mu.</footer>
+</main>
+<script type="module" src="/js/bukutamu/app.js"></script>
+</body>
+</html>
