@@ -1,12 +1,14 @@
 """
 Buku tamu pameran Nova-Band — alat tim (butuh login admin: gcloud atau `firebase login`).
 
-    python tools/bukutamu-admin.py kode ["Nama acara"]   # buat/ganti kode acara rahasia + poster QR
+    python tools/bukutamu-admin.py poster ["Nama acara"] # poster QR A4 -> data/bukutamu/poster-bukutamu.png
+    python tools/bukutamu-admin.py kode ["Nama acara"]   # (lama) kode sumber opsional di link QR
     python tools/bukutamu-admin.py ekspor               # CSV kontak + foto -> data/bukutamu/<tanggal>/
     python tools/bukutamu-admin.py hapus-uji            # hapus entri yang namanya diawali "UJI COBA"
 
 Data:
-  bukutamu_config/acara   {kode, acara}            tidak bisa dibaca browser (dipakai aturan Firestore)
+  Buku tamu mandiri: siapa pun bisa mengisi lewat tombol di landing page atau QR, tanpa kode.
+  Satu HP = satu entri (login anonim). ?k= di link lama hanya dicatat sebagai sumber.
   bukutamu_publik/{uid}   {nama, instansi, foto, acara, dibuat}        tampil di /hadir/ dan landing page
   bukutamu_privat/{uid}   {nama, hp, instagram, instansi, setuju, kode, acara, dibuat}   hanya admin
 Semua keluaran berisi data pribadi: disimpan di data/ (tidak masuk git, tidak ikut deploy).
@@ -137,7 +139,11 @@ def hapus_uji():
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
-    if cmd == "kode":
+    if cmd == "poster":
+        os.makedirs(OUT, exist_ok=True)
+        poster(SITE + "/bukutamu/", sys.argv[2] if len(sys.argv) > 2 else "Pameran Nova-Band · " + dt.date.today().strftime("%d %B %Y"))
+        print("poster ->", os.path.join(OUT, "poster-bukutamu.png"), "| QR:", SITE + "/bukutamu/")
+    elif cmd == "kode":
         kode(sys.argv[2] if len(sys.argv) > 2 else "Pameran Nova-Band · " + dt.date.today().strftime("%d %B %Y"))
     elif cmd == "ekspor":
         ekspor()

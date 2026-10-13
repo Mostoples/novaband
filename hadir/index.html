@@ -20,6 +20,7 @@
 </header>
 <p class="empty" id="empty">Memuat daftar hadir…</p>
 <section class="grid" id="grid"></section>
+<p style="margin:0 0 16px"><a class="btn primary" href="/bukutamu/">✍️ Isi buku tamu</a></p>
 <footer class="foot">Diperbarui langsung · nomor HP &amp; Instagram tidak ditampilkan · <a href="/">novaband-id.web.app</a></footer>
 <script type="module">
   import { watchGuests, waktu, tanggal, esc } from "/js/bukutamu/fb.js";
@@ -30,7 +31,7 @@
   watchGuests(500, (rows) => {
     document.getElementById("n").textContent = rows.length;
     empty.hidden = rows.length > 0;
-    if (!rows.length) empty.textContent = "Belum ada tamu. Jadilah yang pertama — scan QR di stand!";
+    if (!rows.length) empty.textContent = "Belum ada tamu. Jadilah yang pertama!";
     let lastDay = "";
     grid.innerHTML = rows.map((r) => {
       const day = tanggal(r.dibuat);

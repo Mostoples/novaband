@@ -23,13 +23,12 @@ service cloud.firestore {
     }
 
     // ---- exhibition guestbook (bukutamu/) ----
-    // One entry per phone: the document id must be the visitor's anonymous uid
-    // and entries can only be created, never changed. Each entry is two
-    // documents written in one batch: the public card (name, institution,
-    // selfie) shown on /hadir/, and the private contact details that only the
-    // team reads (tools/bukutamu-admin.py). The private half must carry the
-    // event code from the stand's QR; the code lives in bukutamu_config, which
-    // no browser can read.
+    // Self-service, open to anyone (a button on the landing page, or the QR at
+    // the stand): no event code. One entry per phone: the document id must be
+    // the visitor's anonymous uid and entries can only be created, never
+    // changed. Each entry is two documents written in one batch: the public
+    // card (name, institution, selfie) shown on /hadir/, and the private contact
+    // details that only the team reads (tools/bukutamu-admin.py).
     match /bukutamu_publik/{uid} {
       allow get, list: if true;
       allow update, delete: if false;
@@ -42,11 +41,10 @@ service cloud.firestore {
       allow read, update, delete: if false;
       allow create: if request.auth != null && request.auth.uid == uid
                     && validPrivat(request.resource.data)
-                    && request.resource.data.kode == get(/databases/$(db)/documents/bukutamu_config/acara).data.kode
                     && existsAfter(/databases/$(db)/documents/bukutamu_publik/$(uid));
     }
 
-    // everything else stays closed (including bukutamu_config)
+    // everything else stays closed
     match /{document=**} {
       allow read, write: if false;
     }
@@ -69,7 +67,7 @@ service cloud.firestore {
       return d.keys().hasOnly(['nama', 'hp', 'instagram', 'instansi', 'setuju', 'kode', 'acara', 'dibuat'])
           && d.keys().hasAll(['nama', 'hp', 'instagram', 'instansi', 'setuju', 'kode', 'acara', 'dibuat'])
           && req(d.nama, 60) && req(d.hp, 24) && str(d.instagram, 40) && str(d.instansi, 80)
-          && str(d.acara, 80) && req(d.kode, 40)
+          && str(d.acara, 80) && str(d.kode, 40)
           && d.setuju == true
           && d.dibuat == request.time;
     }

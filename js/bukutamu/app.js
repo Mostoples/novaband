@@ -1,9 +1,10 @@
 /* ============================================================
    Buku tamu pameran Nova-Band (bukutamu/index.html)
-   Opened from the QR at the stand: /bukutamu/?k=<event code>.
-   Anonymous sign-in gives each phone one uid = one entry; the entry is two
-   documents in one batch (public card + private contact), and firestore.rules
-   only accepts it when the event code is right.
+   Self-service: opened from the landing-page button or the QR at the stand,
+   no code and no staff needed. Anonymous sign-in gives each phone one uid =
+   one entry; the entry is two documents in one batch (public card + private
+   contact). An old QR link's ?k= is still accepted and recorded as "kode"
+   (where the visitor came from); nothing depends on it.
    ============================================================ */
 import { firebase, auth } from "./fb.js";
 import { Booth, FILTERS } from "./selfie.js";
@@ -13,7 +14,7 @@ const steps = ["sLoad", "sNoCode", "sForm", "sSelfie", "sDone"];
 const show = (id) => steps.forEach((s) => ($(s).hidden = s !== id));
 const DONE_KEY = "novaband-bukutamu";
 
-// event code: from the QR link, kept for this tab, then removed from the address bar
+// optional source tag from an older QR link, kept for this tab, then removed from the address bar
 const url = new URL(location.href);
 let kode = url.searchParams.get("k") || sessionStorage.getItem("bt-k") || "";
 if (url.searchParams.get("k")) { sessionStorage.setItem("bt-k", kode); history.replaceState(null, "", location.pathname); }
@@ -32,7 +33,6 @@ async function boot() {
     $("loadMsg").textContent = "Koneksi bermasalah. Coba muat ulang halaman ini.";
     return;
   }
-  if (!kode) return show("sNoCode");
   show("sForm");
   $("fNama").focus();
 }
@@ -126,7 +126,7 @@ async function submit() {
     const denied = e && e.code === "permission-denied";
     $("camErr").hidden = false;
     $("camErr").textContent = denied
-      ? "Tidak bisa disimpan: kode QR tidak berlaku atau HP ini sudah pernah mengisi. Scan ulang QR di stand."
+      ? "Tidak bisa disimpan: HP ini sepertinya sudah pernah mengisi buku tamu. Muat ulang halaman untuk melihat entri kamu."
       : "Gagal mengirim (sinyal lemah?). Coba tekan Kirim lagi.";
     btns.forEach((b) => (b.disabled = false));
     $("send").textContent = "Kirim ✔";
