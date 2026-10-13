@@ -5,6 +5,7 @@ Buku tamu pameran Nova-Band — alat tim (butuh login admin: gcloud atau `fireba
     python tools/bukutamu-admin.py kode ["Nama acara"]   # (lama) kode sumber opsional di link QR
     python tools/bukutamu-admin.py ekspor               # CSV kontak + foto -> data/bukutamu/<tanggal>/
     python tools/bukutamu-admin.py hapus-uji            # hapus entri yang namanya diawali "UJI COBA"
+    python tools/bukutamu-admin.py reset                # cadangkan (ekspor) lalu kosongkan SEMUA entri
 
 Data:
   Buku tamu mandiri: siapa pun bisa mengisi lewat tombol di landing page atau QR, tanpa kode.
@@ -137,6 +138,18 @@ def hapus_uji():
     print(n, "dokumen uji dihapus")
 
 
+def reset():
+    """Back everything up (CSV + photos), then delete every guestbook entry."""
+    n = len(listing("bukutamu_privat")) + len(listing("bukutamu_publik"))
+    if not n:
+        print("buku tamu sudah kosong"); return
+    print("cadangan dulu:"); ekspor()
+    for col in ("bukutamu_privat", "bukutamu_publik"):
+        for r in listing(col):
+            call("DELETE", "%s/%s/%s" % (DOCS, col, r["_id"]))
+    print(n, "dokumen dihapus — buku tamu kosong")
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     if cmd == "poster":
@@ -149,5 +162,7 @@ if __name__ == "__main__":
         ekspor()
     elif cmd == "hapus-uji":
         hapus_uji()
+    elif cmd == "reset":
+        reset()
     else:
         print(__doc__)
