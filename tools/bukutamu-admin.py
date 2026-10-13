@@ -121,7 +121,7 @@ def ekspor():
                      "acara": p.get("acara", ""), "foto": foto})
     path = os.path.join(out, "bukutamu_%s.csv" % day)
     with open(path, "w", newline="", encoding="utf-8-sig") as f:      # utf-8-sig: opens cleanly in Excel
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()) if rows else ["waktu (WIB)", "nama"])
+        w = csv.DictWriter(f, fieldnames=["waktu (WIB)", "nama", "instansi", "hp", "instagram", "acara", "foto"])
         w.writeheader(); w.writerows(rows)
     print(len(rows), "tamu ->", path)
 
