@@ -317,3 +317,20 @@
 
   doc.querySelectorAll("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
 })();
+
+/* Hero chips breathe like a live band: heart rate wanders 132-164 bpm,
+   readiness drifts 82-89 %. */
+(function liveChips() {
+  var bpm = document.getElementById("live-bpm"), rdy = document.getElementById("live-ready");
+  if (!bpm) return;
+  var hr = 148, target = 150, r = 85;
+  setInterval(function () {
+    if (Math.abs(hr - target) < 2) target = 132 + Math.round(Math.random() * 32);
+    hr += Math.sign(target - hr) * (1 + Math.round(Math.random()));
+    bpm.textContent = hr;
+  }, 1000);
+  if (rdy) setInterval(function () {
+    r = Math.max(82, Math.min(89, r + (Math.random() < 0.5 ? -1 : 1)));
+    rdy.textContent = r;
+  }, 7000);
+})();

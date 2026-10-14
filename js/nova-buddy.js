@@ -30,12 +30,12 @@
           chips: ["Detak jantungku?", "Siap latihan hari ini?", "Mulai sesi", "Kenapa di lengan atas?", "Cara pakai band", "Tips pendinginan"],
           listen: "Mendengarkan…", engDevice: "Suara: perangkat", engPocket: "Suara: Pocket TTS", noMic: "Mikrofon tidak tersedia di browser ini.",
           km: "Kilometer {n}! Pace {pace} per km, detak jantung {hr}.", alert: "Pelan dulu! Detak jantungmu {hr}, di atas batas {thr}. Atur napas ya.",
-          notConnected: "Band belum terhubung, jadi angka ini dari mode simulasi." },
+          notConnected: "" },
     en: { title: "Nova · AI Buddy", ph: "Ask Nova…", hello: "Hi, I'm Nova! Ask me anything about running, your heart rate or the band. I can start a session too.",
           chips: ["My heart rate?", "Should I train today?", "Start session", "Why the upper arm?", "How to wear it", "Cool-down tips"],
           listen: "Listening…", engDevice: "Voice: device", engPocket: "Voice: Pocket TTS", noMic: "Microphone isn't available in this browser.",
           km: "Kilometre {n}! Pace {pace} per km, heart rate {hr}.", alert: "Easy now! Your heart rate is {hr}, above your {thr} limit. Breathe.",
-          notConnected: "The band isn't connected, so these numbers come from the demo." }
+          notConnected: "" }
   };
   var L = function () { return T[pref.lang]; };
 
@@ -94,7 +94,7 @@
     var out = fill(pick(pool)), act = null;
     if (it.intent === "start_session" && S && !S.running) act = "toggle";
     if (it.intent === "stop_session" && S && S.running) act = "toggle";
-    if (/^(hr_now|zone|pace|distance|cadence|calories)$/.test(it.intent) && S && !S.band) out += " " + L().notConnected;
+    if (/^(hr_now|zone|pace|distance|cadence|calories)$/.test(it.intent) && S && !S.band && L().notConnected) out += " " + L().notConnected;
     return { text: out, act: act, urgent: it.intent === "chest_pain_emergency", intent: it.intent };
   }
 

@@ -886,7 +886,7 @@
     if (nu) nu.disabled = !(L && L.support.usb);
     var note = $("cx-note");
     if (note) note.textContent = (L && (L.support.ble || L.support.usb)) ? "" :
-      "Browser ini belum mendukung Web Bluetooth / Web Serial (mis. Safari iOS). Gunakan Chrome atau Edge, atau coba mode simulasi.";
+      "Browser ini belum mendukung Web Bluetooth / Web Serial (mis. Safari iOS). Gunakan Chrome atau Edge, atau pilih mode pameran.";
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
   }
   function closeConnect() { if (dlg) { if (dlg.close) dlg.close(); else dlg.removeAttribute("open"); } }
@@ -945,7 +945,7 @@
         if (lbl) lbl.textContent = run ? "Jeda Sesi" : (S.t > 0 ? "Lanjutkan" : "Mulai Sesi");
       }
       var bd = $("band-data");
-      if (bd) bd.textContent = m.demo ? "Simulasi di band (belum ada sensor PPG)" : "Sensor PPG";
+      if (bd) bd.textContent = m.demo ? "Mode pameran di band (sensor PPG belum terpasang)" : "Sensor PPG";
     });
     L.on("wave", function (samples) {
       samples.forEach(function (v) { wave.push(v); if (wave.length > WAVE_LEN) wave.shift(); });
@@ -1092,6 +1092,42 @@
 
   var appBg = $("app-bg");
   if (appBg && window.NovaThree) window.NovaThree.initAppBg(appBg);
+
+  /* =========================================================
+     Exhibition display: the app runs by itself. The band connects and a
+     session starts on load; the effort drifts through easy -> tempo ->
+     interval -> recovery so heart rate, zones and alerts keep moving. A
+     paused session resumes after 90 s without touches; a real band (S.band)
+     takes over and stops all of this. ?manual turns it off.
+     ========================================================= */
+  (function autoDisplay() {
+    if (/[?&]manual/.test(location.search)) return;
+    var PLAN = [[35, 40], [62, 45], [88, 25], [45, 35], [62, 40], [72, 30], [35, 30]];   // effort, seconds
+    var step = 0, stepLeft = PLAN[0][1], lastTouch = 0;
+    ["pointerdown", "keydown", "touchstart"].forEach(function (ev) {
+      doc.addEventListener(ev, function () { lastTouch = Date.now(); }, { passive: true });
+    });
+    setTimeout(function () {
+      if (S.band) return;
+      if (!S.connected) setConnected(true);
+      if (!S.running) setRunning(true);
+    }, 1200);
+    setInterval(function () {
+      if (S.band) return;                                   // real hardware: hands off
+      if (!S.running) {
+        if (Date.now() - lastTouch > 90000) { if (!S.connected) setConnected(true); setRunning(true); }
+        return;
+      }
+      if (S.t > 3600) { resetSession(); setRunning(true); step = 0; stepLeft = PLAN[0][1]; return; }
+      var target = PLAN[step][0];
+      if (S.effort !== target) {                            // ease toward the next effort, 2 points a second
+        S.effort += Math.max(-2, Math.min(2, target - S.effort));
+        if (effort) effort.value = S.effort;
+        var v = $("eff-val"); if (v) v.textContent = S.effort;
+      }
+      if (--stepLeft <= 0) { step = (step + 1) % PLAN.length; stepLeft = PLAN[step][1]; }
+    }, 1000);
+  })();
 
   requestAnimationFrame(loop);
 })();
