@@ -36,6 +36,9 @@ spec.loader.exec_module(R)
 FF = R.find_ffmpeg()
 PREVIEW = "--preview" in sys.argv
 W, H, FPS, SR = 1080, 1920, 25, 44100
+LAND = "--landscape" in sys.argv                    # 1920 x 1080: media box left, Nova + bubble right
+if LAND:
+    W, H = 1920, 1080
 TOTAL = 150.0
 N = int(TOTAL * FPS)
 XF = 10                                            # media cross-fade, frames
@@ -56,7 +59,13 @@ sm = lambda x: clamp(x) ** 2 * (3 - 2 * clamp(x))
 DOC = J("dokumentasi")
 KL = lambda n: os.path.join(DOC, "KOMUNITAS LARI SURAKARTA", n)
 AD = lambda s: os.path.join(DOC, "ADEGAN", "WhatsApp Video 2026-10-10 at %s.mp4" % s)
-BX, BY, BW, BH = 40, 190, 1000, 1200              # media box
+BX, BY, BW, BH = 40, 190, 1000, 1200              # media box (BW x BH is also the chart design canvas)
+MW, MH = BW, BH                                    # media box size on screen
+if LAND:
+    BX, BY, MW, MH = 50, 125, 1240, 905
+    BW, BH = round(1200 * MW / MH), 1200            # charts keep their 1200-px design height, just wider
+OX = (BW - 1000) / 2                               # centres the fixed-x chart parts on a wider canvas
+HY, PY = (55, 92) if LAND else (100, 150)          # header logo / progress bar heights
 
 SEGS = [(0.0, "00", "THE PROBLEM"), (34.0, "01", "USE CASES"), (62.0, "02", "PARTNERS"), (88.0, "03", "THE APP"), (122.0, "04", "PROFILE")]
 VO = json.load(open(J("build", "portrait_vo", "words.json")))
@@ -81,37 +90,39 @@ LINES = schedule()
 
 
 # ------------------------------------------------------------------ media sources
-def cover_vf(rot=False, w=BW, h=BH, sharpen=False):
+def cover_vf(rot=False, w=None, h=None, sharpen=False):
+    w, h = w or MW, h or MH
     r = "transpose=2," if rot else ""
     us = ",unsharp=5:5:0.6:5:5:0" if sharpen else ""
     return "%sscale=%d:%d:flags=lanczos:force_original_aspect_ratio=increase,crop=%d:%d%s,eq=contrast=1.06:saturation=1.08,setsar=1,fps=%d" % (
         r, w, h, w, h, us, FPS)
 
 
-def video(path, start, dur, vf=None, grade=None):
+def video(path, start, dur, vf=None, grade=None, size=None):
     n = int(round(dur * FPS))
-    vf = vf or cover_vf(sharpen="ADEGAN" in path)
+    VW_, VH_ = size or (MW, MH)
+    vf = vf or cover_vf(sharpen="ADEGAN" in path, w=VW_, h=VH_)
     p = subprocess.Popen([FF, "-v", "error", "-ss", "%.3f" % start, "-i", path, "-t", "%.3f" % (dur + 0.6), "-vf", vf,
                           "-an", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     last = None
     for _ in range(n):
-        b = p.stdout.read(BW * BH * 3)
-        if len(b) == BW * BH * 3:
-            last = np.frombuffer(b, np.uint8).reshape(BH, BW, 3)
+        b = p.stdout.read(VW_ * VH_ * 3)
+        if len(b) == VW_ * VH_ * 3:
+            last = np.frombuffer(b, np.uint8).reshape(VH_, VW_, 3)
         yield grade(last) if grade else last
     p.stdout.close(); p.kill()
 
 
 def photo(path, dur, zoom_in=True, grade=None):
     im = ImageOps.exif_transpose(Image.open(path)).convert("RGB")
-    base = ImageOps.fit(im, (int(BW * 1.12), int(BH * 1.12)), Image.LANCZOS)
+    base = ImageOps.fit(im, (int(MW * 1.12), int(MH * 1.12)), Image.LANCZOS)
     n = int(round(dur * FPS))
     for f in range(n):
         p = f / max(1, n - 1)
         z = 1 + 0.1 * p if zoom_in else 1.1 - 0.1 * p
         cw, ch = base.width / z, base.height / z
         x, y = (base.width - cw) / 2, (base.height - ch) * 0.45
-        a = np.asarray(base.resize((BW, BH), Image.BILINEAR, box=(x, y, x + cw, y + ch)))
+        a = np.asarray(base.resize((MW, MH), Image.BILINEAR, box=(x, y, x + cw, y + ch)))
         yield grade(a) if grade else a
 
 
@@ -120,7 +131,7 @@ def frames(folder, start, n, step=1.0):
     for i in range(n):
         k = min(len(fs) - 1, int(start + i * step))
         im = Image.open(fs[k]).convert("RGB")
-        yield np.asarray(ImageOps.fit(im, (BW, BH), Image.LANCZOS, centering=(0.5, 0.5)))
+        yield np.asarray(ImageOps.fit(im, (MW, MH), Image.LANCZOS, centering=(0.5, 0.5)))
 
 
 def dark_red(a):                                    # urgency grade: desaturated, red-tinted, darker
@@ -205,7 +216,7 @@ def scene_bars_id(t, dur):
     for i, (yr, v, col) in enumerate(vals):
         g = ease((t - 0.4 - 0.7 * i) / 1.4)
         hgt = v * scale * g
-        x = 230 + i * 330
+        x = 230 + i * 330 + OX
         prism(d, x, base, 200, hgt, 90, col)
         label(d, (x + 100, base + 50), str(yr), BOLD(40), INK, ease((t - 0.3) / 0.5), "mm")
         label(d, (x + 100, base - hgt - 100), "%dk" % round(v * g), XB(56), INK, g, "mm")
@@ -227,9 +238,9 @@ def scene_overtrain(t, dur):
     for i, (name, pct, col) in enumerate(rows):
         y = 520 + i * 330
         g = ease((t - 0.6 - 0.5 * i) / 1.3)
-        label(d, (90, y - 150), name, BOLD(42), INK, ease((t - 0.4 - 0.5 * i) / 0.5))
-        prism(d, 90, y + 70, 760 * pct / 100 * g + 2, 110, 60, col)        # lying bar: hgt = thickness
-        label(d, (110 + 760 * pct / 100 * g + 70, y + 15), "~%d%%" % round(pct * g), XB(60), INK, g, "lm")
+        label(d, (90 + OX, y - 150), name, BOLD(42), INK, ease((t - 0.4 - 0.5 * i) / 0.5))
+        prism(d, 90 + OX, y + 70, 760 * pct / 100 * g + 2, 110, 60, col)        # lying bar: hgt = thickness
+        label(d, (110 + OX + 760 * pct / 100 * g + 70, y + 15), "~%d%%" % round(pct * g), XB(60), INK, g, "lm")
     source(d, "Morgan et al., Int J Sports Med 1987", ease((t - 1) / 0.6))
     return np.asarray(im)
 
@@ -278,7 +289,7 @@ def scene_fomo(t, dur, bg):
         y = BH - 160 - k * 120 - i * 10
         if y < 120: continue
         a = ease(k / 0.4) * clamp((y - 120) / 160)
-        x = 80 + (i % 2) * 380 + 40 * math.sin(k * 1.3 + i)
+        x = 80 + OX + (i % 2) * 380 + 40 * math.sin(k * 1.3 + i)
         f = BOLD(38)
         tw = d.textlength(s, font=f) if hasattr(d, "textlength") else 380
         d.rounded_rectangle((x, y, x + tw + 50, y + 74), 37, fill=(255, 255, 255, int(220 * a)))
@@ -325,11 +336,11 @@ def shots():
     s = []
     # 00 problem: cut points follow the narration
     t1 = u["u1"]["t0"] + 4.2
-    s += [("fomo", t1, lambda d: over(scene_fomo, video(KL("WhatsApp Video 2026-10-08 at 06.57.04.mp4"), 0, d, grade=dark_red), d)),
+    s += [("fomo", t1, lambda d: over(scene_fomo, video(KL("WhatsApp Video 2026-10-08 at 06.57.04.mp4"), 0, d, grade=dark_red, size=(BW, BH)), d)),
           ("overtrain", u["u2"]["t0"] - 0.3 - t1, lambda d: chart(scene_overtrain, d)),
           ("pie", u["u3"]["t0"] - (u["u2"]["t0"] - 0.3), lambda d: chart(scene_pie, d)),
           ("bars", u["u4"]["t0"] - u["u3"]["t0"], lambda d: chart(scene_bars_id, d)),
-          ("race", u["u5"]["t0"] - u["u4"]["t0"], lambda d: over(scene_race, video(KL("WhatsApp Video 2026-09-30 at 20.33.42.mp4"), 1.0, d, grade=dark_red), d)),
+          ("race", u["u5"]["t0"] - u["u4"]["t0"], lambda d: over(scene_race, video(KL("WhatsApp Video 2026-09-30 at 20.33.42.mp4"), 1.0, d, grade=dark_red, size=(BW, BH)), d)),
           ("product", 34.0 - u["u5"]["t0"], lambda d: chart(scene_product, d))]
     # 01 use cases: six Blender scenes
     names = [("park_run", "Morning run"), ("treadmill", "Treadmill"), ("pushups", "Strength training"),
@@ -381,7 +392,7 @@ def rounded_mask(w, h, r):
     m = Image.new("L", (w, h), 0); ImageDraw.Draw(m).rounded_rectangle((0, 0, w - 1, h - 1), r, fill=255); return m
 
 
-BOXMASK = rounded_mask(BW, BH, 44)
+BOXMASK = rounded_mask(MW, MH, 44)
 
 
 def background():
@@ -397,8 +408,8 @@ def background():
 
 
 BG = background()
-SHADOW = Image.new("RGBA", (BW + 120, BH + 120), (0, 0, 0, 0))
-ImageDraw.Draw(SHADOW).rounded_rectangle((60, 70, BW + 60, BH + 70), 44, fill=(90, 20, 40, 70))
+SHADOW = Image.new("RGBA", (MW + 120, MH + 120), (0, 0, 0, 0))
+ImageDraw.Draw(SHADOW).rounded_rectangle((60, 70, MW + 60, MH + 70), 44, fill=(90, 20, 40, 70))
 SHADOW = SHADOW.filter(ImageFilter.GaussianBlur(24))
 
 CLIPS = {}
@@ -455,29 +466,29 @@ def overlay(im, t):
     seg = seg_at(t)
     # header
     f = XB(40); x = 50
-    d.text((x, 100), "Nova", font=f, fill=INK, anchor="lm")
-    d.text((x + d.textlength("Nova", font=f), 100), "-", font=f, fill=RED, anchor="lm")
-    d.text((x + d.textlength("Nova-", font=f), 100), "Band", font=f, fill=INK, anchor="lm")
+    d.text((x, HY), "Nova", font=f, fill=INK, anchor="lm")
+    d.text((x + d.textlength("Nova", font=f), HY), "-", font=f, fill=RED, anchor="lm")
+    d.text((x + d.textlength("Nova-", font=f), HY), "Band", font=f, fill=INK, anchor="lm")
     num, name = SEGS[seg][1], SEGS[seg][2]
     tag = num + "  " + name
     tf = SEMI(28); tw = d.textlength(tag, font=tf)
-    d.rounded_rectangle((W - 50 - tw - 44, 72, W - 50, 128), 28, fill=(255, 79, 99, 235))
-    d.text((W - 50 - tw / 2 - 22, 100), tag, font=tf, fill=WHITE, anchor="mm")
+    d.rounded_rectangle((W - 50 - tw - 44, HY - 28, W - 50, HY + 28), 28, fill=(255, 79, 99, 235))
+    d.text((W - 50 - tw / 2 - 22, HY), tag, font=tf, fill=WHITE, anchor="mm")
     for i in range(5):                                  # progress
         x0 = 50 + i * (W - 100 + 12) / 5
         x1 = x0 + (W - 100 + 12) / 5 - 12
-        d.rounded_rectangle((x0, 150, x1, 157), 4, fill=(109, 15, 34, 40))
+        d.rounded_rectangle((x0, PY, x1, PY + 7), 4, fill=(109, 15, 34, 40))
         s0 = SEGS[i][0]; s1 = SEGS[i + 1][0] if i < 4 else TOTAL
         k = clamp((t - s0) / (s1 - s0))
-        if k > 0: d.rounded_rectangle((x0, 150, x0 + (x1 - x0) * k, 157), 4, fill=RED + (255,))
+        if k > 0: d.rounded_rectangle((x0, PY, x0 + (x1 - x0) * k, PY + 7), 4, fill=RED + (255,))
     # Nova presenter + speech bubble
     l = line_at(t)
     name_clip = l["clip"] if l and t <= l["t1"] else "idle"
     fi = int(t * 24)
-    nh = 470 if seg == 3 else 560
+    nh = 620 if LAND else (470 if seg == 3 else 560)
     nv = nova_frame(name_clip, fi, nh)
     bob = int(6 * math.sin(t * 3.1))
-    nx, ny = -40, H - nh + 30 + bob
+    nx, ny = (W - nv.width - 30, H - nh + 40 + bob) if LAND else (-40, H - nh + 30 + bob)
     im.paste(nv, (nx, ny), nv)
     if l:
         k_in = ease((t - l["t0"] + 0.05) / 0.25)
@@ -488,16 +499,22 @@ def overlay(im, t):
         total_spoken = max(1, len(l["words"]))
         show = len(cap) if t > l["t1"] - 0.2 else max(1, int(round(len(cap) * spoken / total_spoken)))
         f = SEMI(42)
-        bx0, bx1 = 400, W - 36
+        bx0, bx1 = (BX + MW + 30, W - 40) if LAND else (400, W - 36)
         lines = wrap(d, cap, f, bx1 - bx0 - 70)
         bh = 70 + len(lines) * 56
-        by1 = H - 60; by0 = by1 - bh
+        if LAND:
+            by0 = BY + 10; by1 = by0 + bh
+        else:
+            by1 = H - 60; by0 = by1 - bh
         if a > 0:
             sh = Image.new("RGBA", (bx1 - bx0 + 80, by1 - by0 + 80), (0, 0, 0, 0))
             ImageDraw.Draw(sh).rounded_rectangle((40, 50, bx1 - bx0 + 40, by1 - by0 + 50), 38, fill=(110, 20, 40, int(70 * a)))
             sh = sh.filter(ImageFilter.GaussianBlur(16)); im.paste(sh, (bx0 - 40, by0 - 40), sh)
             d.rounded_rectangle((bx0, by0, bx1, by1), 38, fill=(255, 255, 255, int(250 * a)), outline=(255, 79, 99, int(200 * a)), width=3)
-            d.polygon([(bx0 + 4, by1 - 90), (bx0 - 38, by1 - 50), (bx0 + 4, by1 - 50)], fill=(255, 255, 255, int(245 * a)))
+            if LAND:                                                 # tail points down at Nova
+                d.polygon([(bx1 - 230, by1 - 4), (bx1 - 190, by1 + 44), (bx1 - 150, by1 - 4)], fill=(255, 255, 255, int(250 * a)))
+            else:
+                d.polygon([(bx0 + 4, by1 - 90), (bx0 - 38, by1 - 50), (bx0 + 4, by1 - 50)], fill=(255, 255, 255, int(245 * a)))
             shown = 0
             for li, ln in enumerate(lines):
                 ws = ln.split()
@@ -515,10 +532,11 @@ def overlay(im, t):
 APP = J("build", "app_rec_en")
 TAPS = json.load(open(os.path.join(APP, "taps.json")))
 APP_T0 = 88.0 + 2.0
-PH_H = 1560
+PH_H = 870 if LAND else 1560
 PH_W = int(PH_H * 1080 / 2338)
-PH_X, PH_Y = (W - PH_W) // 2 + 70, 190
-PHMASK = rounded_mask(PH_W, PH_H, 70)
+PH_X, PH_Y = ((BX + (MW - PH_W) // 2, BY + 18) if LAND else ((W - PH_W) // 2 + 70, 190))
+PH_R = 40 if LAND else 70
+PHMASK = rounded_mask(PH_W, PH_H, PH_R)
 
 
 def phone(im, t):
@@ -541,7 +559,7 @@ def phone(im, t):
             d.ellipse((PH_W * 0.62 - 26, cy - 26, PH_W * 0.62 + 26, cy + 26), fill=(255, 255, 255, 150))
     y = PH_Y + int((1 - k_in) * 300)
     bez = Image.new("RGBA", (PH_W + 36, PH_H + 36), (0, 0, 0, 0))
-    ImageDraw.Draw(bez).rounded_rectangle((0, 0, PH_W + 35, PH_H + 35), 86, fill=(18, 18, 22, 255), outline=(90, 90, 100, 255), width=3)
+    ImageDraw.Draw(bez).rounded_rectangle((0, 0, PH_W + 35, PH_H + 35), PH_R + 16, fill=(18, 18, 22, 255), outline=(90, 90, 100, 255), width=3)
     sh = Image.new("RGBA", (PH_W + 160, PH_H + 160), (0, 0, 0, 0))
     ImageDraw.Draw(sh).rounded_rectangle((60, 80, PH_W + 100, PH_H + 110), 90, fill=(0, 0, 0, 170))
     sh = sh.filter(ImageFilter.GaussianBlur(30))
@@ -643,6 +661,8 @@ def media_stream():
         buf = []
         for f, fr in enumerate(gen(n / FPS + 0.01)):
             if f >= n: break
+            if fr.shape[0] != MH or fr.shape[1] != MW:
+                fr = np.asarray(Image.fromarray(fr).resize((MW, MH), Image.BILINEAR))
             if f < len(tail):
                 w = (f + 1) / (len(tail) + 1)
                 fr = (tail[f].astype(np.float32) * (1 - w) + fr.astype(np.float32) * w).astype(np.uint8)
@@ -656,9 +676,9 @@ def media_stream():
 
 def main():
     os.makedirs(J("build", "portrait"), exist_ok=True)
-    wav = J("build", "portrait", "soundtrack.wav")
+    wav = J("build", "portrait", "soundtrack%s.wav" % ("_land" if LAND else ""))
     soundtrack(wav)
-    out = J("build", "portrait", "NovaBand_Portrait_Reel%s.mp4" % ("_preview" if PREVIEW else ""))
+    out = J("build", "portrait", "NovaBand_%s_Reel%s.mp4" % ("Landscape" if LAND else "Portrait", "_preview" if PREVIEW else ""))
     ow, oh = (W // 2, H // 2) if PREVIEW else (W, H)
     enc = subprocess.Popen([FF, "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", "%dx%d" % (ow, oh), "-r", str(FPS / 2 if PREVIEW else FPS),
                             "-i", "-", "-i", wav, "-c:v", "libx264", "-preset", "veryfast" if PREVIEW else "medium",
